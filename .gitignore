@@ -1,0 +1,14 @@
+# Build artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+Makefile
+inertiablast
+
+# Runtime files
+thrust.highscore
+thrustrc
+
+# Build directories
+build/
