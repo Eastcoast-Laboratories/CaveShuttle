@@ -12,3 +12,5 @@ thrustrc
 
 # Build directories
 build/
+/level-editor/dist/
+*/node_modules/*
