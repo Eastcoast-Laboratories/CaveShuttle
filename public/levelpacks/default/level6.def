@@ -1,178 +1,154 @@
-82
-215
-17
-5
+156
+146         ; height
+0           ; height of start
+-5          ; height of empty space
 25
-168   0 168
-168  84  84
- 84 164  84
-  0 168 168
-164   0   0
-                                                                                  
-                                                                                  
-                                                                                  
-                 *                                                                
-                                                                                  
-pppppppp                                                  stpppppppppppppppppppppp
-pppppppp                                                stpppppppppppppppppppppppp
-pppppppp                                              stpppppppppppppppppppppppppp
-pppppppp                                            stpppppppppppppppppppppppppppp
-pppppppp                                          stpppppppppppppppppppppppppppppp
-pppppppp                                        stpppppppppppppppppppppppppppppppp
-pppppppp                                      stpppppppppppppppppppppppppppppppppp
-pppppppp                                    stpppppppppppppppppppppppppppppppppppp
-pppppppp                                  stpppppppppppppppppppppppppppppppppppppp
-pppppppp                                stpppppppppppppppppppppppppppppppppppppppp
-pppppppp                              stpppppppppppppppppppppppppppppppppppppppppp
-pppppppp                              pppppppppppppppppppppppppppppppppppppppppppp
-pppppppp                              pppppppppppppppppppppppppppppppppppppppppppp
-pppppppp                              pppppppppppppppppppppppppppppppppppppppppppp
-pppppppp                              pppppppppppppppppppppppppppppppppppppppppppp
-pppppppp                              pppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppqr                  wxpppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppqr                  wxpppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppqr                  wxpppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppqr                  wxpppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppqr                 \wxpppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppqr               ]^_wxpppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppqr                  wxpppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppqr                  pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppqr                pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppqr              pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppqr            pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppqr          pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr        pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppq       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp       pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp#######pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppuv                wxpppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppuv[                   wxpppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppuvXYZ                    \wxpppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp                         ]^_wxpppppppp
-pppppppppppppppppppppppppppppppppppppppppppp        *                     wxpppppp
-pppppppppppppppppppppppppppppppppppppppppppp                                pppppp
-pppppppppppppppppppppppppppppppppppppppppppp                                pppppp
-pppppppppppppppppppppppppppppppppppppppppppp                                pppppp
-pppppppppppppppppppppppppppppppppppppppppppp                     `a         pppppp
-pppppppppppppppppppppppppppppppppppppppppppp                     bc         pppppp
-pppppppppppppppppppppppppppppppppppppppppppp                  stpppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp                stpppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp           UVWstpppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp           Tstpppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          stpppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp        stpppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      stpppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp######pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp      wxpppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp   *    wxpppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          wxpppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp           \wxpppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp           ]^_wppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp               ppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp               ppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp               ppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp               ppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp           UVWsppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp           Tstpppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          stpppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppp          pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp                  pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp                  pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp                  pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp                  pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp          `a      pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp          bc      pppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp       ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp       ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp#######ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp       ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp       ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp   *   ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppp       ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppu       ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppuv        ppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppuv[         ppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppvXYZ         wxppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp               wxppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp                \wxppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp                ]^_wxppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppo                    wxppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppno                    wxppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppno                    wxppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppno                    wxppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppno                    wxppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppno                ### wxppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppno            ###     wxppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppno        ###  *      wpppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppno    ###            pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppno ##            1Npppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppno              Opppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppno#############pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppno           pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppno         pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppBpppppppApppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppBpppppppApppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppEpppppppDpppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppEpppppppDpppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppuv         pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppuv           pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppuv[            pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppXYZ            pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp               pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp               pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp               pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppp1L              pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppM              pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp               pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp               pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppu               pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppuv[               pppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppuvXYZ               pppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp                   spppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp                 stppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp               stppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp          UVWstppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp          Tstppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp         stppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp       stppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp      tppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp      pppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp  m0  pppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp  12  pppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppp  34  pppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp pppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp pppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp    def  pppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp    ghi  pppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppppppppppppppppp    jkl  pppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+  0  84 164 ; background/tractor (wall color)
+164   0   0 ; gun/reactor/stand (bunker color)
+  0 164   0 ; pod/blip (pod color)
+  0 164 164 ; text (text color)
+164  84  84 ; shield (shield color)
+
+                   *                           
+
+
+
+
+
+
+
+
+
+
+                  stp                                                                                                                                       
+                stppp                                                                                                                                       
+              stppppp                                                                                                                                       
+ppppppppppppppppppppp                                                                                                                                   stpp
+ppppppppppppppppppppp                                                                                                                                 stpppp
+ppppppppppppppppppppp                                                                                                                               stpppppp
+ppppppppppppppppppppp                                                               stppppqr                                                      stpppppppp
+ppppppppppppppppppppp                                                             stppppppppqr                                        stpppppppppppppppppppp
+pppppppppppppppppppppqrPQR                                                    stppppppppppppppqr                                    stpppppppppppppppppppppp
+pppppppppppppppppppppppqrS                             `a                  pppppppppppppppppppppppppppppqr                stpppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppqr                            bc                  pppppppppppppppppppppppppppppppppqr          stpppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppp         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr      stpppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppp#########ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppp    *    ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppp         ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppp         ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppuv                                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppuv                                               ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppuv[                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppuvXYZ                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppuv                                                     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp     def                                              ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp     ghi               *                     `a       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp     jkl                                     bc       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppp         ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppp#########ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppp         Npppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppp         Opppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppHpppppppGppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppHpppppppGppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppHpppppppGppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppp         Npppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppp    *    Opppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppuv                                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppuv                                               ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppuv[                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppuvXYZ                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppuv                                                     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp       `a                                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp       bc                                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp    *     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp##########ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp    *     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppqrPQR                                                 ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppqrS         `a                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppqr        bc                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp    *    pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp#########pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp    *    pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppppppp         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppuv                                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppuv                                               ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppuv[                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppuvXYZ                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppuv                                                     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppp    *     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppp##########ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppp    *     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppppppppppp          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppuv                                     wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppuv                                         wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppqr                                              stppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppqr                  *                       stppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp########pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp        pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                        *                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                                                      ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppqr                                                    ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppqr                                                  ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppqr                                            stppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppqr                                        stppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp            pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp            pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp     m0     pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp     12     pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp     34     pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppp     pp     pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp

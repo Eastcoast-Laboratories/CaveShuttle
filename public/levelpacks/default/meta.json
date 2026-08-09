@@ -1,0 +1,8 @@
+{
+  "id": "default",
+  "name": "Default Levels",
+  "description": "Seven levels: from straightforward vertical descents to horizontal mazes, spiral canyons, zigzag slopes, cavern hops, reactor gauntlets, and more.",
+  "levelCount": 7,
+  "author": "Built-in",
+  "version": "1.0"
+}
