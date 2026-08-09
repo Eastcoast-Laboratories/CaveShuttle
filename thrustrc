@@ -1,8 +1,0 @@
-# .thrustrc
-# Put this file in your home directory to customize thrust.
-
-SDL-counterclockwise   A
-SDL-clockwise          S
-SDL-thrust             Right_Ctrl
-SDL-fire               Return
-SDL-pickup             Space
