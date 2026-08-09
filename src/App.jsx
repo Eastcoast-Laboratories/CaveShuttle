@@ -20,8 +20,11 @@ import { storageKey } from './core/storage-keys.js';
 import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './core/progress-storage.js';
 import { getAllPacks, ensurePackMetaLoaded, BUILTIN_PACKS, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
 import { useLanguage } from './i18n/LanguageContext.jsx';
+import { getHighscoreTranslations } from './i18n/highscores.js';
 
 function App() {
+  const { language, setLanguage } = useLanguage();
+  const t = getHighscoreTranslations(language);
   const [gameState, setGameState] = useState('menu'); // Start with menu screen
   const previousGameStateRef = useRef(null);
   const [score, setScore] = useState(0);
@@ -611,15 +614,15 @@ function App() {
   };
 
   const scoreBreakdown = useMemo(() => [
-    { key: 'time', label: 'Time', value: levelScoreBreakdown.time + 's' },
-    { key: 'bunker', label: levelScoreBreakdown.bunker > SCORE_BUNKER_DESTROYED ? 'Bunkers destroyed' : 'Bunker destroyed', value: levelScoreBreakdown.bunker },
-    { key: 'button', label: 'Button/Slider activated', value: levelScoreBreakdown.button },
-    { key: 'pod', label: 'Pod connected', value: levelScoreBreakdown.pod },
-    { key: 'fuel', label: 'Fuel remaining', value: levelScoreBreakdown.fuel },
-    { key: 'level', label: 'Level complete', value: levelScoreBreakdown.level },
-    { key: 'reactor', label: 'Reactor escape', value: levelScoreBreakdown.reactor },
-    { key: 'timeBonus', label: 'Time Bonus', value: levelScoreBreakdown.timeBonus }
-  ].filter(item => item.value !== 0 || (item.key === 'time' && levelScoreBreakdown.time > 0)), [levelScoreBreakdown]);
+    { key: 'time', label: t.time, value: levelScoreBreakdown.time + t.seconds },
+    { key: 'bunker', label: levelScoreBreakdown.bunker > SCORE_BUNKER_DESTROYED ? t.bunkerDestroyedPlural : t.bunkerDestroyed, value: levelScoreBreakdown.bunker },
+    { key: 'button', label: t.buttonActivated, value: levelScoreBreakdown.button },
+    { key: 'pod', label: t.podConnected, value: levelScoreBreakdown.pod },
+    { key: 'fuel', label: t.fuelRemaining, value: levelScoreBreakdown.fuel },
+    { key: 'level', label: t.levelCompleteLabel, value: levelScoreBreakdown.level },
+    { key: 'reactor', label: t.reactorEscape, value: levelScoreBreakdown.reactor },
+    { key: 'timeBonus', label: t.timeBonus, value: levelScoreBreakdown.timeBonus }
+  ].filter(item => item.value !== 0 || (item.key === 'time' && levelScoreBreakdown.time > 0)), [levelScoreBreakdown, t]);
 
   // Generate level buttons (DRY: used by hamburger menu)
   const generateLevelButtons = (onClose) => {
@@ -763,8 +766,6 @@ function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState]);
-
-  const { language, setLanguage } = useLanguage();
 
   // Shared hamburger menu settings (DRY): used by both the in-game hamburger
   // and the unified TopRightMenu. Excludes close-sensitive handlers, which are
@@ -974,10 +975,10 @@ function App() {
               {/* Game over overlay - centered over canvas */}
               {gameState === 'gameover' && (
                 <LevelCompleteOverlay
-                  title="GAME OVER"
+                  title={t.gameOver}
                   breakdown={scoreBreakdown}
                   total={score}
-                  totalLabel="Score"
+                  totalLabel={t.scoreLabel}
                   newHighscore={newHighscore}
                   twoPlayer={twoPlayer}
                   networkRole={networkRole}
@@ -1003,10 +1004,10 @@ function App() {
                   buttons={
                     <>
                       <button onClick={() => handlePlayAgain()} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
-                        Play Again
+                        {t.playAgain}
                       </button>
                       <button onClick={() => { if (networkRole) { networkManager.backToLobby(); setGameState('menu'); } else { setGameState('menu'); } }} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #555, #333)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 0, 0, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)'; }}>
-                        {networkRole ? 'Back to Lobby' : 'Back to Menu'}
+                        {networkRole ? t.backToLobby : t.backToMenu}
                       </button>
                     </>
                   }
@@ -1016,10 +1017,10 @@ function App() {
               {/* Level complete overlay - centered over canvas */}
               {gameState === 'levelcomplete' && (
                 <LevelCompleteOverlay
-                  title="LEVEL COMPLETE"
+                  title={t.levelComplete}
                   breakdown={scoreBreakdown}
                   total={levelScore}
-                  totalLabel="Score"
+                  totalLabel={t.scoreLabel}
                   newHighscore={newHighscore}
                   twoPlayer={twoPlayer}
                   networkRole={networkRole}
@@ -1033,7 +1034,7 @@ function App() {
                   onPlayer2NameChange={handlePlayer2NameChange}
                   buttons={
                     <button onClick={handleNextLevel} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
-                      Next Level
+                      {t.nextLevel}
                     </button>
                   }
                 />

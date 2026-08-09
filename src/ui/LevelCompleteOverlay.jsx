@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PlayerNameInput from './PlayerNameInput.jsx';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { getHighscoreTranslations } from '../i18n/highscores.js';
 
 const ROW_DURATION = 500; // ms each row counts up
 const ROW_DELAY = 300; // ms between rows
 const TOTAL_FLASH_DURATION = 600; // ms the total flashes
 
 export default function LevelCompleteOverlay({ title, breakdown, total, totalLabel, buttons, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, newHighscore, twoPlayer, levelNumber, networkRole, hsName, hsPlayer2Name, onShowHighscores }) {
+  const { language } = useLanguage();
+  const t = getHighscoreTranslations(language);
   const [visibleRow, setVisibleRow] = useState(-1);
   const [displayedValues, setDisplayedValues] = useState(() => breakdown.map(() => 0));
   const [showTotal, setShowTotal] = useState(false);
@@ -116,12 +120,12 @@ export default function LevelCompleteOverlay({ title, breakdown, total, totalLab
           onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
           >
             <span style={{ color: '#ffd700', fontSize: '20px', fontWeight: '800', textShadow: '0 0 10px rgba(255, 215, 0, 0.6)' }}>
-              {'\u2605'} NEW HIGHSCORE {'\u2605'} {onShowHighscores ? '\u2192' : ''}
+              {'\u2605'} {t.newHighscore} {'\u2605'} {onShowHighscores ? '\u2192' : ''}
             </span>
             <div style={{ display: 'flex', gap: '4px', fontSize: '13px', color: '#fff' }}>
-              {newHighscore.level && <span>Level {levelNumber}</span>}
+              {newHighscore.level && <span>{t.level} {levelNumber}</span>}
               {newHighscore.level && newHighscore.run && <span>&</span>}
-              {newHighscore.run && <span>Run</span>}
+              {newHighscore.run && <span>{t.run}</span>}
             </div>
             {twoPlayer && hsName && (
               <div style={{ fontSize: '14px', color: '#ffd700', fontWeight: '600' }}>
@@ -134,7 +138,7 @@ export default function LevelCompleteOverlay({ title, breakdown, total, totalLab
         {playerName !== undefined && (
           <div style={{ marginBottom: '15px', minWidth: '240px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', width: '72px', textAlign: 'right' }}>{networkRole === 'host' ? 'Player 1:' : 'Your name:'}</span>
+              <span style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', width: '72px', textAlign: 'right' }}>{networkRole === 'host' ? t.player1 : t.yourName}</span>
               <PlayerNameInput 
                 playerName={hsName || playerName} 
                 onPlayerNameChange={onPlayerNameChange}
@@ -143,7 +147,7 @@ export default function LevelCompleteOverlay({ title, breakdown, total, totalLab
             </div>
             {twoPlayer && player2Name !== undefined && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', width: '72px', textAlign: 'right' }}>{networkRole === 'host' ? 'Your name:' : 'Player 2:'}</span>
+                <span style={{ color: '#fff', fontSize: '14px', whiteSpace: 'nowrap', width: '72px', textAlign: 'right' }}>{networkRole === 'host' ? t.yourName : t.player2}</span>
                 <PlayerNameInput 
                   playerName={hsPlayer2Name || player2Name} 
                   onPlayerNameChange={onPlayer2NameChange}

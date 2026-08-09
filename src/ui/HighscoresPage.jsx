@@ -3,9 +3,13 @@ import './LegalPages.css';
 import './cave-theme.css';
 import './HighscoresPage.css';
 import { HighScoreManager } from '../game/high-score-manager.js';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { getHighscoreTranslations } from '../i18n/highscores.js';
 
 // Standalone highscores page linked from the main menu.
 export default function HighscoresPage({ onBack, onPlay, installedPacks = [], currentPackId, twoPlayer = false }) {
+  const { language } = useLanguage();
+  const t = getHighscoreTranslations(language);
   const [activeTab, setActiveTab] = useState('runs');
   const [selectedPackId, setSelectedPackId] = useState(currentPackId || (installedPacks[0]?.id || 'default'));
   const [selectedMode, setSelectedMode] = useState(twoPlayer ? 'two' : 'single');
@@ -119,21 +123,21 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
       <div className="modal-page-inner cave-panel">
         <h1 className="highscore-title"><img src="/images/highscore/highscore_title.png" alt="HIGH SCORE" /></h1>
         <p className="player-info">
-          Player: <strong className="player-name">{profile.name}</strong>
+          {t.player}: <strong className="player-name">{profile.name}</strong>
         </p>
         <div className="top-row">
           <span className="nbsp">&nbsp;</span>
-          <button className="back-button" onClick={onBack}>← Back</button>
+          <button className="back-button" onClick={onBack}>{t.back}</button>
           <div className="tabs">
             <span className="nbsp">&nbsp;</span>
             <button
               className={`tab-button ${activeTab === 'runs' ? 'active' : ''}`}
               onClick={() => setActiveTab('runs')}
-            >Runs</button>
+            >{t.runs}</button>
             <button
               className={`tab-button ${activeTab === 'levels' ? 'active' : ''}`}
               onClick={() => setActiveTab('levels')}
-            >Levels</button>
+            >{t.levels}</button>
           </div>
           <span className="nbsp">&nbsp;</span>
           <div className="filter-group">
@@ -151,30 +155,30 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
               value={selectedMode}
               onChange={(e) => setSelectedMode(e.target.value)}
             >
-              <option value="all">1 and 2 Player</option>
-              <option value="single">1 Player</option>
-              <option value="two">2 Player</option>
+              <option value="all">{t.allPlayers}</option>
+              <option value="single">{t.onePlayer}</option>
+              <option value="two">{t.twoPlayer}</option>
             </select>
           </div>
           <div style={{ flex: 1 }} />
-          {onPlay && <button className="play-button" onClick={() => onPlay()}>Play →</button>}
+          {onPlay && <button className="play-button" onClick={() => onPlay()}>{t.play}</button>}
           <span className="nbsp">&nbsp;&nbsp;</span>
         </div>
 
         {activeTab === 'runs' && (
           <div>
             {runTop10.length === 0 ? (
-              <p className="empty-message">No run highscores yet.</p>
+              <p className="empty-message">{t.noRunHighscores}</p>
             ) : (
               <table className="highscores-table">
                 <thead>
                   <tr>
                     <th className="solid-col edge-img edge-tl"></th>
                     <th className="rank-col"></th>
-                    <th className="level-col">Rank</th>
-                    <th className="text-right">Score</th>
-                    <th className="level-col">Level</th>
-                    <th>Name</th>
+                    <th className="level-col">{t.rank}</th>
+                    <th className="text-right">{t.score}</th>
+                    <th className="level-col">{t.level}</th>
+                    <th>{t.name}</th>
                     <th className="solid-col edge-img edge-tr"></th>
                   </tr>
                 </thead>
@@ -187,7 +191,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                       <td className="text-right">{String(entry.totalScore).padStart(6, '0')}</td>
                       <td className="level-col">{entry.lastLevel}{(() => {
                         const lastRec = (entry.levelRecordIds || []).map(id => HighScoreManager.getLevelRecordByAttemptId(id)).filter(Boolean).pop();
-                        return lastRec && lastRec.pass > 1 ? ` (Stage ${lastRec.pass})` : '';
+                        return lastRec && lastRec.pass > 1 ? ` (${t.stageLabel.replace('{n}', lastRec.pass)})` : '';
                       })()}</td>
                       <td className={`uppercase ${isOwnEntry(entry) ? 'own-name' : ''}`}>{getDisplayName(entry)}</td>
                       <td className="solid-col"></td>
@@ -223,9 +227,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
               <thead>
                 <tr>
                   <th className="solid-col"><span className="edge-img edge-tl"></span></th>
-                  <th className="level-col">Level</th>
-                  <th className="text-right">Score</th>
-                  <th>Name</th>
+                  <th className="level-col">{t.level}</th>
+                  <th className="text-right">{t.score}</th>
+                  <th>{t.name}</th>
                   <th className="solid-col"><span className="edge-img edge-tr"></span></th>
                 </tr>
               </thead>
@@ -233,9 +237,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                 {levelTop.map(({ level, top }) => (
                   <tr key={level} onClick={() => openLevelDetail(level)}>
                     <td className="solid-col"></td>
-                    <td className="level-col">{level}{top && top.pass > 1 ? ` (Stage ${top.pass})` : ''}</td>
+                    <td className="level-col">{level}{top && top.pass > 1 ? ` (${t.stageLabel.replace('{n}', top.pass)})` : ''}</td>
                     <td className="text-right">{top ? String(top.score).padStart(6, '0') : '------'}</td>
-                    <td className={`uppercase ${top && isOwnEntry(top) ? 'own-name' : ''}`}>{top ? getDisplayName(top) : 'No score'}</td>
+                    <td className={`uppercase ${top && isOwnEntry(top) ? 'own-name' : ''}`}>{top ? getDisplayName(top) : t.noScore}</td>
                     <td className="solid-col"></td>
                   </tr>
                 ))}
@@ -259,30 +263,21 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
         <div className="popup-overlay popup-overlay-top" onClick={(e) => { if (e.target === e.currentTarget) setRunDetail(null); }}>
           <div className="popup-content">
             <h2>{runDetail.startLevel === runDetail.lastLevel ? `${runDetail.startLevel}` : `${runDetail.startLevel} - ${runDetail.lastLevel}`}: {getDisplayName(runDetail)}</h2>
-            <p className="total-score">Total Score: {runDetail.totalScore}</p>
-            <p className="player-mode">{runDetail.mode === 'two' ? '2 Player' : '1 Player'}</p>
+            <p className="total-score">{t.totalScore}: {runDetail.totalScore}</p>
+            <p className="player-mode">{runDetail.mode === 'two' ? t.twoPlayer : t.onePlayer}</p>
             {lastRecord && (
               <p className="last-level">
-                Last played: Level {lastRecord.level} - {lastRecord.score} pts{lastRecord.completed ? '' : ' (game over)'}
+                {t.lastPlayed.replace('{level}', lastRecord.level).replace('{score}', lastRecord.score).replace('{suffix}', lastRecord.completed ? '' : t.gameOverSuffix)}
               </p>
             )}
             {runDetail.records.length === 0 ? (
-              <p>No level records.</p>
+              <p>{t.noLevelRecords}</p>
             ) : (
               <div className="popup-levels">
                 {runDetail.records.map(r => {
                   const breakdown = r.scoreBreakdown || {};
                   const orderedKeys = ['bunker', 'button', 'pod', 'reactor', 'fuel', 'level', 'time', 'timeBonus'];
-                  const labelMap = {
-                    bunker: 'bunker',
-                    button: 'button',
-                    pod: 'pod',
-                    reactor: 'reactor escape',
-                    fuel: 'fuel',
-                    level: 'level',
-                    time: 'time',
-                    timeBonus: 'bonus'
-                  };
+                  const labelMap = t.breakdownLabels;
                   const categories = orderedKeys
                     .map(k => {
                       let value = breakdown[k];
@@ -303,9 +298,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                   return (
                     <div key={r.attemptId} className="popup-level-row">
                       <div className="popup-level-header">
-                        <span>Level {r.level}{r.pass > 1 ? ` (stage ${r.pass})` : ''}{r.completed ? '' : ' - failed'}</span>
+                        <span>{t.level} {r.level}{r.pass > 1 ? ` (${t.stageLabel.replace('{n}', r.pass)})` : ''}{r.completed ? '' : t.levelFailed}</span>
                         <span className="popup-level-score">
-                          <span>{r.score} pts</span>
+                          <span>{r.score} {t.points}</span>
                           {breakdown.time > 0 && breakdown.timeBonus > 0 && (
                             <span>{breakdown.time}s</span>
                           )}
@@ -321,7 +316,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                 })}
               </div>
             )}
-            <button className="close-button" onClick={() => setRunDetail(null)}>Close</button>
+            <button className="close-button" onClick={() => setRunDetail(null)}>{t.close}</button>
           </div>
         </div>
       )}
@@ -329,18 +324,18 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
       {levelDetail && (
         <div className="popup-overlay" onClick={(e) => { if (e.target === e.currentTarget) setLevelDetail(null); }}>
           <div className="popup-content">
-            <h2>Level {levelDetail.level}</h2>
+            <h2>{t.level} {levelDetail.level}</h2>
             {levelDetail.records.length === 0 ? (
-              <p>No entries yet.</p>
+              <p>{t.noEntriesYet}</p>
             ) : (
               <table className="highscores-table">
                 <thead>
                   <tr>
                     <th className="solid-col"></th>
-                    <th className="rank-col">Rank</th>
-                    <th>Name</th>
-                    <th>Stage</th>
-                    <th className="text-right">Score</th>
+                    <th className="rank-col">{t.rank}</th>
+                    <th>{t.name}</th>
+                    <th>{t.stage}</th>
+                    <th className="text-right">{t.score}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -355,7 +350,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                       <td className="solid-col"></td>
                       <td className="rank-col">{r.rank}</td>
                       <td className={isOwnEntry(r) ? 'own-name' : ''}>{getDisplayName(r)}</td>
-                      <td>{r.pass > 1 ? `Stage ${r.pass}` : '1'}</td>
+                      <td>{r.pass > 1 ? t.stageLabel.replace('{n}', r.pass) : '1'}</td>
                       <td className="text-right">{r.score}</td>
                     </tr>
                   ))}
@@ -364,14 +359,14 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                       <td className="solid-col"></td>
                       <td className="rank-col">{levelDetail.ownEntry.rank}</td>
                       <td className="own-name">{getDisplayName(levelDetail.ownEntry)}</td>
-                      <td>{levelDetail.ownEntry.pass > 1 ? `Stage ${levelDetail.ownEntry.pass}` : '1'}</td>
+                      <td>{levelDetail.ownEntry.pass > 1 ? t.stageLabel.replace('{n}', levelDetail.ownEntry.pass) : '1'}</td>
                       <td className="text-right">{levelDetail.ownEntry.score}</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             )}
-            <button className="close-button" onClick={() => setLevelDetail(null)}>Close</button>
+            <button className="close-button" onClick={() => setLevelDetail(null)}>{t.close}</button>
           </div>
         </div>
       )}
