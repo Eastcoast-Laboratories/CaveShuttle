@@ -23,8 +23,8 @@ export default function Impressum({ onBack }) {
         </p>
 
         <h2>Kontakt</h2>
-        <p>Telefon: (+49) Kiel - 53 678 64</p>
-        <p>E-Mail: rbk-at-eclabs.de</p>
+        <p>Telefon: (+49) Kiel-53687223</p>
+        <p>E-Mail: caveshuttle-support-at-it.z11.de</p>
 
         <h2>Steuerdaten</h2>
         <p>Steuernummer: 19 222 22158</p>

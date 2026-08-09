@@ -20,7 +20,7 @@ export const highscoreTranslations = {
 
     // Buttons
     back: '← Zurück',
-    play: 'Spielen →',
+    play: 'Play →',
     close: 'Schließen',
     playAgain: 'Nochmal spielen',
     backToMenu: '← Menu',
