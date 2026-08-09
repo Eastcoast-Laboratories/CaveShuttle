@@ -1,0 +1,18 @@
+{
+  "name": "caveshuttle-geckos-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Geckos.io signaling and relay server for Cave Shuttle online multiplayer.",
+  "dependencies": {
+    "@geckos.io/server": "^3.1.0",
+    "nanoid": "^5.1.16"
+  }
+}
