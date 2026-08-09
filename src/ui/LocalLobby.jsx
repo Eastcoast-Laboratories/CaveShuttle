@@ -357,6 +357,7 @@ export default function LocalLobby({ onBack }) {
           </>
         )}
 
+        <button style={secondaryButtonBase} onClick={() => { manager.reset(); setView('select'); setManualOffer('') }}>{t.back}</button>
       </div>
       {renderWebScanner()}
     </div>

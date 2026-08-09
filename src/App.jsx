@@ -1034,43 +1034,45 @@ function App() {
               )}
             </div>
           </div>
-
-          {/* Menu overlay for level selection and controls */}
-          <HamburgerMenu
-            isOpen={showMobileMenu}
-            onClose={() => setShowMobileMenu(false)}
-            levelButtons={generateLevelButtons(() => setShowMobileMenu(false))}
-            onBackToMenu={() => { setGameState('menu'); setShowMobileMenu(false); }}
-            onOpenLevelEditor={() => { setGameState('editor'); setShowMobileMenu(false); }}
-            appVersion={APP_VERSION}
-            showTouchButtons={showTouchButtons}
-            onToggleTouchButtons={() => setShowTouchButtons(!showTouchButtons)}
-            installedPacks={installedPacks}
-            currentPackId={currentPackId}
-            onSwitchPack={handleSwitchPack}
-            onPackImported={handlePackImported}
-            onPackDeleted={handlePackDeleted}
-            twoPlayer={twoPlayer}
-            playerName={playerName}
-            onPlayerNameChange={handlePlayerNameChange}
-            player2Name={player2Name}
-            onPlayer2NameChange={handlePlayer2NameChange}
-            podDocked={podDocked}
-            soundVolume={soundVolume}
-            onSoundVolumeChange={setSoundVolume}
-            touchButtonOpacity={touchButtonOpacity}
-            onTouchButtonOpacityChange={setTouchButtonOpacity}
-            vibrationEnabled={vibrationEnabled}
-            onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
-            tiltSteering={tiltSteering}
-            onToggleTiltSteering={() => setTiltSteering(!tiltSteering)}
-            tiltSensorRef={tiltSensorRef}
-            onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
-            tiltSteeringRotated={tiltSteeringRotated}
-            onToggleTiltRotation={() => setTiltSteeringRotated(!tiltSteeringRotated)}
-            onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
-          />
         </>
+      )}
+
+      {/* Menu overlay for level selection and controls - rendered whenever hamburger button is visible */}
+      {((gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') || (gameState === 'menu' && multiplayerView)) && showMobileMenu && (
+        <HamburgerMenu
+          isOpen={showMobileMenu}
+          onClose={() => setShowMobileMenu(false)}
+          levelButtons={generateLevelButtons(() => setShowMobileMenu(false))}
+          onBackToMenu={() => { setGameState('menu'); setShowMobileMenu(false); }}
+          onOpenLevelEditor={() => { setGameState('editor'); setShowMobileMenu(false); }}
+          appVersion={APP_VERSION}
+          showTouchButtons={showTouchButtons}
+          onToggleTouchButtons={() => setShowTouchButtons(!showTouchButtons)}
+          installedPacks={installedPacks}
+          currentPackId={currentPackId}
+          onSwitchPack={handleSwitchPack}
+          onPackImported={handlePackImported}
+          onPackDeleted={handlePackDeleted}
+          twoPlayer={twoPlayer}
+          playerName={playerName}
+          onPlayerNameChange={handlePlayerNameChange}
+          player2Name={player2Name}
+          onPlayer2NameChange={handlePlayer2NameChange}
+          podDocked={podDocked}
+          soundVolume={soundVolume}
+          onSoundVolumeChange={setSoundVolume}
+          touchButtonOpacity={touchButtonOpacity}
+          onTouchButtonOpacityChange={setTouchButtonOpacity}
+          vibrationEnabled={vibrationEnabled}
+          onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
+          tiltSteering={tiltSteering}
+          onToggleTiltSteering={() => setTiltSteering(!tiltSteering)}
+          tiltSensorRef={tiltSensorRef}
+          onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
+          tiltSteeringRotated={tiltSteeringRotated}
+          onToggleTiltRotation={() => setTiltSteeringRotated(!tiltSteeringRotated)}
+          onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
+        />
       )}
 
       {showTutorial && (
