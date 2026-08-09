@@ -1,0 +1,55 @@
+/* Commodore 64 font by Devin D. Cook
+   Source: https://www.dafont.com/commodore-64.font */
+@font-face {
+  font-family: 'Commodore 64';
+  src: url('/fonts/Commodore Rounded v1.2.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Commodore 64 Thin';
+  src: url('/fonts/Commodore Rounded Thin v1.2.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* Shared theme: background blur, terminal font, and green color scheme.
+   Used by Menu and HighscoresPage to keep visual consistency (DRY). */
+
+.cave-background {
+  background-image: url('/logo2.png') !important;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #6ee66ec5;
+  font-family: 'Commodore 64', 'Courier New', monospace;
+  text-transform: uppercase;
+  font-weight: bold;
+  z-index: 0;
+}
+
+.cave-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: -1;
+}
+
+.cave-panel {
+  background: #000;
+  box-shadow: 0 0 30px rgba(110, 230, 110, 0.3);
+  border: 2px solid #6ee66ec5;
+  border-radius: 12px;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 120px 120px, 180px 180px, 240px 240px;
+  background-position: 0 0, 40px 80px, 90px 30px;
+}
+
+.nbsp {
+  font-family: Arial, sans-serif;
+}

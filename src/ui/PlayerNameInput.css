@@ -1,0 +1,61 @@
+.player-name-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.player-name-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-name-input-field {
+  width: 163px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  transition: width 0.2s ease;
+}
+
+.player-name-input-row:has(.player-name-save-btn, .player-name-checkmark) .player-name-input-field {
+  width: 120px;
+}
+
+.player-name-input-field::placeholder {
+  color: #666;
+  font-style: italic;
+}
+
+.player-name-save-btn {
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.player-name-checkmark {
+  color: #00ff88;
+  font-size: 18px;
+  font-weight: bold;
+  animation: checkmark-fade 2s ease-out forwards;
+}
+
+@keyframes checkmark-fade {
+  0% { opacity: 1; transform: scale(1); }
+  20% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+.player-name-error {
+  font-size: 12px;
+  color: #ff6666;
+}
