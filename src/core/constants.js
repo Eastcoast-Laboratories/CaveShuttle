@@ -1,487 +1,139 @@
+// Game constants
+export const GRAVITY = 0.055; // base gravity
+export const ACCELERATE_POWER = 0.3; // thrust strength per dt
+export const ROTATION_SPEED = 0.05; // 50% slower than original
+export const TURRET_ROTATION_SPEED = 0.06; // Player 2 turret rotation speed
+export const POD_ROTATION_SPEED = 0.05; // Player 2 pod rotation speed
+export const POD_THRUST = 0.1; // Player 2 pod thruster strength
+export const ROTATION_SLOW_ANGLE_THRESHOLD = 15; // degrees: when starting rotation within this threshold of vertical, use slow rotation
+export const ROTATION_SLOW_MULTIPLIER = 0.4; // multiplier for rotation speed when in slow mode
+export const ROTATION_SNAP_ANGLE_THRESHOLD = 3; // degrees: when stopping rotation within this threshold of vertical, snap to 0°
+export const MAX_SPEED = 5; // maximum speed for the ship
+export const FRICTION = 0.99; // friction coefficient
+export const SHIELD_DURATION = 300; // frames
+export const FUEL_MAX = 100;
+export const FUEL_CONSUMPTION = 0.1;
+export const POD_FUEL_CONSUMPTION = 0.05;
+export const FIRE_FUEL_CONSUMPTION = 0.05; // Fuel consumed per shot fired
+export const BULLET_SPEED = 8; // Speed of fired bullets
 
-/* Written by Peter Ekberg, peda@lysator.liu.se */
+// Fuel depots
+export const FUEL_DEPOT_CAPACITY = 80; // Max fuel a 2x2 depot can hold
+export const FUEL_DEPOT_INITIAL = FUEL_DEPOT_CAPACITY; // Fuel level when a depot is first loaded
+export const FUEL_DEPOT_REFUEL_RATE = 2.2; // Fuel transferred to ship per frame while refueling
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+// Sky event
+// The star start height is controlled by the level header 'height of empty space'.
+// The value is read in GameCanvas.jsx; no constant needed.
+export const SKY_FULL_STAR_DENSITY = 700; // pixels above level top (y=0) where stars are rendered to full density
+export const SKY_DELIVERY_THRESHOLD = 100; // additional pixels above SKY_FULL_STAR_DENSITY to trigger sky delivery
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#ifdef HAVE_MALLOC_H
-# include <malloc.h>
-#endif
-#include <math.h>
+export const WORMHOLE_GRAVITY = 1.4; // strong gravitational pull during the level-complete wormhole animation
+export const GAME_SPEED = 0.5; // Global game speed multiplier (1.0 = full speed, 0.5 = half speed)
 
-#include "thrust_t.h"
-#include "keyboard.h"
-#include "init.h"
-#include "fast_gr.h"
-#include "graphics.h"
-#include "things.h"
-#include "font5x5.h"
-#include "thrust.h"
-#include "gr_drv.h"
+// Canvas internal resolution (fixed aspect ratio 4:3)
+export const GAME_WIDTH = 800;
+export const GAME_HEIGHT = 600;
+export const HUD_HEIGHT = 10;
 
-#include "sound.h"
-sound_t snd[SOUND_SAMPLES];
 
-void
-turnship(void)
-{
-  word i,j,k;
+// Camera scrolling
+// Additional offset for camera bottom limit to ensure full level is visible
+// Accounts for HUD height, bottom gap, and padding
+export const CAMERA_BOTTOM_OFFSET = 200;
 
-  for(k=0; k<4; k++)
-    for(i=0; i<16; i++)
-      for(j=0; j<16; j++)
-        *(ship+(5+k)*256 +     i*16+j)=
-          *(ship+(3-k)*256 +(15-j)*16+15-i);
-  for(i=0; i<4; i++) {
-    memcpy(shipstorage,ship+(i<<8),256);
-    memcpy(ship+(i<<8),ship+((8-i)<<8),256);
-    memcpy(ship+((8-i)<<8),shipstorage,256);
-  }
-  for(k=0; k<8; k++)
-    for(i=0; i<16; i++)
-      for(j=0; j<16; j++)
-        *(ship+(9+k)*256 +     i*16+j)=
-          *(ship+(7-k)*256 +     i*16+15-j);
-  for(k=0; k<15; k++)
-    for(i=0; i<16; i++)
-      for(j=0; j<16; j++)
-        *(ship+(17+k)*256+     i*16+j)=
-          *(ship+(15-k)*256+(15-i)*16+j);
-}
+// Pod physics
+export const POD_MASS_FACTOR = 2; // Pod is 2x heavier than the ship (affects tow physics / center of mass)
+export const POD_GRAVITY = 0.055; // Gravity applied to the pod when free-falling (off the holder)
+export const POD_TETHER_LENGTH = 50; // Rest length of the tow tether (pixels)
+export const POD_TETHER_STIFFNESS = 0.18; // Spring stiffness of the tow tether
+export const POD_TETHER_DAMPING = 0.12; // Damping of the tow tether to prevent oscillation
+export const POD_HOLDER_OFFSET = -13; // Pixels the pod sits ABOVE its holder marker (avoids holder collision)
+export const POD_TETHER_WIDTH = 1; // Width of the visible tether line (pixels)
+export const POD_HOLDER_CHAR = 'm'; // Character used for pod holder marker in level files (original it was 'm)
+export const POD_DROPPABLE = false; // If true, pod can be released after docking (for future missions); if false, pod stays docked once activated
 
-void
-makeshieldedship(void)
-{
-  word i,j,k;
+// Touch controls
+// Screen aspect ratio (width / height) at which the tractor-beam touch button switches position:
+// ratio > threshold -> side buttons (left & right), ratio <= threshold -> single bottom button
+export const TOUCH_BUTTON_RATIO_THRESHOLD = 1.9;
+// Virtual joystick: minimum movement (pixels) to activate direction control
+export const JOYSTICK_THRESHOLD = 30;
+// Virtual joystick: scale factor mapping horizontal pointer velocity (px/event) to rotation speed
+export const JOYSTICK_VELOCITY_FACTOR = 0.004;
+// Virtual joystick: time (ms) without horizontal movement after which rotation stops
+export const JOYSTICK_STOP_MS = 60;
 
-  for(i=0; i<32; i++)
-    for(j=0; j<17; j++)
-      for(k=0; k<17; k++) {
-        if(j&&k)
-          *(shieldship+i*17*17+j*17+k)=*(ship+(i<<8)+((j-1)<<4)+k-1);
-        else
-          *(shieldship+i*17*17+j*17+k)=0;
-        if(*(shld_pixels+j*17+k))
-          *(shieldship+i*17*17+j*17+k)=*(shld_pixels+j*17+k) + shield_shift;
-      }
-}
+// Door system: automatic close timeout (ms) after door fully opens
+export const DOOR_AUTO_CLOSE_MS = 6000;
+// Door system: animation step time (ms) per column slide
+export const DOOR_SLIDE_MS_PER_COL = 50;
+// Touch button size factor - base thickness for all buttons
+export const BUTTON_SIZE_FACTOR = 40;
+// Touch button margin factor - transparent margin around buttons for hit area
+export const BUTTON_MARGIN_FACTOR = 10;
 
-void
-makefuelmap(ui8 *fuelmap)
-{
-  int i;
+// Scoring
+export const SCORE_LEVEL_COMPLETE = 1000; // for each live left when completing a level, maximum: LEVEL_NR*1000 (if more lives are left)
+export const SCORE_BUNKER_DESTROYED = 50;
+export const SCORE_BUTTON_SLIDER = 100; // for each slider opened (only once)
+export const SCORE_POD_CONNECT = 100; // once the pod is collected
+export const SCORE_FUEL_REMAINING = 10; // per percent remaining when reaching the sky
 
-  memset(fuelmap, 0, 2*4*32);
+// Time bonus
+export const TIME_BONUS_HEIGHT_SECONDS_PER_TILE = 0.4; // seconds allowed per level height tile
+export const TIME_BONUS_WIDTH_SECONDS_PER_TILE = 0.04; // small width influence on allowed time
+export const TIME_BONUS_POINTS_PER_SECOND = 10; // points for each remaining full second
+export const TIME_BONUS_MAX = 1000; // maximum time bonus points per level
+export const SCORING_VERSION = '1.3'; // version of the scoring calculation rule
 
-  for(i=0; i<32; i++) {
-    *(fuelmap+4*(i+32)+(i>6)+(i>16)+(i>26)) = SHIP;
-    *(fuelmap+4*i+(i<27)+(i<17)+(i<7)) = SHIP;
-  }
-}
+// Bonus life thresholds: when total score reaches each value, the player gains an extra life.
+// The gaps grow larger so later bonus lives are harder to earn.
+export const BONUS_LIFE_THRESHOLDS = [2000, 4000, 7000,10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000, 90000, 95000, 100000,105000,110000,115000,120000,125000,130000,135000,140000,145000,150000];
 
-int
-initmem(void)
-{
-  word i;
+// Shooting
+export const SHOOT_COOLDOWN_MS = 250; // Cooldown between shots in milliseconds
 
-  printf("Allocating memory...");
-  fflush(stdout);
+// Bunker indicator offsets (x, y) for each bunker type (relative to bunker center)
+export const BUNKER_INDICATOR_OFFSETS = {
+  'P': { x: 24, y: -5 },   // Up-right-facing bunker
+  'U': { x: 8, y: -6 },    // Up-left-facing bunker
+  '[': { x: -8, y: 19 },   // Down-right-facing bunker
+  '\\': { x: 8, y: 19 }    // Down-left-facing bunker
+};
 
-  bild=(ui8 *)malloc((long)PBILDX*PBILDY*2+16);
-  bana=(ui8 *)malloc(maxlenx*maxleny);
-  ship=(ui8 *)malloc(32*16*16);
-  shieldship=(ui8 *)malloc(32*17*17);
-  shipstorage=(ui8 *)malloc(17*17);
-  bulletmap=(ui8 *)malloc(16*4*4);
-  bulletstorage=(ui8 *)malloc(maxbullets*4*4);
-  fragmentstorage=(ui8 *)malloc(maxfragments*2*2);
-  fuelmap=(ui8 *)malloc(2*4*32);
-  fuelstorage=(ui8 *)malloc(2*4*32);
-  loadmap=(ui8 *)malloc(11*19);
-  loadstorage=(ui8 *)malloc(11*19);
-  wirestorage=(ui8 *)malloc(64);
-  blipstorage=(ui8 *)malloc(16*8);
+// Shield
+export const SHIELD_RADIUS = 25; // Radius of the shield circle around the ship
+export const SHIELD_COLOR = 'rgba(0, 255, 255, 0.5)'; // Color of the shield
+export const SHIELD_FUEL_CONSUMPTION = 0.3; // Fuel consumed per frame when shield is active
 
-  if(!bild || !bana || !ship || !shieldship || !shipstorage
-     || !bulletmap || !bulletstorage || !fragmentstorage
-     || !fuelmap || !fuelstorage || !loadmap || !loadstorage
-     || !wirestorage) {
-    printf("failed!.\n");
-    fflush(stdout);
-    return(0);
-  }
-  printf("done.\n");
-  fflush(stdout);
+// Enemy mines
+export const MINE_RADIUS = 10;
+export const MINE_SPEED_MIN = 1.5;
+export const MINE_SPEED_MAX = 2.5;
+export const MINE_CHANGE_DIR_MIN_FRAMES = 60;
+export const MINE_CHANGE_DIR_MAX_FRAMES = 180;
+export const MINE_BOUNCE_DAMPING = 0.8;
+export const MINE_TURN_RATE = 0.01; // How fast mine velocity interpolates toward target direction (0-1, higher = sharper turn)
+export const MINE_STUCK_BOUNCE_THRESHOLD = 4; // Number of bounces within MINE_STUCK_BOUNCE_WINDOW frames to trigger stuck detection
+export const MINE_STUCK_BOUNCE_WINDOW = 30; // Frame window for counting bounces
+export const MINE_UNSTUCK_FRAMES = 20; // How many frames collision is disabled while escaping
 
-  for(i=0; i<256; i++)
-    pixel_collision[i] = 255;
-  int copy_color = 0;
-  for (i = 0; i < blks_nr_colors; i++) {
-    if ((blks_colors[i * 3] == 0) && (blks_colors[i * 3 + 1] == 0) && (blks_colors[i * 3 + 2] == 0)) {
-      if (i == 0)
-        break;
-      blks_colors[i * 3] = blks_colors[0];
-      blks_colors[i * 3 + 1] = blks_colors[1];
-      blks_colors[i * 3 + 2] = blks_colors[2];
-      blks_colors[0] = 0;
-      blks_colors[1] = 0;
-      blks_colors[2] = 0;
-      for (int k = 0; k < blks_rows * blks_cols; k++) {
-        if (blks_pixels[k] == i)
-          blks_pixels[k] = 0;
-        else if (blks_pixels[k] == 0)
-          blks_pixels[k] = i;
-      }
-      break;
-    }
-  }
-  memcpy(bin_colors, blks_colors, blks_nr_colors*3);
-  for(i=0; i<39; i++) {
-    for (int k = 0; k < 8 * 8; k++)
-      if (blks_pixels[i * 8 * 8 + k] != 0) {
-        pixel_collision[blks_pixels[i * 8 * 8 + k]] = 0;
-      }
-  }
-  for(i=39; i<256; i++) {
-    if (i == 109)
-      continue;
-    if ((i >= 48) && (i <= 52))
-      continue;
-    for (int k = 0; k < 8 * 8; k++)
-      if (blks_pixels[i * 8 * 8 + k] != 0) {
-        if (pixel_collision[blks_pixels[i * 8 * 8 + k]] == 0)
-        {
-          int pixel_color = 0;
-          for (; pixel_color < copy_color; pixel_color++)
-            if ((bin_colors[(blks_nr_colors + pixel_color) * 3] == bin_colors[blks_pixels[i * 8 * 8 + k] * 3]) &&
-                (bin_colors[(blks_nr_colors + pixel_color) * 3 + 1] == bin_colors[blks_pixels[i * 8 * 8 + k] * 3 + 1]) &&
-                (bin_colors[(blks_nr_colors + pixel_color) * 3 + 2] == bin_colors[blks_pixels[i * 8 * 8 + k] * 3 + 2])) {
-              break;
-            }
-          if (pixel_color == copy_color) {
-            copy_color++;
-            bin_colors[(blks_nr_colors + pixel_color) * 3] = bin_colors[blks_pixels[i * 8 * 8 + k] * 3];
-            bin_colors[(blks_nr_colors + pixel_color) * 3 + 1] = bin_colors[blks_pixels[i * 8 * 8 + k] * 3 + 1];
-            bin_colors[(blks_nr_colors + pixel_color) * 3 + 2] = bin_colors[blks_pixels[i * 8 * 8 + k] * 3 + 2];
-          }
-          blks_pixels[i * 8 * 8 + k] = blks_nr_colors + pixel_color;
-        }
-        if (i >=76 && i <= 108)
-          pixel_collision[blks_pixels[i * 8 * 8 + k]] = 4;
-        else if (pixel_collision[blks_pixels[i * 8 * 8 + k]] == 255)
-          pixel_collision[blks_pixels[i * 8 * 8 + k]] = 2;
-      }
-  }
-  for (i = 0; i < FIND_COLORS; i++) {
-    for (int k = 0; k < blks_nr_colors; k++) {
-      if ((blks_colors[k * 3] == findcolor[i * 3]) && (blks_colors[k * 3 + 1] == findcolor[i * 3 + 1]) && (blks_colors[k * 3 + 2] == findcolor[i * 3 + 2])) {
-        foundcolor[i] = k;
-        break;
-      }
-    }
-  }
-  blocks=blks_pixels;
-  bullet_shift = blks_nr_colors + copy_color;
-  memcpy(bin_colors + bullet_shift*3, bullet_colors, bullet_nr_colors*3);
-  shield_shift = bullet_shift + bullet_nr_colors;
-  memcpy(bin_colors + shield_shift*3, shld_colors, shld_nr_colors*3);
-  ship_shift = shield_shift + shld_nr_colors;
-  memcpy(ship, ship_pixels, 256*5);
-  for(i=0; i<ship_cols*ship_rows; i++) {
-    if (*(ship + i) > 0)
-      *(ship+i) += ship_shift;
-  }
-  memcpy(bin_colors+ship_shift*3, ship_colors, ship_nr_colors*3);
-  extracolor_shift = ship_shift + ship_nr_colors;
-  memcpy(bin_colors + extracolor_shift*3, extracolor, EXTRA_COLORS * 3);
-  for(i=0; i<16*4*4; i++)
-    if (bullet_pixels[i] != 0) {
-      bullet_pixels[i] += bullet_shift;
-      pixel_collision[bullet_pixels[i]] = 1;
-    }
-  for(i=0; i<16; i++)
-    memcpy(bulletmap+((20-i)&15)*16, bullet_pixels+i*16, 16);
-  for(i=0; i<256; i++) {
-    if (pixel_collision[i] == 255)
-      pixel_collision[i] = 0;
-  }
+// God mode power-up
+export const GOD_MODE_TILE = 'ý'; // Tile that grants god mode when shot
+export const GOD_MODE_DURATION_MS = 600000; // Duration of god mode in milliseconds
+export const GOD_MODE_COLOR = 'rgba(0, 255, 174, 0.55)'; // Golden aura around the ship in god mode
 
-  for(i=0; i<title_cols*title_rows; i++) {
-    *(title_pixels+i) += extracolor_shift + EXTRA_COLORS;
-  }
+// Level editor
+export const ENABLE_LEVEL_EDITOR = true; // Enable/disable level editor button
 
-  memcpy(bin_colors+(extracolor_shift + EXTRA_COLORS)*3, title_colors, title_nr_colors*3);
+// Game settings
+export const INITIAL_LIVES = 3; // Starting number of lives
+export const FUEL_EMPTY_DESTROY_DELAY_MS = 7000; // Delay before ship explodes after fuel runs out
 
-  for(i=0; i<3*256; i++)
-    bin_colors[i]=GAMMA(bin_colors[i]);
-
-  printf("Turning the ship...");
-  fflush(stdout);
-  turnship();
-  printf("done.\n");
-  printf("Building graphics...");
-  fflush(stdout);
-  makefuelmap(fuelmap);
-  for(i=0; i<3; i++) {
-    memcpy(loadmap  + i    *11, blocks+64*'m'+(i+5)*8, 8);
-    memcpy(loadmap+8+ i    *11, blocks+64*'0'+(i+5)*8, 3);
-  }
-  for(i=0; i<8; i++) {
-    memcpy(loadmap  +(i+ 3)*11, blocks+64*'1'+i*8, 8);
-    memcpy(loadmap+8+(i+ 3)*11, blocks+64*'2'+i*8, 3);
-  }
-  for(i=0; i<8; i++) {
-    memcpy(loadmap  +(i+11)*11, blocks+64*'3'+i*8, 8);
-    memcpy(loadmap+8+(i+11)*11, blocks+64*'4'+i*8, 3);
-  }
-  makeshieldedship();
-  printf("done.\n");
-  fflush(stdout);
-
-  chcolor=TEXTCOLOR;
-  chpaper=BLACK;
-
-  return 1;
-}
-
-void
-inithardware(int argc, char **argv)
-{
-  if(play_sound && !sound_depends_on_graphics()) {
-    if(initsound())
-      play_sound=0;
-    else
-      play_sound=1;
-  }
-
-  if(graphicsinit(argc, argv))
-    exit(-1);
-
-  if(play_sound && sound_depends_on_graphics()) {
-    if(initsound())
-      play_sound=0;
-    else
-      play_sound=1;
-  }
-
-  if(keyinit()) {
-    printf("Failed to initialize the keyboard.\n");
-    fflush(stdout);
-    exit(-1);
-  }
-  printf("Keyboard initialized.\n");
-  fflush(stdout);
-}
-
-void
-initscreen(int round)
-{
-  int i,j;
-  color tmp;
-
-  if(round&2)
-    setcolor(BGCOLOR, 0);
-  else
-    setcolor(BGCOLOR, &bgcolor);
-
-  setcolor(TRACTOR, &bgcolor);
-  setcolor(BULBS,   &guncolor);
-  tmp.r = guncolor.r * 0.8;
-  tmp.g = guncolor.g * 0.8;
-  tmp.b = guncolor.b * 0.8;
-  setcolor(BULBS2,  &tmp);
-  setcolor(GUN,     &guncolor);
-  setcolor(STAND,   &guncolor);
-  setcolor(POD,     &podcolor);
-  for (int i = 0; i < 4; i++) {
-    tmp.r = shieldcolor.r * (1.0 - (3 - i) / 10.0);
-    tmp.g = shieldcolor.g * (1.0 - (3 - i) / 10.0);
-    tmp.b = shieldcolor.b * (1.0 - (3 - i) / 10.0);
-    setcolor(SHIELD + i,  &tmp);
-  }
-
-  for(j=pblocky; j<BBILDY+pblocky; j++)
-    for(i=pblockx; i<BBILDX+pblockx; i++)
-      writeblock(i%lenx, j, *(bana+i%lenx+j*lenx));
-}
-
-void
-initgame(int round, int reset, int xblock, int yblock)
-{
-  int i;
-
-  crash=0;
-  shoot=0;
-#ifdef DEBUG
-  repetetive=1;
-#else
-  repetetive=0;
-#endif
-  refueling=0;
-  speedx=0;
-  speedy=0;
-  absspeed=0L;
-  oldabs=0L;
-  vx=0;
-  vy=0;
-  if(round&1) {
-    kdir=72;
-    dir=24;
-    gravity=-20;
-    alpha=3*M_PI/2;
-    deltaalpha=0;
-  }
-  else {
-    kdir=24;
-    dir=8;
-    gravity=20;
-    alpha=M_PI/2;
-    deltaalpha=0;
-  }
-  if(reset) {
-    loaded=0;
-    loadcontact=0;
-    loadpoint=0;
-    loadpointshift=0;
-    shipdx=0;
-    shipdy=0;
-  }
-  else {
-    loadcontact=0;
-    if(loaded) {
-      loadpoint=LOADPOINT;
-      loadpointshift=0;
-      shipdx=(int)( cos(alpha)*loadpoint/5.90625);
-      shipdy=(int)(-sin(alpha)*loadpoint/5.90625);
-    }
-    else {
-      loadpoint=0;
-      loadpointshift=0;
-      *(bana+lenx* loadby   +loadbx  )='m';
-      *(bana+lenx* loadby   +loadbx+1)='0';
-      *(bana+lenx*(loadby+1)+loadbx  )='1';
-      *(bana+lenx*(loadby+1)+loadbx+1)='2';
-      *(bana+lenx*(loadby+2)+loadbx  )='3';
-      *(bana+lenx*(loadby+2)+loadbx+1)='4';
-      shipdx=0;
-      shipdy=0;
-    }
-  }
-  
-  pblockx=xblock;
-  pblocky=yblock+3*(round&1);
-  if(loaded) {
-    if(round&1)
-      pblocky-=2;
-    else
-      pblocky+=2;
-  }
-
-  pixx=pblockx<<3;
-  pixy=pblocky<<3;
-  x=pixx<<3;
-  y=pixy<<3;
-  bildx=(pixx+PBILDX-4)%PBILDX+4;
-  bildy=pixy%PBILDY;
-  bblockx=bildx>>3;
-  bblocky=bildy>>3;
-
-  countdown=0;
-
-  for(i=0; i<maxbullets; i++)
-    bullets[i].life=0;
-  for(i=0; i<maxfragments; i++)
-    fragments[i].life=0;
-
-  chcolor=TEXTCOLOR;
-  chpaper=BLACK;
-  chflag=BLACK;
-
-  normalcolors();
-}
-
-int
-initsound(void)
-{
-  printf("Initializing %s...", sound_name());
-  fflush(stdout);
-
-  snd[SND_BOOM  ].data = sound_boom;
-  snd[SND_BOOM  ].len  = sound_boom_len;
-  snd[SND_BOOM  ].loop = 0;
-  snd[SND_BOOM2 ].data = sound_boom2;
-  snd[SND_BOOM2 ].len  = sound_boom2_len;
-  snd[SND_BOOM2 ].loop = 0;
-  snd[SND_HARP  ].data = sound_harp;
-  snd[SND_HARP  ].len  = sound_harp_len;
-  snd[SND_HARP  ].loop = 0;
-  snd[SND_ENGINE].data = sound_engine;
-  snd[SND_ENGINE].len  = sound_engine_len;
-  snd[SND_ENGINE].loop = 1;
-  snd[SND_BLIP  ].data = sound_blip;
-  snd[SND_BLIP  ].len  = sound_blip_len;
-  snd[SND_BLIP  ].loop = 0;
-
-  if(sound_init(snd)) {
-    printf("No sound.\n");
-    fflush(stdout);
-    return(-1);
-  }
-
-  printf("done.\n");
-  fflush(stdout);
-  return(0);
-}
-                                                            
-void
-restoresound(void)
-{
-  printf("Restoring sound...");
-  fflush(stdout);
-  sound_exit();
-  printf("done.\n");
-  fflush(stdout);
-}
-         
-void
-restorehardware(void)
-{
-  printf("Releasing keyboard...");
-  fflush(stdout);
-  keyclose();
-  printf("done.\n");
-  fflush(stdout);
-
-  if(play_sound && sound_depends_on_graphics())
-    restoresound();
-
-  graphicsclose();
-
-  if(play_sound && !sound_depends_on_graphics())
-    restoresound();
-}
-
-void
-restoremem(void)
-{
-  printf("Freeing allocated memory...");
-  fflush(stdout);
-  free(bild);
-  free(bana);
-  free(bulletmap);
-  free(ship);
-  free(shieldship);
-  free(shipstorage);
-  free(fragmentstorage);
-  free(wirestorage);
-  free(fuelmap);
-  free(fuelstorage);
-  free(loadmap);
-  free(loadstorage);
-  printf("done.\n");
-  fflush(stdout);
-}
+// Reactor meltdown
+export const REACTOR_TILES = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']; // Shootable reactor core tiles
+export const REACTOR_MELTDOWN_TRIGGER_MS = 1000; // Shoot the reactor this long to trigger meltdown
+export const REACTOR_MELTDOWN_ESCAPE_MS = 15000; // Time until planet explodes after meltdown begins
+export const REACTOR_HIT_TIMEOUT_MS = 400; // Max gap between hits to keep meltdown charging
+export const SCORE_REACTOR_ESCAPE = 2000; // Bonus for escaping with the pod during meltdown

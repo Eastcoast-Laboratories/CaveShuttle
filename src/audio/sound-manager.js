@@ -1,91 +1,131 @@
+// Sound manager for game-specific sounds
+import { AudioEngine } from './audio-engine.js';
+import { loadSoundBuffers } from './sound-loader.js';
 
-/* SoundIt library 0.04
+// Per-sound base mix levels (0..1). The master volume is applied on top of this.
+const SOUND_VOLUMES = {
+  shipThrust: 0.3,
+  podThrust: 0.3,
+  shipFire: 0.5,
+  podFire: 0.5,
+  bunkerFire: 0.4,
+  podWobble: 0.3,
+  explosion: 0.7,
+  fuelDrain: 0.3,
+  podDock: 0.6,
+  wormholeAmbient: 0.4,
+  wormholeComplete: 0.7,
+  noFuel: 0.6,
+};
 
-   Copyright 1994 Brad Pitzel  pitzel@cs.sfu.ca
+export class SoundManager {
+  constructor() {
+    this.engine = new AudioEngine();
+    // Active looping sound instances keyed by logical name (only one per name).
+    this.loops = {};
+    this.oneShots = {}; // one-shot sound instances keyed by name (for stopping)
+    this.ready = false;
+  }
 
-   Adapted to Solaris/SunOS by Peter Ekberg.
+  async init() {
+    await this.engine.init();
+    if (!this.engine.audioContext) {
+      console.warn('[SOUND_MANAGER] init failed: no audio context');
+      return;
+    }
+    try {
+      const buffers = await loadSoundBuffers(this.engine.audioContext);
+      this.loadSounds(buffers);
+      this.ready = true;
+      console.log('[SOUND_MANAGER] init complete, ready=true');
+    } catch (err) {
+      console.error('[SOUND_MANAGER] init failed:', err.message);
+      throw err;
+    }
+  }
 
-   Feel free to use/distribute/modify as long as proper credits
-   are included.
-*/
- 
-/* Designed for digital sound effects in interactive apps (games, drum
-   machines, digital organs, ???)
+  loadSounds(soundBuffers) {
+    for (const [name, buffer] of Object.entries(soundBuffers)) {
+      this.engine.loadSound(name, buffer);
+    }
+  }
 
-   Will mix channels of mono 8-bit raw samples, & play back in "real-time".
-   Each channel can only play one sample at a time, but all
-   channels can play a different sample simultaneously.                 
-   
-   If you have sox, use the ' -t .ub ' option to make samples
-   that this library will play properly.
-*/
+  // Play a one-shot sound (fire, explosion, dock, level complete).
+  // The instance is stored so it can be stopped via stopOnce if needed.
+  playOnce(name) {
+    const base = SOUND_VOLUMES[name] ?? 0.5;
+    const master = this.engine.masterVolume;
+    console.log(`[SOUND_MANAGER] playOnce name=${name} base=${base.toFixed(2)} master=${master.toFixed(2)} effective=${(base * master).toFixed(2)}`);
+    const instance = this.engine.playSound(name, base, false);
+    if (instance) {
+      this.oneShots[name] = instance;
+    }
+    return instance;
+  }
 
-#ifndef SOUNDIT_VERS
-#define SOUNDIT_VERS "0.04"
+  // Stop a one-shot sound if it is currently playing.
+  stopOnce(name) {
+    if (this.oneShots[name]) {
+      console.log('[SOUND_MANAGER] stopOnce name=', name);
+      this.engine.stopSound(this.oneShots[name]);
+      this.oneShots[name] = null;
+    }
+  }
 
-#include <stdlib.h>
-#include <stdio.h>
+  // Start a looping sound if it is not already playing (thrust, ambient, etc.).
+  startLoop(name) {
+    if (this.loops[name]) return;
+    const base = SOUND_VOLUMES[name] ?? 0.3;
+    const master = this.engine.masterVolume;
+    console.log(`[SOUND_MANAGER] startLoop name=${name} base=${base.toFixed(2)} master=${master.toFixed(2)} effective=${(base * master).toFixed(2)}`);
+    this.loops[name] = this.engine.playSound(name, base, true);
+  }
 
-#ifndef EXIT_FAILURE
-#define EXIT_FAILURE 1
-#endif
-#ifndef EXIT_SUCCESS
-#define EXIT_SUCCESS 0
-#endif
+  // Stop a looping sound if it is currently playing.
+  stopLoop(name) {
+    if (this.loops[name]) {
+      console.log('[SOUND_MANAGER] stopLoop name=', name);
+      this.engine.stopSound(this.loops[name]);
+      this.loops[name] = null;
+    }
+  }
 
-/* 00002 = 2 fragments   */
-/* 00007 = means each fragment is 2^7 or 128 bytes */
-/* See voxware docs (in /usr/src/linux/drivers/sound) for more info */
-#define FRAG_SPEC 0x00020007
+  // Fade a looping sound out over the given seconds and release its slot.
+  fadeLoop(name, durationSeconds = 1.0) {
+    const instance = this.loops[name];
+    if (!instance) {
+      console.log('[SOUND_FADE] no active loop to fade for', name);
+      return;
+    }
+    console.log('[SOUND_MANAGER] fadeLoop name=', name, 'duration=', durationSeconds, 'instance=', instance ? 'present' : 'missing');
+    // Use the class prototype so even an engine instance created before fadeOut existed uses the current method.
+    AudioEngine.prototype.fadeOut.call(this.engine, instance, durationSeconds);
+    this.loops[name] = null;
+  }
 
-/*==========================================================================*/
-typedef struct {
-  ui8 *data;  /* unsigned 8-bit raw samples */
-  int len;    /* length of sample in bytes  */
-  int loop;   /* loop=0 : play sample once, */
-              /* loop=1 : loop sample       */
-} Sample;
+  // Convenience: drive a looping sound directly from a boolean game state.
+  setLoop(name, active) {
+    if (active) {
+      this.startLoop(name);
+    } else {
+      this.stopLoop(name);
+    }
+  }
 
-void dump_snd_list(void);
+  // Stop every currently playing looping sound (e.g. on level end / unmount).
+  stopAllLoops() {
+    for (const name of Object.keys(this.loops)) {
+      this.stopLoop(name);
+    }
+  }
 
-/*==========================================================================*/
-/* given the name of a .raw sound file, load it into the Sample struct */ 
-/* pointed to by 'sample'                                              */
-int
-Snd_loadRawSample(const char *file, Sample *sample, int loop);
+  setMasterVolume(volume) {
+    console.log('[SOUND_MANAGER] setMasterVolume', volume.toFixed(2));
+    this.engine.setMasterVolume(volume);
+  }
 
-/*==========================================================================*/
-/* init sound device, etc..                                                 */
-/* num_snd  = the number of samples in the sample array *sa                 */
-/* sa       = the sample array						    */
-/* freq     = the rate (Hz) to play back the samples                        */
-/* channels = # of channels to mix                                          */
-/* sound_device = a char string for the sound device, eg, "/dev/dsp"        */
-/* returns: 0=success, -1=failure.*/
-int
-Snd_init(int num_snd, const Sample *sa, int freq, 
-	 int channels, const char *sound_device);
-
-
-/* shutdown sample player, free mem, etc/etc..*/
-int
-Snd_restore(void);
-
-
-/* play a sound effect in the given channel 1..n*/
-/* volume = integers from 0 (off) to 100 (full volume)*/
-int
-Snd_effect(int nr, int channel);
-
-
-/* stop a channel (1..n) from playing*/
-int
-Snd_reset(int channel);
-
-
-/* stop all channels from playing*/
-/*void
-Snd_reset(void);*/
-	
-	
-#endif
+  resume() {
+    console.log('[SOUND_MANAGER] resume');
+    this.engine.resume();
+  }
+}

@@ -1,344 +1,207 @@
-
-/* Written by Dennis Payne, dulsi@identicalsoftware.com */
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
-#include <SDL.h>
-#include <string.h>
-#include <stdio.h>
-#include <sys/time.h>
-
-#include "compat.h"
-#include "thrust.h"
-#include "fast_gr.h"
-#include "gr_drv.h"
-#include "options.h"
-
-#define VGAMODE G320x200x256
-#define PSTARTX ((320-PUSEX)>>1)
-#define PSTARTY ((200-PUSEY-24)>>1)
-
-typedef unsigned char IColor;
-
-typedef IColor IPaletteTable[256][3];
-typedef IPaletteTable *IPalette;
-
-/* Extra global variables needed by SDL */
-SDL_Window *ISDLMainWindow;
-SDL_Renderer *ISDLMainRenderer;
-SDL_Texture *ISDLMainTexture;
-SDL_Surface *ISDLMainScreen;
-SDL_Surface *ISDLScreen;
-unsigned char *IScreenMain;
-IPalette IPaletteMain;
-int displayMult = 1;
-
-void
-clearscr(void)
-{
-//  SDL_RenderClear(ISDLMainRenderer);
-  memset(IScreenMain, 0, 320 * 200);
-}
-
-void
-putarea(ui8 *source,
-	int x, int y, int width, int height, int bytesperline,
-	int destx, int desty)
-{
-  if(bytesperline==320 && width==320 && 320==320 && x==0 && destx==0) {
-    memcpy(IScreenMain + desty*320, source + y*320, height*320);
+// Collision detection system
+export class CollisionDetection {
+  constructor(levelRenderer) {
+    this.levelRenderer = levelRenderer;
   }
-  else {
-    for (int cy = 0; cy < height; cy++)
-    {
-      if (desty + cy >= 200)
-        break;
-      if (destx + width <= 320)
-        memcpy(IScreenMain + (desty + cy) * 320 + destx, source + (y + cy) * bytesperline + x, width);
-      else
-        memcpy(IScreenMain + (desty + cy) * 320 + destx, source + (y + cy) * bytesperline + x, 320 - destx);
+
+  checkShipCollision(ship, level) {
+    if (!level || !level.layout) return { collided: false };
+
+    const shipRadius = 8;
+    
+    // Check ship center
+    const centerTile = this.levelRenderer.getTileAt(level, ship.x, ship.y, 'ship-center');
+    if (this.levelRenderer.isWall(centerTile)) {
+      return { collided: true, tile: centerTile, point: { x: ship.x, y: ship.y } };
     }
-  }
-}
 
-void
-putpixel(int x, int y, ui8 color)
-{
-  IScreenMain[PSTARTX+x + ((PSTARTY+y) << 8) + ((PSTARTY+y) << 6)] = color;
-}
+    const shipPoints = this.getShipPoints(ship, shipRadius);
 
-static void
-delaygame(long usec)
-{
-  static long extratime[3] = { 0, 0, 0 };
-  struct timeval start, end, diff;
-  long extradelay, delay;
-  int i;
-
-  extradelay = (extratime[0] + extratime[1] + extratime[2])/3;
-  if(usec > extradelay) {
-    gettimeofday(&start, NULL);
-    usleep(usec - extradelay);
-    gettimeofday(&end, NULL);
-    diff.tv_sec = end.tv_sec - start.tv_sec;
-    diff.tv_usec = end.tv_usec - start.tv_usec;
-    if(diff.tv_usec < 0) {
-      diff.tv_sec--;
-      diff.tv_usec += 1000000;
-    }
-    delay = diff.tv_sec*1000000 + diff.tv_usec;
-    extratime[0] = extratime[1];
-    extratime[1] = extratime[2];
-    extratime[2] = delay - (usec - extradelay);
-  }
-  else
-    for(i=0; i<3; i++)
-      extratime[i] = (extratime[i] * 9) / 10;
-}
-
-void
-syncscreen(unsigned long us)
-{
-  struct timeval end, diff;
-  static struct timeval start;
-  static int first = 1;
-  long delay;
-
-  if(us)
-    usleep(us);
-
-  if(first) {
-    gettimeofday(&start, NULL);
-    first = 0;
-  }
-
-  gettimeofday(&end, NULL);
-  if(end.tv_sec < start.tv_sec ||
-     (end.tv_sec == start.tv_sec &&
-      end.tv_usec < start.tv_usec))
-    end.tv_sec += 60*60*24;
-  diff.tv_sec = end.tv_sec - start.tv_sec;
-  diff.tv_usec = end.tv_usec - start.tv_usec;
-  if(diff.tv_usec < 0) {
-    diff.tv_sec--;
-    diff.tv_usec += 1000000;
-  }
-
-  delay = 20000 - (diff.tv_sec*1000000 + diff.tv_usec);
-  if(delay > 0) {
-    delaygame(delay);
-  }
-  gettimeofday(&start, NULL);
-}
-
-void
-displayscreen(unsigned long us)
-{
-  void *pixels;
-  int pitch;
-  SDL_Rect dest;
-  dest.x = 0;
-  dest.y = 0;
-  dest.w = 320 * displayMult;
-  dest.h = 200 * displayMult;
-  SDL_LockTexture(ISDLMainTexture, &dest, &pixels, &pitch);
-  int x, y, xMult, yMult;
-  unsigned char *curPos;
-  Uint8 *realLine;
-  Uint8 *prevLine;
-  Uint8 *realPos;
-
-  curPos = IScreenMain;
-  realPos = (Uint8 *)pixels;
-  for (y = 0; y < 200; ++y)
-  {
-    prevLine = curPos;
-    for (yMult = 0; yMult < displayMult; yMult++)
-    {
-      curPos = prevLine;
-      realLine = realPos;
-      for (x = 0; x < 320; ++x)
-      {
-        for (xMult = 0; xMult < displayMult; xMult++)
-        {
-          SDL_GetRGB(*curPos, ISDLScreen->format, realPos + 2, realPos + 1, realPos);
-          realPos += 4;
-        }
-        ++curPos;
+    for (const point of shipPoints) {
+      const tile = this.levelRenderer.getTileAt(level, point.x, point.y, 'ship-perimeter');
+      if (this.levelRenderer.isWall(tile)) {
+        return { collided: true, tile, point };
       }
-      realPos = realLine + pitch;
     }
-  }
-  SDL_UnlockTexture(ISDLMainTexture);
-  SDL_RenderClear(ISDLMainRenderer);
-  SDL_RenderCopy(ISDLMainRenderer, ISDLMainTexture, NULL, NULL);
-  SDL_RenderPresent(ISDLMainRenderer);
-  if(us)
-    usleep(us);
-}
 
-void
-fadepalette(int first, int last, ui8 *RGBtable, int fade, int flag)
-{
-  static int tmpRGBtable[768];
-  int entries,i;
-  int *c;
-  ui8 *d;
-
-  entries=last-first+1;
-
-  c=tmpRGBtable;
-  d=RGBtable;
-  i=0;
-
-  while(i<entries) {
-    *c++ = (*d++ * fade) >> 8;
-    *c++ = (*d++ * fade) >> 8;
-    *c = (*d * fade) >> 8;
-    i++;
+    return { collided: false };
   }
 
-  if(flag)
-    displayscreen(0);
-
-  SDL_Color sdlcol[256];
-  int color;
-
-  for (color = 0; color < 256; color++)
-  {
-    sdlcol[color].r = tmpRGBtable[color * 3] << 2;
-    sdlcol[color].g = tmpRGBtable[color* 3 + 1] << 2;
-    sdlcol[color].b = tmpRGBtable[color * 3 + 2] << 2;
-  }
-  SDL_SetPaletteColors((SDL_Palette *)IPaletteMain, sdlcol, 0, 256);
-}
-
-void
-fade_in(unsigned long us)
-{
-  int i;
-
-  for(i=1; i<=64; i++)
-    fadepalette(0, 255, bin_colors, i, 1);
-
-  if(us)
-    usleep(us);
-}
-
-void
-fade_out(unsigned long us)
-{
-  int i;
-
-  if(us)
-    usleep(us);
-
-  for(i=64; i; i--)
-    fadepalette(0, 255, bin_colors, i, 1);
-  clearscr();
-  usleep(500000L);
-}
-
-void
-graphics_preinit(void)
-{
-}
-
-int
-graphicsinit(int argc, char **argv)
-{
-  int optc;
-  int windowed = 0;
-
-  optind=0;
-  do {
-    static struct option longopts[] = {
-      OPTS,
-      SDL_OPTS,
-      { 0, 0, 0, 0 }
-    };
-
-    optc=getopt_long_only(argc, argv, OPTC SDL_OPTC, longopts, (int *)0);
-    switch(optc) {
-    case 'w':
-      windowed = 1;
-      break;
-    case '2':
-      displayMult = 2;
-      break;
-    default:
-      break;
+  getShipPoints(ship, radius) {
+    const points = [];
+    const numPoints = 8;
+    
+    for (let i = 0; i < numPoints; i++) {
+      const angle = (i / numPoints) * Math.PI * 2;
+      points.push({
+        x: ship.x + Math.cos(angle) * radius,
+        y: ship.y + Math.sin(angle) * radius
+      });
     }
-  } while(optc != EOF);
 
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
-  {
-    printf("Failed - SDL_Init\n");
-    exit(0);
+    return points;
   }
-  ISDLMainWindow = SDL_CreateWindow("Thrust",
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    320 * displayMult, 200 * displayMult,
-    (!windowed ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0));
-  if (ISDLMainWindow == NULL)
-  {
-    printf("Failed - SDL_CreateWindow\n");
-    exit(0);
+
+  resolveCollision(entity, collision) {
+    if (!collision.collided) return;
+
+    const scaledSize = this.levelRenderer.getScaledTileSize();
+    const radius = 8; // ship and pod collision radius
+
+    // The wall tile that was hit
+    const tileX = Math.floor(collision.point.x / scaledSize);
+    const tileY = Math.floor(collision.point.y / scaledSize);
+    const tileLeft = tileX * scaledSize;
+    const tileRight = tileLeft + scaledSize;
+    const tileTop = tileY * scaledSize;
+    const tileBottom = tileTop + scaledSize;
+
+    // Closest point on the wall tile to the entity center
+    const closestX = Math.max(tileLeft, Math.min(entity.x, tileRight));
+    const closestY = Math.max(tileTop, Math.min(entity.y, tileBottom));
+    let nx = entity.x - closestX;
+    let ny = entity.y - closestY;
+    let dist = Math.hypot(nx, ny);
+    let overlap = radius - dist;
+
+    if (dist === 0) {
+      // Entity center is inside the wall tile; push back opposite to movement
+      const v = Math.hypot(entity.vx, entity.vy);
+      if (v > 0.001) {
+        nx = -entity.vx / v;
+        ny = -entity.vy / v;
+      } else {
+        nx = 0;
+        ny = -1;
+      }
+      overlap = radius;
+    } else {
+      nx /= dist;
+      ny /= dist;
+    }
+
+    // Push the entity out of the wall by the overlap plus a small safety margin
+    const push = Math.max(overlap + 0.5, 0.5);
+    entity.x += nx * push;
+    entity.y += ny * push;
+
+    // Reflect the velocity component that is heading into the wall
+    const dot = entity.vx * nx + entity.vy * ny;
+    if (dot < 0) {
+      entity.vx -= 2 * dot * nx;
+      entity.vy -= 2 * dot * ny;
+    }
+
+    // Dampen slightly so the bounce doesn't grow out of control
+    entity.vx *= 0.8;
+    entity.vy *= 0.8;
   }
-  ISDLMainRenderer = SDL_CreateRenderer(ISDLMainWindow, -1, SDL_RENDERER_PRESENTVSYNC);
-  if (ISDLMainRenderer == NULL)
-  {
-    printf("Failed - SDL_CreateRenderer\n");
-    exit(0);
+
+  checkCircleCollision(x1, y1, r1, x2, y2, r2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < r1 + r2;
   }
-  ISDLMainTexture = SDL_CreateTexture(ISDLMainRenderer,
-    SDL_PIXELFORMAT_ARGB8888,
-    SDL_TEXTUREACCESS_STREAMING,
-    320 * displayMult, 200 * displayMult);
-  if (ISDLMainTexture == NULL)
-  {
-    printf("Failed - SDL_CreateTexture\n");
-    exit(0);
+
+  checkPointCollision(x, y, level) {
+    if (!level || !level.layout) return false;
+    const tile = this.levelRenderer.getTileAt(level, x, y, 'point');
+    return this.levelRenderer.isWall(tile);
   }
-  ISDLMainScreen = SDL_CreateRGBSurface(0, 320 * displayMult, 200 * displayMult, 32,
-    0x00FF0000,
-    0x0000FF00,
-    0x000000FF,
-    0xFF000000);
-  ISDLScreen = SDL_CreateRGBSurface(0, 320, 200, 8, 0, 0, 0, 0);
-  if (ISDLScreen == NULL)
-  {
-    printf("Failed - SDL_CreateRGBSurface\n");
-    exit(0);
+
+  checkAABB(x1, y1, w1, h1, x2, y2, w2, h2) {
+    return (
+      x1 < x2 + w2 &&
+      x1 + w1 > x2 &&
+      y1 < y2 + h2 &&
+      y1 + h1 > y2
+    );
   }
-  IScreenMain = (unsigned char *)ISDLScreen->pixels;
-  IPaletteMain = (IPalette)ISDLScreen->format->palette;
 
-  SDL_RenderClear(ISDLMainRenderer);
-  fadepalette(0, 255, bin_colors, 1, 0);
+  checkPodCollision(pod, level) {
+    if (!level || !level.layout) return { collided: false };
 
-  return 0;
-}
+    const podRadius = 8;
+    
+    // Check pod center
+    const centerTile = this.levelRenderer.getTileAt(level, pod.x, pod.y, 'pod-center');
+    if (this.levelRenderer.isWall(centerTile)) {
+      return { collided: true, tile: centerTile, point: { x: pod.x, y: pod.y } };
+    }
 
-int
-graphicsclose(void)
-{
-  SDL_Quit();
+    // Check pod perimeter points
+    const podPoints = this.getPodPoints(pod, podRadius);
+    for (const point of podPoints) {
+      const tile = this.levelRenderer.getTileAt(level, point.x, point.y, 'pod-perimeter');
+      if (this.levelRenderer.isWall(tile)) {
+        return { collided: true, tile, point };
+      }
+    }
 
-  return 0;
-}
+    return { collided: false };
+  }
 
-char *
-graphicsname(void)
-{
-  static char name[] = "SDL";
+  getPodPoints(pod, radius) {
+    const points = [];
+    const numPoints = 8;
 
-  return name;
+    for (let i = 0; i < numPoints; i++) {
+      const angle = (i / numPoints) * Math.PI * 2;
+      points.push({
+        x: pod.x + Math.cos(angle) * radius,
+        y: pod.y + Math.sin(angle) * radius
+      });
+    }
+
+    return points;
+  }
+
+  checkBulletCollision(bullet, level, owner = 'unknown') {
+    if (!level || !level.layout) return { collided: false };
+
+    const bulletRadius = 2;
+
+    // Tiles that are solid for ship/pod but should not block bunker- nor player-bullets
+    // - Bunker variants (the functional bunker markers handle bullets themselves)
+    const bulletPassThroughTiles = ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', '[', 'X', 'Y', 'Z', '\\', ']', '^', '_', 'L', 'M', 'N', 'O', 'v', 'w', 'q', 'r', 's', 'u', 'x'];
+
+    // Check bullet center
+    const centerTile = this.levelRenderer.getTileAt(level, bullet.x, bullet.y, 'bullet-center:' + owner);
+    if (this.levelRenderer.isWall(centerTile) && !bulletPassThroughTiles.includes(centerTile)) {
+      if (centerTile != 'p') {
+        console.log('[BULLET_WALL_HIT] owner:', owner, 'tile:', centerTile, 'bullet pos:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) }, 'point:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) });
+      }
+      return { collided: true, tile: centerTile, point: { x: bullet.x, y: bullet.y } };
+    }
+
+    // Check bullet perimeter points
+    const bulletPoints = this.getBulletPoints(bullet, bulletRadius);
+    for (const point of bulletPoints) {
+      const tile = this.levelRenderer.getTileAt(level, point.x, point.y, 'bullet-perimeter:' + owner);
+      if (this.levelRenderer.isWall(tile) && !bulletPassThroughTiles.includes(tile)) {
+        if (tile != 'p') {
+          console.log('[BULLET_WALL_HIT] owner:', owner, 'tile:', tile, 'bullet pos:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) }, 'point:', { x: point.x.toFixed(1), y: point.y.toFixed(1) });
+        }
+        return { collided: true, tile, point };
+      }
+    }
+
+    return { collided: false };
+  }
+
+  getBulletPoints(bullet, radius) {
+    const points = [];
+    const numPoints = 4;
+
+    for (let i = 0; i < numPoints; i++) {
+      const angle = (i / numPoints) * Math.PI * 2;
+      points.push({
+        x: bullet.x + Math.cos(angle) * radius,
+        y: bullet.y + Math.sin(angle) * radius
+      });
+    }
+
+    return points;
+  }
 }
