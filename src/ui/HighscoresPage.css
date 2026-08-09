@@ -60,6 +60,7 @@
 button.tab-button:nth-child(2) {
   border-radius: 8px 0 0 8px !important;
   border-right: 1px solid #6ee66ec5 !important;
+  margin-left: 2vw;
 }
 
 .tab-button:last-child {
@@ -97,11 +98,13 @@ button.tab-button:nth-child(2) {
 .filter-group .filter-select:first-child {
   border-radius: 8px 0 0 8px !important;
   border-right: 1px solid #6ee66ec5 !important;
+  margin-left: 2vw;
 }
 
 .filter-group .filter-select:last-child {
   border-radius: 0 8px 8px 0 !important;
   border-left: 0 solid #6ee66ec5 !important;
+  width: 100px;
 }
 
 .highscores-table {
@@ -125,6 +128,13 @@ button.tab-button:nth-child(2) {
   color: #6ee66ec5;
   font-weight: 700;
   letter-spacing: 2px;
+  font-family: 'Commodore 64 Thin', 'Courier New', monospace;
+}
+
+.highscores-table td, .filter-select {
+  font-family: 'Commodore 64 Thin', 'Courier New', monospace;
+  font-weight: 400;
+  letter-spacing: -1px;
 }
 
 .highscores-table tbody tr {
@@ -324,7 +334,7 @@ td.edge-img:nth-child(1), td.solid-col:nth-child(3) {
   max-height: 80%;
   overflow: auto;
   color: #6ee66ec5;
-  font-family: 'Commodore 64', 'Courier New', monospace;
+  font-family: 'Commodore 64 Thin', 'Courier New', monospace;
 }
 
 .total-score,

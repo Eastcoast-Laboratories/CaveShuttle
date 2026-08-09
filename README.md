@@ -291,8 +291,9 @@ See [COPYING](COPYING) for the full license text.
 ## Credits
 
 - Development: CaveShuttle Team
-- Level Design: CaveShuttle Levels
+- Level Design: CaveShuttle Team
 - Font: [Commodore 64](https://www.dafont.com/commodore-64.font) by Devin D. Cook
+- Sounds: [Pixabay](https://pixabay.com)
 
 ---
 
