@@ -1,0 +1,239 @@
+/* Level Editor React Wrapper CSS, no dependencies on the main app — styles the outer React shell around the iframe (toolbar, Pack Builder sidebar, language switcher, inputs, buttons).
+   The iframe content (public/level-editor/editor.css) is styled separately. */
+
+.level-editor-root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  background-color: #000;
+}
+
+.level-editor-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.level-editor-btn-back {
+  padding: 4px 6px;
+  background: linear-gradient(135deg, #444, #555);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.level-editor-btn-sidebar {
+  padding: 4px 8px;
+  background: linear-gradient(135deg, #335, #446);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 10px;
+}
+
+.level-editor-iframe {
+  flex: 1;
+  border: none;
+  background-color: #000;
+}
+
+.level-editor-sidebar {
+  width: 320px;
+  background: #111;
+  color: #fff;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.level-editor-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-editor-sidebar-header h3 {
+  margin: 0;
+}
+
+.level-editor-sidebar-header-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.level-editor-btn-help {
+  padding: 2px 6px;
+  background: #333;
+  color: #aaa;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.level-editor-btn-close {
+  padding: 2px 7px;
+  background: #333;
+  color: #aaa;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.level-editor-help-text {
+  font-size: 11px;
+  color: #ccc;
+  line-height: 1.5;
+  padding: 10px;
+  background: #222;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.level-editor-message {
+  color: #4f4;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.level-editor-error {
+  color: #f44;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.level-editor-label {
+  font-size: 11px;
+}
+
+.level-editor-input {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #222;
+  color: #fff;
+}
+
+.level-editor-section-title {
+  margin: 12px 0 4px 0;
+  font-size: 12px;
+}
+
+.level-editor-level-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px;
+  margin: 2px 0;
+  background: #222;
+  border-radius: 4px;
+}
+
+.level-editor-level-name {
+  font-size: 11px;
+}
+
+.level-editor-level-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.level-editor-btn {
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.level-editor-btn-edit {
+  background: #448;
+}
+
+.level-editor-btn-move {
+  background: #666;
+}
+
+.level-editor-btn-remove {
+  background: #844;
+}
+
+.level-editor-btn-new {
+  background: #555;
+}
+
+.level-editor-btn-open {
+  background: #357;
+}
+
+.level-editor-btn-download {
+  background: #282;
+}
+
+.level-editor-btn-install {
+  background: #884;
+}
+
+.level-editor-btn-full-width {
+  width: 100%;
+}
+
+.level-editor-sidebar-footer {
+  margin-top: auto;
+}
+
+.level-editor-empty-levels {
+  font-size: 11px;
+  color: #888;
+}
+
+.level-editor-file-input {
+  display: none;
+}
+
+/* Language switcher inside editor */
+.level-editor-language-switcher {
+  position: fixed;
+  top: 10px;
+  left: 166px;
+  z-index: 3000;
+  display: flex;
+  gap: 2px;
+}
+
+.level-editor-language-switcher button {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 2px 3px;
+  cursor: pointer;
+  font-size: 10px;
+  height: 16px;
+
+}
+
+.level-editor-language-switcher button.active {
+  background: #00ff88;
+  color: #000;
+}

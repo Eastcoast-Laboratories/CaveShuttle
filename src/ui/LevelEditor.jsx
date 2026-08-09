@@ -1,0 +1,333 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { parseImportedPackFile } from '../levels/level-pack-import.js';
+import { storageKey } from '../core/storage-keys.js';
+import './level-editor.css';
+
+// CaveShuttle-specific imports are optional via props.
+// When embedded in CaveShuttle, App.jsx passes installPackFn and reservedPackIds.
+// When standalone, these are undefined and the "Install" button is hidden.
+
+const DRAFT_KEY = storageKey('editorPackDraft');
+const LANGUAGE_KEY = 'caveShuttle_language';
+const PLAYER_NAME_KEY = storageKey('playerProfile');
+
+// Local fallback for player name (replaces HighScoreManager dependency)
+function getPlayerName() {
+  try {
+    const stored = localStorage.getItem(PLAYER_NAME_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.name) return parsed.name;
+    }
+  } catch {}
+  return 'Editor';
+}
+
+// Local fallback for language (replaces useLanguage dependency)
+function getStoredLanguage() {
+  try {
+    const stored = localStorage.getItem(LANGUAGE_KEY);
+    if (stored) return stored;
+  } catch {}
+  return navigator.language && navigator.language.startsWith('de') ? 'de' : 'en';
+}
+
+const PACK_NAME_ADJECTIVES = ['Cavernous', 'Treacherous', 'Crystal', 'Volcanic', 'Frozen', 'Ancient', 'Neon', 'Shadow', 'Crimson', 'Emerald', 'Golden', 'Forgotten'];
+const PACK_NAME_NOUNS = ['Depths', 'Expedition', 'Labyrinth', 'Odyssey', 'Frontier', 'Venture', 'Reaches', 'Catacombs', 'Drift', 'Expanse'];
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generatePackId() {
+  return `pack-${Math.random().toString(36).slice(2, 8)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
+function generatePackName() {
+  return `${pick(PACK_NAME_ADJECTIVES)} ${pick(PACK_NAME_NOUNS)}`;
+}
+
+function sanitizeLevelName(name) {
+  if (!name) return 'level';
+  return name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+}
+
+function defaultDraft() {
+  return {
+    meta: { id: generatePackId(), name: generatePackName(), version: '1.0', author: getPlayerName(), createdAt: Date.now() },
+    levels: {}
+  };
+}
+
+export default function LevelEditor({ onBack, onEditorTest, onPackImported, installPackFn, isReservedPackIdFn }) {
+  const [language, setLanguageState] = useState(getStoredLanguage);
+  const setLanguage = (lang) => {
+    setLanguageState(lang);
+    try { localStorage.setItem(LANGUAGE_KEY, lang); } catch {}
+  };
+  const iframeRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const [draft, setDraft] = useState(() => {
+    try {
+      const stored = localStorage.getItem(DRAFT_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.meta && parsed.meta.id) return parsed;
+      }
+      return defaultDraft();
+    } catch (error) {
+      console.error('[LEVEL_EDITOR_PACK] Failed to load draft', error);
+      return defaultDraft();
+    }
+  });
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showHelp, setShowHelp] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (error) {
+      console.error('[LEVEL_EDITOR_PACK] Failed to save draft', error);
+      setError('Pack draft is too large to save.');
+    }
+  }, [draft]);
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (!event.data) return;
+      if (event.data.type === 'EDITOR_TEST') {
+        onEditorTest(event.data.levelData, event.data.wallColor);
+      } else if (event.data.type === 'EDITOR_ADD_TO_PACK') {
+        const rawName = event.data.levelName || 'level';
+        const base = sanitizeLevelName(rawName);
+        const uniqueId = (() => {
+          if (!draft.levels[base]) return base;
+          let i = 2;
+          while (draft.levels[`${base}_${i}`]) i += 1;
+          return `${base}_${2}`;
+        })();
+        setDraft(prev => ({
+          ...prev,
+          levels: {
+            ...prev.levels,
+            [uniqueId]: event.data.levelData
+          }
+        }));
+        setSidebarOpen(true);
+        setMessage(`Added ${uniqueId} to pack.`);
+        setTimeout(() => setMessage(null), 2000);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onEditorTest, draft.levels]);
+
+  const setMetaField = (field, value) => {
+    setDraft(prev => ({ ...prev, meta: { ...prev.meta, [field]: value } }));
+  };
+
+  const editLevel = (levelId) => {
+    const levelData = draft.levels[levelId];
+    if (!levelData || !iframeRef.current) return;
+    iframeRef.current.contentWindow.postMessage(
+      { type: 'LOAD_LEVEL', levelData, levelName: levelId },
+      '*'
+    );
+  };
+
+  const removeLevel = (levelId) => {
+    setDraft(prev => {
+      const { [levelId]: _, ...rest } = prev.levels;
+      return { ...prev, levels: rest };
+    });
+  };
+
+  const moveLevel = (levelId, direction) => {
+    const ids = Object.keys(draft.levels);
+    const index = ids.indexOf(levelId);
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= ids.length) return;
+    [ids[index], ids[newIndex]] = [ids[newIndex], ids[index]];
+    const reordered = {};
+    ids.forEach(id => { reordered[id] = draft.levels[id]; });
+    setDraft(prev => ({ ...prev, levels: reordered }));
+  };
+
+  const handleOpenPack = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setError(null);
+    try {
+      const fileText = await file.text();
+      const parsed = parseImportedPackFile(fileText);
+      setDraft({
+        meta: { ...defaultDraft().meta, ...parsed.meta, createdAt: parsed.meta.createdAt || Date.now() },
+        levels: parsed.levels || {}
+      });
+      setMessage(`Pack ${parsed.meta.name || parsed.meta.id} loaded.`);
+      setTimeout(() => setMessage(null), 2000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  const downloadPack = () => {
+    if (!draft.meta.id) {
+      setError('Pack ID is required for download.');
+      return;
+    }
+    const pack = { meta: { ...draft.meta, createdAt: draft.meta.createdAt || Date.now() }, levels: draft.levels };
+    const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${draft.meta.id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const installPack = () => {
+    if (!installPackFn) return;
+    setError(null);
+    if (!draft.meta.id || !draft.meta.name) {
+      setError('Pack ID and name are required.');
+      return;
+    }
+    if (isReservedPackIdFn && isReservedPackIdFn(draft.meta.id)) {
+      setError(`Pack ID "${draft.meta.id}" is reserved for a built-in pack.`);
+      return;
+    }
+    if (!draft.levels || Object.keys(draft.levels).length === 0) {
+      setError('Pack must contain at least one level.');
+      return;
+    }
+    try {
+      const result = installPackFn(draft.meta, draft.levels, true);
+      if (result.success) {
+        if (onPackImported) onPackImported();
+        setMessage(`Pack ${draft.meta.id} installed.`);
+        setTimeout(() => setMessage(null), 2000);
+      } else if (result.conflict) {
+        setError(`Pack ${draft.meta.id} could not be installed due to a conflict.`);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const newPack = () => {
+    if (window.confirm('Create a new pack? The current draft will be discarded.')) {
+      setDraft(defaultDraft());
+    }
+  };
+
+  const toggleSidebar = () => setSidebarOpen(prev => !prev);
+
+  return (
+    <div className="level-editor-root">
+      <div className="level-editor-toolbar">
+        <button onClick={onBack} className="level-editor-btn-back">
+          Back to Menu
+        </button>
+        <button onClick={toggleSidebar} className="level-editor-btn-sidebar">
+          Pack Builder
+        </button>
+      </div>
+      <div className="level-editor-language-switcher">
+        {['de', 'en'].map((lang) => (
+          <button
+            key={lang}
+            onClick={() => setLanguage(lang)}
+            className={language === lang ? 'active' : ''}
+          >
+            {lang === 'de' ? '🇩🇪' : '🇬🇧'}
+          </button>
+        ))}
+      </div>
+      <iframe
+        ref={iframeRef}
+        src="/level-editor/index.html"
+        className="level-editor-iframe"
+        title="Level Editor"
+      />
+      {sidebarOpen && (
+        <div className="level-editor-sidebar">
+          <div className="level-editor-sidebar-header">
+            <h3>Pack Builder</h3>
+            <div className="level-editor-sidebar-header-buttons">
+              <button
+                onClick={() => setShowHelp(prev => !prev)}
+                className="level-editor-btn-help"
+                title="How does the Pack Builder work?"
+              >
+                ?
+              </button>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="level-editor-btn-close"
+                title="Close Pack Builder"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          {showHelp && (
+            <div className="level-editor-help-text">
+              <strong>Pack Builder</strong> lets you collect levels into a shareable pack.<br /><br />
+              <strong>1.</strong> Design a level in the editor on the left.<br />
+              <strong>2.</strong> Click <strong>"Add to Pack"</strong> to add it to your pack.<br />
+              <strong>3.</strong> Reorder levels with ▲▼ or remove them with ×.<br />
+              <strong>4.</strong> Click a level and press <strong>Edit</strong> to load it back into the editor.<br />
+              <strong>5.</strong> Use <strong>Download Pack</strong> to save a .json file you can share.<br />
+              <strong>6.</strong> Use <strong>Install Pack in Game</strong> to play it immediately.<br /><br />
+              If you share it, everybody can import your level-pack in their game menu.
+            </div>
+          )}
+          {message && <div className="level-editor-message">{message}</div>}
+          {error && <div className="level-editor-error">{error}</div>}
+
+          <label className="level-editor-label">Pack ID</label>
+          <input className="level-editor-input" value={draft.meta.id} onChange={e => setMetaField('id', e.target.value)} placeholder="unique-pack-id" />
+          <label className="level-editor-label">Pack Name</label>
+          <input className="level-editor-input" value={draft.meta.name} onChange={e => setMetaField('name', e.target.value)} placeholder="My Pack" />
+          <label className="level-editor-label">Version</label>
+          <input className="level-editor-input" value={draft.meta.version} onChange={e => setMetaField('version', e.target.value)} placeholder="1.0" />
+          <label className="level-editor-label">Author</label>
+          <input className="level-editor-input" value={draft.meta.author} onChange={e => setMetaField('author', e.target.value)} placeholder="Author" />
+
+          <h4 className="level-editor-section-title">Levels</h4>
+          <div>
+            {Object.keys(draft.levels).map(levelId => (
+              <div key={levelId} className="level-editor-level-item">
+                <span className="level-editor-level-name">{levelId}</span>
+                <div className="level-editor-level-buttons">
+                  <button onClick={() => editLevel(levelId)} className="level-editor-btn level-editor-btn-edit">Edit</button>
+                  <button onClick={() => moveLevel(levelId, -1)} className="level-editor-btn level-editor-btn-move">▲</button>
+                  <button onClick={() => moveLevel(levelId, 1)} className="level-editor-btn level-editor-btn-move">▼</button>
+                  <button onClick={() => removeLevel(levelId)} className="level-editor-btn level-editor-btn-remove">×</button>
+                </div>
+              </div>
+            ))}
+            {Object.keys(draft.levels).length === 0 && (
+              <div className="level-editor-empty-levels">No levels yet. Use &quot;Add to Pack&quot; in the editor.</div>
+            )}
+          </div>
+
+          <div className="level-editor-sidebar-footer">
+            <button onClick={newPack} className="level-editor-btn level-editor-btn-new level-editor-btn-full-width">New Pack</button>
+            <button onClick={() => fileInputRef.current?.click()} className="level-editor-btn level-editor-btn-open level-editor-btn-full-width">Open Pack File</button>
+            <input ref={fileInputRef} type="file" accept=".json" onChange={handleOpenPack} className="level-editor-file-input" />
+            <button onClick={downloadPack} className="level-editor-btn level-editor-btn-download level-editor-btn-full-width">Download Pack</button>
+            {installPackFn && (
+              <button onClick={installPack} className="level-editor-btn level-editor-btn-install level-editor-btn-full-width">Install Pack in Game</button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

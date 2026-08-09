@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Level Editor</title>
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <div class="editor-container">
+    <!-- Main content -->
+    <div class="editor-main">
+      <!-- Left sidebar: Tools -->
+      <aside class="sidebar left-sidebar">
+        <br>
+        <div class="tool-buttons">
+          <button class="tool-btn active" data-tool="paint" title="Paint Tool (P)">🖌️</button>
+          <button class="tool-btn" data-tool="select" title="Select Tool (S)">🔲</button>
+          <button class="tool-btn" data-tool="slope" title="Slope Tool (L)">📐</button>
+          <button class="tool-btn" data-tool="triangle" title="Triangle Tool (D)">🔺</button>
+          <button class="tool-btn" data-tool="hill" title="Hill Tool (H)">⛰️</button>
+          <button class="tool-btn" data-tool="bucket" title="Bucket Tool (B)">🪣</button>
+          <button class="tool-btn" data-tool="eraser" title="Eraser (E)">🧹</button>
+        </div>
+        
+        <h3>Actions</h3>
+        <div class="action-buttons">
+          <button id="undoBtn" class="action-btn" title="Undo (Ctrl+Z)">↶</button>
+          <button id="redoBtn" class="action-btn" title="Redo (Ctrl+Y)">↷</button>
+          <button id="copyBtn" class="action-btn" title="Copy (Ctrl+C)">📋</button>
+          <button id="pasteBtn" class="action-btn" title="Paste (Ctrl+V)">📄</button>
+          <button id="fillBtn" class="action-btn" title="Fill Selection (G)">🪣</button>
+          <button id="deleteBtn" class="action-btn" title="Delete (Del)">🗑️</button>
+        </div>
+
+        <h3>Move & Zoom</h3>
+        <div class="move-zoom-controls">
+          <div class="move-controls">
+            <button id="moveUpBtn" class="move-btn">↑</button>
+            <div class="move-row">
+              <button id="moveLeftBtn" class="move-btn">←</button>
+              <button id="moveRightBtn" class="move-btn">→</button>
+            </div>
+            <button id="moveDownBtn" class="move-btn">↓</button>
+          </div>
+          <div class="zoom-controls">
+            <button id="zoomOutBtn" class="zoom-btn">−</button>
+            <span id="zoomLevel">100%</span>
+            <button id="zoomInBtn" class="zoom-btn">+</button>
+          </div>
+        </div>
+
+        <h3>Level Controls</h3>
+        <div class="level-controls">
+          <select id="levelpackSelect" class="control-input">
+            <option value="default">Default</option>
+            <option value="classic">Classic</option>
+          </select>
+          <select id="levelSelect" class="control-input">
+          </select>
+          <input type="text" id="levelNameInput" class="control-input" placeholder="Level name (e.g., level2)" value="level1">
+          <div class="color-picker-wrapper" id="wallColorWrapper">
+            <input type="hidden" id="wallColorInput" value="#ff0000">
+            <button type="button" id="wallColorBtn" class="wall-color-btn" title="Wall Color" aria-haspopup="true" aria-expanded="false"></button>
+            <div id="wallColorPopup" class="color-popup" style="display: none;" role="dialog" aria-label="Wall color picker">
+              <input type="color" id="wallColorPicker" class="control-input color-picker-input" value="#ff0000">
+              <div class="color-rgb-display">
+                <label for="wallColorRgb">RGB values:</label>
+                <input type="text" id="wallColorRgb" class="control-input" value="255 0 0" readonly>
+              </div>
+              <button type="button" id="wallColorCopy" class="btn btn-secondary color-copy-btn">Copy RGB</button>
+            </div>
+          </div>
+          <button id="loadBtn" class="btn btn-primary">Load</button>
+          <button id="newBtn" class="btn btn-secondary">New</button>
+          <button id="generateBtn" class="btn btn-info">Generate</button>
+          <button id="saveBtn" class="btn btn-success">Save</button>
+          <button id="testBtn" class="btn btn-warning">Test</button>
+          <button id="addToPackBtn" class="btn btn-success">Add to Pack</button>
+        </div>
+
+        <h3>Level Parameters</h3>
+        <div class="parameter-grid">
+          <div class="param-group">
+            <label>Width:</label>
+            <input type="number" id="paramWidth" class="param-input" value="82" min="40" max="200">
+          </div>
+          <div class="param-group">
+            <label>Height:</label>
+            <input type="number" id="paramHeight" class="param-input" value="120" min="20" max="300">
+          </div>
+          <div class="param-group">
+            <label>Start Height:</label>
+            <input type="number" id="paramStartHeight" class="param-input" value="17" min="5" max="100">
+          </div>
+          <div class="param-group">
+            <label>Empty Space:</label>
+            <input type="number" id="paramEmptySpace" class="param-input" value="5" min="-50" max="50">
+          </div>
+          <div class="param-group">
+            <label>Bedrock:</label>
+            <input type="number" id="paramBedrock" class="param-input" value="25" min="5" max="100">
+          </div>
+          <div class="param-group">
+            <label>Bunkers:</label>
+            <input type="number" id="paramBunkers" class="param-input" value="5" min="0" max="20">
+          </div>
+          <div class="param-group">
+            <label>Fuel:</label>
+            <input type="number" id="paramFuel" class="param-input" value="6" min="0" max="20">
+          </div>
+          <div class="param-group">
+            <label>Bunker Chance:</label>
+            <input type="number" id="paramBunkerChance" class="param-input" value="" min="0" max="1" step="0.05">
+          </div>
+          <div class="param-group">
+            <label>Fuel Chance:</label>
+            <input type="number" id="paramFuelChance" class="param-input" value="" min="0" max="1" step="0.05">
+          </div>
+          <div class="param-group pod-color-group">
+            <label>Pod Color:</label>
+            <div class="color-rgb-inputs">
+              <input type="number" id="paramPodR" class="param-input color-input" value="0" min="0" max="255" title="Pod R">
+              <input type="number" id="paramPodG" class="param-input color-input" value="164" min="0" max="255" title="Pod G">
+              <input type="number" id="paramPodB" class="param-input color-input" value="0" min="0" max="255" title="Pod B">
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- Center: Canvas -->
+      <main class="canvas-container">
+        <canvas id="levelCanvas"></canvas>
+        <div class="canvas-info">
+          <span id="cursorPos">X: 0, Y: 0</span>
+          <span id="levelSize">Size: 80 x 50</span>
+        </div>
+      </main>
+
+      <!-- Right sidebar: Tile palette -->
+      <aside class="sidebar right-sidebar">
+        <div class="top-bar">
+          <div class="scroll-controls">
+            <button id="scrollUpBtn" class="scroll-btn">↑</button>
+            <button id="scrollDownBtn" class="scroll-btn">↓</button>
+          </div>
+          <div id="currentTile" class="current-tile">
+            <div class="tile-preview"></div>
+            <span class="tile-name">Empty</span>
+          </div>
+        </div>
+        
+        <!-- Level Preview -->
+        <div id="previewPanel" class="preview-panel" style="display: block;">
+          <h3>Level Preview</h3>
+          <canvas id="previewCanvas" class="preview-canvas"></canvas>
+        </div>
+
+        <h3>Templates</h3>
+        <div id="templateButtons" class="template-buttons"></div>
+        
+        <h3>Tile Palette</h3>
+        <div id="tilePalette" class="tile-palette"></div>
+      </aside>
+    </div>
+
+  </div>
+
+  <div id="saveModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Level ASCII</h3>
+        <button type="button" id="closeModalBtn" class="modal-close">&times;</button>
+      </div>
+      <textarea id="saveModalText" class="modal-text" readonly></textarea>
+      <div class="modal-actions">
+        <button type="button" id="copyModalBtn" class="btn btn-secondary">Copy</button>
+        <button type="button" id="saveModalBtn" class="btn btn-success">Save as .txt</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="tile-definitions.js"></script>
+  <script src="level-renderer.js"></script>
+  <script type="module" src="level-generator.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>
