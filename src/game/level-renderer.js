@@ -1,810 +1,216 @@
+// Level renderer for rendering level layout
+export class LevelRenderer {
+  constructor() {
+    this.tileSize = 16; // Scaled for better visibility (was 8)
+  }
 
-/* Written by Peter Ekberg, peda@lysator.liu.se */
+  render(ctx, level, offsetX = 0, offsetY = 0) {
+    if (!level || !level.layout) return;
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+    const layout = level.layout;
+    const startX = offsetX;
+    const startY = offsetY;
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+    for (let y = 0; y < layout.length; y++) {
+      const row = layout[y];
+      for (let x = 0; x < row.length; x++) {
+        const tile = row[x];
+        const posX = startX + x * this.tileSize;
+        const posY = startY + y * this.tileSize;
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "thrust_t.h"
-#include "graphics.h"
-#include "things.h"
-#include "fast_gr.h"
-#include "gr_drv.h"
-#include "thrust.h"
-
-static int colors_inverted = 0;
-
-
-void
-writeblock(word bx, word by, ui8 block)
-{
-  word tempx, tempy;
-
-  *(bana+bx+by*lenx)=block;
-  tempx=bx;
-  tempy=by;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  if(insideblock(tempx, tempy, pblockx, pblocky, 0, 0))
-    putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	     blocks+(block<<6));
-}
-
-#define NR_TP (6)
-#define SZ_TP (3)
-#define DIFF_TP (8)
-#define SHIFT_TP (10)
-
-void
-drawteleline(int round, int x1, int y1, int x2, int y2, int j, int k)
-{
-  int l;
-  static ui8 telemem[2*7*4*NR_TP*SZ_TP];
-  static ui8 *tm;
-
-  switch(round) {
-  case 0:
-    tm=&telemem[0];
-    break;
-  case 1:
-    for(l=-3; l<=3; l++) {
-      putpixel(x1+(j+2)*DIFF_TP+k-SHIFT_TP, 24+y1+l, SHIP);
-      putpixel(x1-(j+2)*DIFF_TP-k+SHIFT_TP, 24+y1+l, SHIP);
-      putpixel(x1+l, 24+y1+(j+2)*DIFF_TP+k-SHIFT_TP, SHIP);
-      putpixel(x1+l, 24+y1-(j+2)*DIFF_TP-k+SHIFT_TP, SHIP);
-      if(loaded) {
-	putpixel(x2+(j+2)*DIFF_TP+k-SHIFT_TP, 24+y2+l, POD);
-	putpixel(x2-(j+2)*DIFF_TP-k+SHIFT_TP, 24+y2+l, POD);
-	putpixel(x2+l, 24+y2+(j+2)*DIFF_TP+k-SHIFT_TP, POD);
-	putpixel(x2+l, 24+y2-(j+2)*DIFF_TP-k+SHIFT_TP, POD);
+        this.renderTile(ctx, tile, posX, posY);
       }
     }
-    break;
-  case 2:
-    for(l=-3; l<=3; l++) {
-      *(tm++) = *(bild + (bildx+x1+(j+2)*DIFF_TP+k-SHIFT_TP)
-		  + ((bildy+y1+l)%PBILDY)*PBILDX*2);
-      *(tm++) = *(bild + (bildx+x1-(j+2)*DIFF_TP-k+SHIFT_TP)
-		  + ((bildy+y1+l)%PBILDY)*PBILDX*2);
-      *(tm++) = *(bild + (bildx+x1+l)
-		  + ((bildy+y1+(j+2)*DIFF_TP+k-SHIFT_TP)%PBILDY)*PBILDX*2);
-      *(tm++) = *(bild + (bildx+x1+l)
-		  + ((bildy+y1-(j+2)*DIFF_TP-k+SHIFT_TP)%PBILDY)*PBILDX*2);
-      if(loaded) {
-	*(tm++) = *(bild + (bildx+x2+(j+2)*DIFF_TP+k-SHIFT_TP)
-		    + ((bildy+y2+l)%PBILDY)*PBILDX*2);
-	*(tm++) = *(bild + (bildx+x2-(j+2)*DIFF_TP-k+SHIFT_TP)
-		    + ((bildy+y2+l)%PBILDY)*PBILDX*2);
-	*(tm++) = *(bild + (bildx+x2+l)
-		    + ((bildy+y2+(j+2)*DIFF_TP+k-SHIFT_TP)%PBILDY)*PBILDX*2);
-	*(tm++) = *(bild + (bildx+x2+l)
-		    + ((bildy+y2-(j+2)*DIFF_TP-k+SHIFT_TP)%PBILDY)*PBILDX*2);
-      }
-    }
-    break;
-  case 3:
-    for(l=-3; l<=3; l++) {
-      putpixel(x1+(j+2)*DIFF_TP+k-SHIFT_TP, 24+y1+l, *(tm++));
-      putpixel(x1-(j+2)*DIFF_TP-k+SHIFT_TP, 24+y1+l, *(tm++));
-      putpixel(x1+l, 24+y1+(j+2)*DIFF_TP+k-SHIFT_TP, *(tm++));
-      putpixel(x1+l, 24+y1-(j+2)*DIFF_TP-k+SHIFT_TP, *(tm++));
-      if(loaded) {
-	putpixel(x2+(j+2)*DIFF_TP+k-SHIFT_TP, 24+y2+l, *(tm++));
-	putpixel(x2-(j+2)*DIFF_TP-k+SHIFT_TP, 24+y2+l, *(tm++));
-	putpixel(x2+l, 24+y2+(j+2)*DIFF_TP+k-SHIFT_TP, *(tm++));
-	putpixel(x2+l, 24+y2-(j+2)*DIFF_TP-k+SHIFT_TP, *(tm++));
-      }
-    }
-    break;
-  }
-}
-
-void
-drawteleport(int tohere)
-{
-  int i, j, k;
-  int x1, y1, x2, y2;
-
-  x1=x2=154+7+shipdx;
-  y1=y2= 82+7+shipdy;
-  if(loaded) {
-    x2=161-(int)((LOADLINELEN-loadpoint)*cos(alpha)/7.875);
-    y2= 89+(int)((LOADLINELEN-loadpoint)*sin(alpha)/7.875);
   }
 
-  syncscreen(0UL);
-  for(i=0; i<NR_TP+SZ_TP-1; i++) {
-    for(k=min(SZ_TP-1, i), j=max(i-(SZ_TP-1), 0); j<=min(i, NR_TP-1); k--, j++)
-      drawteleline(1, x1, y1, x2, y2, j, k);
-    displayscreen(30000UL);
-  }
+  renderTile(ctx, tile, x, y) {
+    switch (tile) {
+      case ' ': // Empty space
+        return; // Don't render anything
 
-  syncscreen(250000UL);
-  if(tohere)
-    drawshuttle();
-  putscr(bildx, bildy);
+      case '0': // Pod stand 0 - rendered as space
+      case '1': // Pod holder marker (POD_HOLDER_CHAR) - rendered as space
+      case '2': // Pod holder part - rendered as space
+        return; // Don't render anything
 
-  for(i=0; i<NR_TP+SZ_TP-1; i++)
-    for(k=min(SZ_TP-1, i), j=max(i-(SZ_TP-1), 0); j<=min(i, NR_TP-1); k--, j++)
-      drawteleline(1, x1, y1, x2, y2, j, k);
-  displayscreen(0UL);
-  drawteleline(0, 0, 0, 0, 0, 0, 0);
-  for(i=0; i<NR_TP+SZ_TP-1; i++)
-    for(k=min(SZ_TP-1, i), j=max(i-(SZ_TP-1), 0); j<=min(i, NR_TP-1); k--, j++)
-      drawteleline(2, x1, y1, x2, y2, j, k);
+      case '3': // Pod stand 3
+        ctx.fillStyle = '#33cc33';
+        ctx.fillRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4);
+        break;
 
-  syncscreen(250000UL);
-  drawteleline(0, 0, 0, 0, 0, 0, 0);
-  for(i=0; i<NR_TP+SZ_TP-1; i++) {
-    for(k=min(SZ_TP-1, i), j=max(i-(SZ_TP-1), 0); j<=min(i, NR_TP-1); k--, j++)
-      drawteleline(3, x1, y1, x2, y2, j, k);
-    displayscreen(30000UL);
-  }
-  if(tohere)
-    undrawshuttle();
-}
+      case '4': // Pod stand 4
+        ctx.fillStyle = '#33cc33';
+        ctx.fillRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4);
+        break;
 
-void
-swap(int *pa, int *pb)
-{
-  int	t;
-  t=*pa; *pa=*pb; *pb=t;
-}
+      case '#': // Solid wall (fallback)
+        ctx.fillStyle = '#666666';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        ctx.strokeStyle = '#888888';
+        ctx.strokeRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-void
-drawlinev(int x1, int y1, int x2, int y2, ui8 color, ui8 *storage)
-{
-  int d, dx, dy;
-  int Ai, Bi, xi;
-  ui8 *ptr=bild;
+      case '*': // Restart point
+        ctx.fillStyle = '#ffff00';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        ctx.fillStyle = '#000000';
+        ctx.font = `${this.tileSize - 2}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('R', x + this.tileSize / 2, y + this.tileSize / 2);
+        break;
 
-  if(y1>y2) {
-    swap(&x1, &x2);
-    swap(&y1, &y2);
-  }
-  xi=(x2>x1)?1:-1;
-  dx=abs(x2-x1);
-  dy=(y2-y1);
-  Ai=(dx-dy)<<1;
-  Bi=(dx<<1);
-  d=Bi-dy;
+      case '`': // Fuel
+        ctx.fillStyle = '#00ffff';
+        ctx.fillRect(x + 2, y + 2, this.tileSize - 4, this.tileSize - 4);
+        break;
 
-  ptr+=y1*(PBILDX<<1);
-  *(storage++)=*(ptr+x1);
-  *(ptr+x1)=color;
-  for(y1++, ptr+=PBILDX<<1; y1<=y2; y1++, ptr+=PBILDX<<1) {
-    if(y1==PBILDY)
-      ptr=bild;
-    if(d<0)
-      d+=Bi;
-    else {
-      x1+=xi;
-      d+=Ai;
-    }
-    *(storage++)=*(ptr+x1);
-    *(ptr+x1)=color;
-  }
-}
+      case 'd': // Power plant
+        ctx.fillStyle = '#ff00ff';
+        ctx.fillRect(x + 1, y + 1, this.tileSize - 2, this.tileSize - 2);
+        break;
 
-void
-undrawlinev(int x1, int y1, int x2, int y2, ui8 *storage)
-{
-  int d, dx, dy;
-  int Ai, Bi, xi;
-  ui8 *ptr=bild;
+      // Accelerate platform tiles (p, q, r, s, t - different heights)
+      case 'p': // Platform - lowest
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x, y + this.tileSize - 2, this.tileSize, 2);
+        break;
 
-  if(y1>y2) {
-    swap(&x1, &x2);
-    swap(&y1, &y2);
-  }
-  xi=(x2>x1)?1:-1;
-  dx=abs(x2-x1);
-  dy=(y2-y1);
-  Ai=(dx-dy)<<1;
-  Bi=(dx<<1);
-  d=Bi-dy;
+      case 'q': // Platform - low
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x, y + this.tileSize - 3, this.tileSize, 3);
+        break;
 
-  ptr+=y1*(PBILDX<<1);
-  *(ptr+x1)=*(storage++);
-  for(y1++, ptr+=PBILDX<<1; y1<=y2; y1++, ptr+=PBILDX<<1) {
-    if(y1==PBILDY)
-      ptr=bild;
-    if(d<0)
-      d+=Bi;
-    else {
-      x1+=xi;
-      d+=Ai;
-    }
-    *(ptr+x1)=*(storage++);
-  }
-}
+      case 'r': // Platform - medium
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x, y + this.tileSize - 4, this.tileSize, 4);
+        break;
 
-void
-drawlineh(int x1, int y1, int x2, int y2, ui8 color, ui8 *storage)
-{
-  int d, dx, dy;
-  int Ai, Bi, yi, i;
-  ui8 *ptr=bild;
+      case 's': // Platform - high
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x, y + this.tileSize - 5, this.tileSize, 5);
+        break;
 
-  if(x1>x2) {
-    swap(&x1, &x2);
-    swap(&y1, &y2);
-  }
-  if(y2>y1) {
-    yi=PBILDX<<1;
-    i=1;
-  }
-  else {
-    yi=-PBILDX<<1;
-    i=-1;
-  }
-  dx=x2-x1;
-  dy=abs(y2-y1);
-  Ai=(dy-dx)<<1;
-  Bi=(dy<<1);
-  d=Bi-dx;
-  if(y1>=PBILDY)
-    y1-=PBILDY;
-  y2=y1;
-  y1=y1*PBILDX<<1;
+      case 't': // Platform - highest
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x, y + this.tileSize - 6, this.tileSize, 6);
+        break;
 
-  ptr+=y1;
-  *(storage++)=*(ptr+x1);
-  *(ptr+x1)=color;
-  for(x1++; x1<=x2; x1++) {
-    if(d<0)
-      d+=Bi;
-    else {
-      ptr+=yi;
-      y2+=i;
-      if(y2==-1)
-	ptr+=PBILDY*PBILDX<<1;
-      if(y2==PBILDY)
-	ptr=bild;
-      d+=Ai;
-    }
-    *(storage++)=*(ptr+x1);
-    *(ptr+x1)=color;
-  }
-}
+      // Door buttons (L/M left wall, N/O right wall; M/O are lower tile halves)
+      case 'L':
+      case 'M':
+        ctx.fillStyle = '#00ff00';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-void
-undrawlineh(int x1, int y1, int x2, int y2, ui8 *storage)
-{
-  int d, dx, dy;
-  int Ai, Bi, yi, i;
-  ui8 *ptr=bild;
+      case 'N':
+      case 'O':
+        ctx.fillStyle = '#00aa00';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-  if(x1>x2) {
-    swap(&x1, &x2);
-    swap(&y1, &y2);
-  }
-  if(y2>y1) {
-    yi=PBILDX<<1;
-    i=1;
-  }
-  else {
-    yi=-PBILDX<<1;
-    i=-1;
-  }
-  dx=x2-x1;
-  dy=abs(y2-y1);
-  Ai=(dy-dx)<<1;
-  Bi=(dy<<1);
-  d=Bi-dx;
-  if(y1>=PBILDY)
-    y1-=PBILDY;
-  y2=y1;
-  y1=y1*PBILDX<<1;
+      // Sliders (@-K) - different colors for different slider types
+      case '@':
+      case 'A':
+      case 'B':
+      case 'C':
+      case 'D':
+      case 'E':
+      case 'F':
+      case 'G':
+      case 'H':
+      case 'I':
+      case 'J':
+      case 'K':
+        ctx.fillStyle = '#0000ff';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-  ptr+=y1;
-  *(ptr+x1)=*(storage++);
-  for(x1++; x1<=x2; x1++) {
-    if(d<0)
-      d+=Bi;
-    else {
-      ptr+=yi;
-      y2+=i;
-      if(y2==-1)
-        ptr+=PBILDY*PBILDX<<1;
-      if(y2==PBILDY)
-        ptr=bild;
-      d+=Ai;
-    }
-    *(ptr+x1)=*(storage++);
-  }
-}
+      // Bunkers (P, U, [, \) - different colors for different bunker types
+      case 'P':
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-void
-drawline(int x1, int y1, int x2, int y2, ui8 color, ui8 *storage)
-{
-  if(y1>y2+64)
-    y2+=PBILDY;
-  if(y2>y1+64)
-    y1+=PBILDY;
-  if(abs(x1-x2)<abs(y1-y2))
-    drawlinev(x1, y1, x2, y2, color, storage);
-  else
-    drawlineh(x1, y1, x2, y2, color, storage);
-}
+      case 'U':
+        ctx.fillStyle = '#ff6666';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-void
-undrawline(int x1, int y1, int x2, int y2, ui8 *storage)
-{
-  if(y1>y2+64)
-    y2+=PBILDY;
-  if(y2>y1+64)
-    y1+=PBILDY;
-  if(abs(x1-x2)<abs(y1-y2))
-    undrawlinev(x1, y1, x2, y2, storage);
-  else
-    undrawlineh(x1, y1, x2, y2, storage);
-}
+      case '[':
+        ctx.fillStyle = '#ff9999';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-void
-drawbullets(void)
-{
-  int l;
-  bullet *bulletptr;
-  word tempx, tempy;
-  ui8 target;
+      case '\\':
+        ctx.fillStyle = '#ffcccc';
+        ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        break;
 
-  for(l=0, bulletptr=bullets; l<maxbullets; l++, bulletptr++)
-    if((*bulletptr).life) {
-      tempx=(*bulletptr).x>>3;
-      tempy=(*bulletptr).y>>3;
-      if(pixx+PUSEX>(int)lenx3 && tempx<PUSEX)
-        tempx+=lenx3;
-      if(pixy+PUSEY>(int)leny3 && tempy<PUSEY)
-        tempy+=leny3;
-      if(insidepixel(tempx, tempy, pixx, pixy, 4, 4))
-        drawsquare(bildx+tempx-pixx, tempy%PBILDY,
-          bulletmap+((*bulletptr).dir<<4),
-          bulletstorage+(l<<4), 4, 4);
-      else {
-        target = *(bana+(tempx>>3)%lenx+((tempy>>3)%leny)*lenx);
-        if(target!=' ') {
-          /* Add code to take care of offscreen hits */
-          if((*bulletptr).owner)
-            switch(target) {
-            case '`':
-            case 'a':
-            case 'b':
-            case 'c':
-            case 'd':
-            case 'e':
-            case 'f':
-            case 'g':
-            case 'h':
-            case 'i':
-            case 'j':
-            case 'k':
-            case 'l':
-            case 'L':
-            case 'M':
-            case 'N':
-            case 'O':
-            case 'P':
-            case 'Q':
-            case 'R':
-            case 'S':
-            case 'T':
-            case 'U':
-            case 'V':
-            case 'W':
-            case 'X':
-            case 'Y':
-            case 'Z':
-            case ']':
-            case '\\':
-            case '^':
-            case '_':
-              hit((tempx+3)%lenx3, (tempy+3)%leny3, 4, (*bulletptr).owner);
-            }
-          (*bulletptr).life=0;
+      // Letters for other objects - render as placeholders with different colors
+      default:
+        if (tile.match(/[a-z]/i)) {
+          // Letters - render as colored rectangles for now
+          const hue = (tile.charCodeAt(0) % 26) * 14;
+          ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+          ctx.fillRect(x, y, this.tileSize, this.tileSize);
+        } else if (tile.match(/[0-9]/)) {
+          // Numbers - render as yellow
+          ctx.fillStyle = '#ffff00';
+          ctx.fillRect(x, y, this.tileSize, this.tileSize);
+          ctx.fillStyle = '#000000';
+          ctx.font = `${this.tileSize - 2}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(tile, x + this.tileSize / 2, y + this.tileSize / 2);
         }
-      }
+        break;
     }
-}
-
-void
-undrawbullets(void)
-{
-  int l;
-  bullet *bulletptr;
-  word tempx, tempy;
-  word crash;
-
-  for(l=maxbullets-1, bulletptr=bullets+maxbullets-1; l>=0; l--, bulletptr--)
-    if((*bulletptr).life) {
-      tempx=(*bulletptr).x>>3;
-      tempy=(*bulletptr).y>>3;
-      if(pixx+PUSEX>(int)lenx3 && tempx<PUSEX)
-        tempx+=lenx3;
-      if(pixy+PUSEY>(int)leny3 && tempy<PUSEY)
-        tempy+=leny3;
-      if(insidepixel(tempx, tempy, pixx, pixy, 4, 4)) {
-        crash=testcrash(bulletmap+((*bulletptr).dir<<4),
-          bulletstorage+(l<<4), 16, 0);
-        if(crash) {
-          if(crash>=3)
-            hit((tempx+3)%lenx3, (tempy+3)%leny3, crash, (*bulletptr).owner);
-          (*bulletptr).life=0;
-        }
-        undrawsquare(bildx+tempx-pixx, tempy%PBILDY,
-          bulletstorage+(l<<4), 4, 4);
-      }
-    }
-}
-
-void
-drawfragments(void)
-{
-  int l;
-  fragment *fragmentptr;
-  word tempx, tempy;
-  static ui8 fragmentmap[4];
-  static int fragmentinit=1;
-
-  if(fragmentinit) {
-    for(l=0; l<sizeof(fragmentmap); l++)
-      fragmentmap[l] = FRAGMENT;
-    fragmentinit=0;
   }
 
-  for(l=0, fragmentptr=fragments; l<maxfragments; l++, fragmentptr++)
-    if((*fragmentptr).life) {
-      tempx=(*fragmentptr).x>>3;
-      tempy=(*fragmentptr).y>>3;
-      if(pixx+PUSEX>(int)lenx3 && tempx<PUSEX)
-        tempx+=lenx3;
-      if(pixy+PUSEY>(int)leny3 && tempy<PUSEY)
-        tempy+=leny3;
-      if(insidepixel(tempx, tempy, pixx, pixy, 2, 2))
-        drawsquare(bildx+tempx-pixx, tempy%PBILDY,
-          fragmentmap, fragmentstorage+(l<<2), 2, 2);
-      else if(*(bana+(tempx>>3)%lenx+((tempy>>3)%leny)*lenx)!=' ')
-        (*fragmentptr).life=0;
-    }
-}
-
-void
-undrawfragments(void)
-{
-  int l;
-  fragment *fragmentptr;
-  word tempx, tempy;
-  word crash;
-  static ui8 fragmentmap[4]={ 1, 1, 1, 1 };
-  static int fragmentinit=1;
-
-  if(fragmentinit) {
-    for(l=0; l<sizeof(fragmentmap); l++)
-      fragmentmap[l] = FRAGMENT;
-    fragmentinit=0;
+  /**
+   * Only used in level-renderer.test.js: These are the tiles, that fire, all other bunker tiles are decorative
+   */
+  isBunker(tile) {
+    return ['P', 'U', '[', '\\'].includes(tile);
   }
 
-  for(l=maxfragments-1, fragmentptr=fragments+maxfragments-1;
-      l>=0;
-      l--, fragmentptr--)
-    if((*fragmentptr).life) {
-      tempx=(*fragmentptr).x>>3;
-      tempy=(*fragmentptr).y>>3;
-      if(pixx+PUSEX>(int)lenx3 && tempx<PUSEX)
-        tempx+=lenx3;
-      if(pixy+PUSEY>(int)leny3 && tempy<PUSEY)
-        tempy+=leny3;
-      if(insidepixel(tempx, tempy, pixx, pixy, 2, 2)) {
-        crash=testcrash(fragmentmap, fragmentstorage+(l<<2), 4, 0);
-        if(crash) {
-          (*fragmentptr).life=0;
-        }
-        undrawsquare(bildx+tempx-pixx, tempy%PBILDY,
-               fragmentstorage+(l<<2), 2, 2);
-      }
-    }
-}
-
-void
-drawpowerplantblip(void)
-{
-  word tempx, tempy;
-
-  tempx=ppx;
-  tempy=ppy;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  if(insideblock(tempx, tempy, pblockx, pblocky, 0, 0)) {
-    drawblock(bblockx-pblockx+tempx, tempy%BBILDY,
-      blocks+((ppblip?' ':222-(ppcount&0xc))<<6), blipstorage);
-/*    drawsquare((bblockx+pblockx+tempx) * 8, tempy%BBILDY * 8,
-      blocks+((ppblip?' ':222-(ppcount&0xc))<<6), blipstorage, 8, 8);*/
-  }
-}
-
-void
-undrawpowerplantblip(void)
-{
-  word tempx, tempy;
-
-  tempx=ppx;
-  tempy=ppy;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  if(insideblock(tempx, tempy, pblockx, pblocky, 0, 0))
-    undrawblock(bblockx-pblockx+tempx, tempy%BBILDY,
-      blipstorage);
-/*    undrawsquare((bblockx+pblockx+tempx) * 8, tempy%BBILDY * 8,
-           blipstorage, 8, 8);*/
-}
-
-void
-drawload(int flag)
-{
-  word tempx, tempy;
-
-  tempx=loadbx;
-  tempy=loadby;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	   blocks+((flag?'m':' ')<<6));
-
-  tempx=loadbx+1;
-  tempy=loadby;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	   blocks+((flag?'0':' ')<<6));
-
-  tempx=loadbx;
-  tempy=loadby+1;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	   blocks+((flag?'1':' ')<<6));
-
-  tempx=loadbx+1;
-  tempy=loadby+1;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	   blocks+((flag?'2':' ')<<6));
-
-  tempx=loadbx;
-  tempy=loadby+2;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	   blocks+((flag?'3':' ')<<6));
-
-  tempx=loadbx+1;
-  tempy=loadby+2;
-  if(pblockx+BBILDX>(int)lenx && tempx<BBILDX)
-    tempx+=lenx;
-  if(pblocky+BBILDY>(int)leny && tempy<BBILDY)
-    tempy+=leny;
-  putblock(bblockx-pblockx+tempx, tempy%BBILDY,
-	   blocks+((flag?'4':' ')<<6));
-}
-
-word
-drawshuttle(void)
-{
-  word crash=0, tmp;
-#ifdef DEBUG2
-  int debug2i;
-#endif
-  int x1, x2=0, y1, y2=0, lx, ly;
-  static ui8 wiremap[64];
-  static int wireinit=1;
-  
-  if(wireinit) {
-    for(tmp=0; tmp<sizeof(wiremap); tmp++)
-      wiremap[tmp] = TRACTOR;
-    wireinit=0;
+  /**
+   * Only used in level-renderer.test.js: These are the tiles, that are buttons (L==left)
+   */
+  isButton(tile) {
+    return ['L', 'M', 'N', 'O'].includes(tile);
   }
 
-  if(loaded || loadcontact) {
-    x1=bildx+161+shipdx;
-    y1=(bildy+89+shipdy);
-    if(loaded) {
-      x2=bildx+161-(int)((LOADLINELEN-loadpoint)*cos(alpha)/7.875);
-      y2=bildy+ 89+(int)((LOADLINELEN-loadpoint)*sin(alpha)/7.875);
-    }
-    else {
-      x2=(loadbx<<3)+5;
-      if(abs(x2-x1)>PBILDX/2)
-        x2+=PBILDX;
-      y2=(loadby<<3)+10;
-    }
-    lx=abs(x1-x2)%PBILDX;
-    ly=abs(y1-y2)%PBILDY;
-    if(lx>64)
-      lx=abs(lx-PBILDX);
-    if(ly>64)
-      ly=abs(ly-PBILDY);
-    drawline(x1, y1%PBILDY, x2, y2%PBILDY, TRACTOR, wirestorage);
-    tmp=testcrash(wiremap, wirestorage, max(lx, ly)+1, shield);
-    crash=max(crash, tmp);
-#ifdef DEBUG2
-    if(tmp) {
-      printf("Crash: Wire destroyed. By %d. Wirelength %d.\n",
-	     tmp, max(lx, ly)+1);
-      printf("Wirestorage:");
-      for(debug2i=0; debug2i<max(lx, ly)+1; debug2i++)
-        printf(" %02x", *(wirestorage+debug2i));
-      printf("\n");
-      printf("Killer line: x1=%d, y1=%d, x2=%d, y2=%d\n",
-	     x1, y1%PBILDY, x2, y2%PBILDY);
-      undrawline(x1+2 , y1%PBILDY, x2+2 , y2%PBILDY, wirestorage);
-    }
-#endif
-  }
-  /* Draw the shuttle */
-  if(shield>3)
-    drawship(bildx+153+shipdx, (bildy+81+shipdy)%PBILDY,
-	   shieldship+dir*17*17, shipstorage, 17);
-  else
-    drawship(bildx+154+shipdx, (bildy+82+shipdy)%PBILDY,
-	   ship+(dir<<8), shipstorage, 16);
-  tmp=testcrash(ship+(dir<<8), shipstorage, 256, shield);
-  crash=max(crash, tmp);
-#ifdef DEBUG2
-  if(tmp)
-    printf("Crash: Ship destroyed. By %d.\n", tmp);
-#endif
-  if(loaded || loadcontact) {
-    if(loaded)
-      drawsquare(x2-5, (y2-5)%PBILDY, loadmap, loadstorage, 11, 11);
-    else if(loadcontact) {
-      x1=loadbx<<3;
-      y1=(loadby<<3)+5;
-      if(pixx+PBILDX>(int)lenx3 && x1<PBILDX)
-        x1+=lenx3;
-      if(pixy+PBILDY>(int)leny3 && y1<PBILDY)
-        y1+=leny3;
-      drawsquare(bildx-pixx+x1, y1%PBILDY, loadmap, loadstorage, 11, 19);
-    }
-    tmp=testcrash(loadmap, loadstorage, 11*11, shield);
-    crash=max(crash, tmp);
-#ifdef DEBUG2
-    if(tmp)
-      printf("Crash: Load destroyed. By %d.\n", tmp);
-#endif
-  }
-  return(crash);
-}
-
-void
-undrawshuttle(void)
-{
-  int x1, x2=0, y1, y2=0;
-
-  if(loaded) {
-    x2=bildx+161-(int)((LOADLINELEN-loadpoint)*cos(alpha)/7.875);
-    y2=bildy+ 89+(int)((LOADLINELEN-loadpoint)*sin(alpha)/7.875);
-    undrawsquare(x2-5, (y2-5)%PBILDY, loadstorage, 11, 11);
-  }
-  else if(loadcontact) {
-    x1=loadbx<<3;
-    y1=(loadby<<3)+5;
-    if(pixx+PBILDX>(int)lenx3 && x1<PBILDX)
-      x1+=lenx3;
-    if(pixy+PBILDY>(int)leny3 && y1<PBILDY)
-      y1+=leny3;
-    undrawsquare(bildx-pixx+x1, y1%PBILDY, loadstorage, 11, 19);
-  }
-  if(shield>3)
-    undrawship(bildx+153+shipdx, (bildy+81+shipdy)%PBILDY,
-	   shipstorage, 17);
-  else
-    undrawship(bildx+154+shipdx, (bildy+82+shipdy)%PBILDY,
-	   shipstorage, 16);
-  if(loaded || loadcontact) {
-    x1=bildx+161+shipdx;
-    y1=(bildy+89+shipdy);
-    if(loadcontact) {
-      x2=(loadbx<<3)+5;
-      if(abs(x2-x1)>PBILDX/2)
-	x2+=PBILDX;
-      y2=(loadby<<3)+10;
-    }
-    undrawline(x1, y1%PBILDY, x2, y2%PBILDY, wirestorage);
-  }
-}
-
-void
-drawfuellines(void)
-{
-  if(shield>3)
-    return;
-  drawsquare(bildx+shipdx+151, (bildy+shipdy+98)%PBILDY,
-	     fuelmap, fuelstorage, 4, 32);
-  drawsquare(bildx+shipdx+168, (bildy+shipdy+98)%PBILDY,
-	     fuelmap+128, fuelstorage+128, 4, 32);
-}
-
-void
-undrawfuellines(void)
-{
-  if(shield>3)
-    return;
-  undrawsquare(bildx+shipdx+151, (bildy+shipdy+98)%PBILDY,
-	       fuelstorage, 4, 32);
-  undrawsquare(bildx+shipdx+168, (bildy+shipdy+98)%PBILDY,
-	       fuelstorage+128, 4, 32);
-}
-
-void
-setcolor(ui8 c, color *rgb)
-{
-  if(!rgb) {
-    bin_colors[c*3+0] = 0;
-    bin_colors[c*3+1] = 0;
-    bin_colors[c*3+2] = 0;
-  }
-  else {
-    bin_colors[c*3+0] = GAMMA(rgb->r);
-    bin_colors[c*3+1] = GAMMA(rgb->g);
-    bin_colors[c*3+2] = GAMMA(rgb->b);
+  /**
+   * Only used in level-renderer.test.js: These are the tiles, that are slider buttons (@-K)
+   */
+  isSlider(tile) {
+    const code = tile.charCodeAt(0);
+    return code >= 64 && code <= 75; // @-K
   }
 
-  if(!colors_inverted)
-    return;
+  isWall(tile) {
+    return tile === '#' || ['p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', '$', '%'].includes(tile);
+  }
 
-  bin_colors[c*3+0] = 255 - bin_colors[c*3+0];
-  bin_colors[c*3+1] = 255 - bin_colors[c*3+1];
-  bin_colors[c*3+2] = 255 - bin_colors[c*3+2];
-}
+  getTileAt(level, x, y) {
+    if (!level || !level.layout) return null;
+    const tileX = Math.floor(x / this.tileSize);
+    const tileY = Math.floor(y / this.tileSize);
+    
+    if (tileY < 0 || tileY >= level.layout.length) return null;
+    const row = level.layout[tileY];
+    if (tileX < 0 || tileX >= row.length) return null;
+    
+    return row[tileX];
+  }
 
-void
-invertedcolors(void)
-{
-  if(colors_inverted)
-    return;
-
-  colors_inverted = 1;
-  normalcolors();
-  colors_inverted = 1;
-  fadepalette(0, 255, bin_colors, 64, 0);
-}
-
-void
-normalcolors(void)
-{
-  int i;
-
-  if(!colors_inverted)
-    return;
-
-  for(i=0; i<3*256; ++i)
-    bin_colors[i] = 255 - bin_colors[i];
-
-  colors_inverted = 0;
-  fadepalette(0, 255, bin_colors, 64, 0);
+  getLevelDimensions(level) {
+    if (!level || !level.layout) return { width: 0, height: 0 };
+    return {
+      width: level.layout[0].length * this.tileSize,
+      height: level.layout.length * this.tileSize
+    };
+  }
 }
