@@ -1,26 +1,24 @@
-# Build artifacts (C-era, to be cleaned up later)
+# C-era
+# Build artifacts
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 install_manifest.txt
 Makefile
 inertiablast
-
-# Runtime files (C-era, to be cleaned up later)
+# Runtime files
 thrust.highscore
 thrustrc
 
-# Build directories
+# Build
+dist/
 build/
 /level-editor/dist/
-*/node_modules/*
+/caveshuttle/app/release/*
 
 # Dependencies
-node_modules/
-
-# Build output
-dist/
-/caveshuttle/app/release/*
+*/node_modules/*
+/node_modules/
 
 # Environment
 .env

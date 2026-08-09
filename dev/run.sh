@@ -4,6 +4,16 @@ echo "Haupt-App: https://localhost:5173 (Vite)"
 echo "Level Editor: https://localhost:5173/level-editor/"
 echo "Geckos Server: https://localhost:9208"
 
+# Check if dependencies are installed, install if not
+if [ ! -d "node_modules" ]; then
+  echo "Dependencies not found, running npm install..."
+  npm install
+fi
+if [ ! -d "server/node_modules" ]; then
+  echo "Server dependencies not found, running npm install in server/..."
+  cd server && npm install && cd ..
+fi
+
 # Kill any existing process on port 5173 (Vite)
 if lsof -Pi :5173 -sTCP:LISTEN -t >/dev/null 2>&1; then
   echo "Killing existing process on port 5173..."
