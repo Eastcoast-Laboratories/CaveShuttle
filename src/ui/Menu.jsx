@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Impressum from './Impressum';
 import Datenschutz from './Datenschutz';
+import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
 import './cave-theme.css';
@@ -9,6 +10,7 @@ function getLegalPageFromHash() {
   const hash = window.location.hash.replace(/^#/, '').replace(/^\//, '').toLowerCase();
   if (hash === 'impressum' || hash === 'imprint') return 'impressum';
   if (hash === 'datenschutz' || hash === 'privacy' || hash === 'privacypolicy') return 'datenschutz';
+  if (hash === 'account-deletion' || hash === 'accountdeletion' || hash === 'deleteaccount') return 'account-deletion';
   if (hash === 'highscores' || hash === 'highscore') return 'highscores';
   return null;
 }
@@ -53,6 +55,9 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
   }
   if (legalPage === 'datenschutz') {
     return <Datenschutz onBack={() => { setLegalPage(null); setLegalPageHash(null); }} />;
+  }
+  if (legalPage === 'account-deletion') {
+    return <AccountDeletion onBack={() => { setLegalPage(null); setLegalPageHash(null); }} />;
   }
   if (legalPage === 'highscores') {
     return <HighscoresPage onBack={() => { setLegalPage(null); setLegalPageHash(null); }} onPlay={onStart} installedPacks={installedPacks || []} currentPackId={currentPackId} twoPlayer={twoPlayer} />;
@@ -276,6 +281,20 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
             }}
           >
             Privacy
+          </button>
+          <button
+            onClick={() => { setLegalPage('account-deletion'); setLegalPageHash('account-deletion'); }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'rgba(110, 230, 110, 0.5)',
+              cursor: 'pointer',
+              fontSize: '10px',
+              padding: '0',
+              fontFamily: 'inherit',
+            }}
+          >
+            Delete account
           </button>
         </div>
         <button
