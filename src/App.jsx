@@ -3,6 +3,7 @@ import Menu from './ui/Menu';
 import GameCanvas from './ui/GameCanvas';
 import LevelCompleteOverlay from './ui/LevelCompleteOverlay';
 import HamburgerMenu from './ui/HamburgerMenu';
+import TopRightMenu from './ui/TopRightMenu';
 import TutorialOverlay from './ui/TutorialOverlay';
 import LevelEditor from './ui/LevelEditor';
 import MultiplayerMenu from './ui/MultiplayerMenu';
@@ -18,7 +19,6 @@ import { APP_VERSION } from './version.js';
 import { storageKey } from './core/storage-keys.js';
 import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './core/progress-storage.js';
 import { getAllPacks, ensurePackMetaLoaded, BUILTIN_PACKS, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
-import LanguageSwitcher from './ui/LanguageSwitcher.jsx';
 import { useLanguage } from './i18n/LanguageContext.jsx';
 
 function App() {
@@ -766,46 +766,60 @@ function App() {
 
   const { language, setLanguage } = useLanguage();
 
+  // Shared hamburger menu settings (DRY): used by both the in-game hamburger
+  // and the unified TopRightMenu. Excludes close-sensitive handlers, which are
+  // wired individually per usage.
+  const hamburgerSettingsProps = {
+    appVersion: APP_VERSION,
+    showTouchButtons,
+    onToggleTouchButtons: () => setShowTouchButtons(!showTouchButtons),
+    installedPacks,
+    currentPackId,
+    onSwitchPack: handleSwitchPack,
+    onPackImported: handlePackImported,
+    onPackDeleted: handlePackDeleted,
+    twoPlayer,
+    playerName,
+    onPlayerNameChange: handlePlayerNameChange,
+    player2Name,
+    onPlayer2NameChange: handlePlayer2NameChange,
+    soundVolume,
+    onSoundVolumeChange: setSoundVolume,
+    touchButtonOpacity,
+    onTouchButtonOpacityChange: setTouchButtonOpacity,
+    vibrationEnabled,
+    onToggleVibration: () => setVibrationEnabled(!vibrationEnabled),
+    tiltSteering,
+    onToggleTiltSteering: () => setTiltSteering(!tiltSteering),
+    tiltSensorRef,
+    onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
+    tiltSteeringRotated,
+    onToggleTiltRotation: () => setTiltSteeringRotated(!tiltSteeringRotated),
+  };
+
   return (
     <div className="app" id="app" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: '#000', color: '#fff', position: 'relative', overflow: 'hidden', touchAction: 'none' }}>
-      {gameState !== 'playing' && gameState !== 'gameover' && gameState !== 'levelcomplete' && gameState !== 'editor' && gameState !== 'highscores' && (
-        <LanguageSwitcher language={language} onLanguageChange={setLanguage} style={{ position: 'fixed', top: '17px', right: '80px', zIndex: 3000 }} />
+      {(gameState === 'menu' || gameState === 'highscores') && (
+        <TopRightMenu
+          language={language}
+          onLanguageChange={setLanguage}
+          onOpenLevelEditor={() => setGameState('editor')}
+          makeLevelButtons={generateLevelButtons}
+          onBackToMenu={() => setGameState('menu')}
+          onShowTutorial={() => setShowTutorial(true)}
+          hamburgerProps={hamburgerSettingsProps}
+        />
       )}
       {gameState === 'menu' && (
         <div id="menu-container" style={{ width: '100%', height: '100%', overflow: 'auto', touchAction: 'auto' }}>
           <Menu
             onStart={(isTwoPlayer) => handleStartGame(isTwoPlayer, null)}
             onMultiplayer={() => setMultiplayerView('menu')}
-            levelButtons={generateLevelButtons()}
-            onBackToMenu={() => setGameState('menu')}
             onOpenLevelEditor={() => setGameState('editor')}
-            playerName={playerName}
-            onPlayerNameChange={handlePlayerNameChange}
-            player2Name={player2Name}
-            onPlayer2NameChange={handlePlayer2NameChange}
-            appVersion={APP_VERSION}
-            showTouchButtons={showTouchButtons}
-            onToggleTouchButtons={() => setShowTouchButtons(!showTouchButtons)}
             installedPacks={installedPacks}
             currentPackId={currentPackId}
-            onSwitchPack={handleSwitchPack}
-            onPackImported={handlePackImported}
-            onPackDeleted={handlePackDeleted}
             twoPlayer={twoPlayer}
             onTogglePlayerMode={() => setTwoPlayer(!twoPlayer)}
-            onShowTutorial={() => setShowTutorial(true)}
-            soundVolume={soundVolume}
-            onSoundVolumeChange={setSoundVolume}
-            touchButtonOpacity={touchButtonOpacity}
-            onTouchButtonOpacityChange={setTouchButtonOpacity}
-            vibrationEnabled={vibrationEnabled}
-            onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
-            tiltSteering={tiltSteering}
-            onToggleTiltSteering={() => setTiltSteering(!tiltSteering)}
-            tiltSensorRef={tiltSensorRef}
-            onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
-            tiltSteeringRotated={tiltSteeringRotated}
-            onToggleTiltRotation={() => setTiltSteeringRotated(!tiltSteeringRotated)}
           />
         </div>
       )}
@@ -861,23 +875,18 @@ function App() {
         />
       )}
 
-      {/* Hamburger menu and level editor button - visible in game and lobby */}
-      {((gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') || (gameState === 'menu' && multiplayerView)) && (
+      {/* In-game hamburger and editor button (in-game layout; editor only in test mode).
+          Non-game screens use the unified TopRightMenu instead. */}
+      {(gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') && (
         <>
-          {(() => {
-            const inGame = gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete';
-            const editorTop = inGame ? '2px' : '12px';
-            const hamburgerTop = inGame ? '-5px' : '6px';
-            return (
-              <>
-          {/* Level editor button - circle next to hamburger menu */}
-          {ENABLE_LEVEL_EDITOR && (
+          {/* Level editor button - only visible in editor test mode */}
+          {ENABLE_LEVEL_EDITOR && isEditorTestMode && (
             <button
               onClick={() => setGameState('editor')}
               style={{
                 position: 'fixed',
-                top: editorTop,
-                right: inGame ? '55px' : '51px',
+                top: '2px',
+                right: '55px',
                 marginTop: '4px',
                 width: '24px',
                 height: '24px',
@@ -889,7 +898,7 @@ function App() {
                 cursor: 'pointer',
                 padding: '0',
                 zIndex: 3000,
-                display: (isEditorTestMode || (gameState === 'menu' && multiplayerView)) ? 'flex' : 'none',
+                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: '600'
@@ -904,13 +913,10 @@ function App() {
           <button
             id="hamburger-button"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            style={{ position: 'fixed', top: hamburgerTop, right: inGame ? '22px' : '18px', background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px', zIndex: 3000 }}
+            style={{ position: 'fixed', top: '-5px', right: '22px', background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px', zIndex: 3000 }}
           >
             ☰
           </button>
-              </>
-            );
-          })()}
         </>
       )}
 
@@ -1037,41 +1043,17 @@ function App() {
         </>
       )}
 
-      {/* Menu overlay for level selection and controls - rendered whenever hamburger button is visible */}
-      {((gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') || (gameState === 'menu' && multiplayerView)) && showMobileMenu && (
+      {/* In-game hamburger overlay (uses shared settings via hamburgerSettingsProps). */}
+      {(gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') && showMobileMenu && (
         <HamburgerMenu
           isOpen={showMobileMenu}
           onClose={() => setShowMobileMenu(false)}
           levelButtons={generateLevelButtons(() => setShowMobileMenu(false))}
           onBackToMenu={() => { setGameState('menu'); setShowMobileMenu(false); }}
           onOpenLevelEditor={() => { setGameState('editor'); setShowMobileMenu(false); }}
-          appVersion={APP_VERSION}
-          showTouchButtons={showTouchButtons}
-          onToggleTouchButtons={() => setShowTouchButtons(!showTouchButtons)}
-          installedPacks={installedPacks}
-          currentPackId={currentPackId}
-          onSwitchPack={handleSwitchPack}
-          onPackImported={handlePackImported}
-          onPackDeleted={handlePackDeleted}
-          twoPlayer={twoPlayer}
-          playerName={playerName}
-          onPlayerNameChange={handlePlayerNameChange}
-          player2Name={player2Name}
-          onPlayer2NameChange={handlePlayer2NameChange}
-          podDocked={podDocked}
-          soundVolume={soundVolume}
-          onSoundVolumeChange={setSoundVolume}
-          touchButtonOpacity={touchButtonOpacity}
-          onTouchButtonOpacityChange={setTouchButtonOpacity}
-          vibrationEnabled={vibrationEnabled}
-          onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
-          tiltSteering={tiltSteering}
-          onToggleTiltSteering={() => setTiltSteering(!tiltSteering)}
-          tiltSensorRef={tiltSensorRef}
-          onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
-          tiltSteeringRotated={tiltSteeringRotated}
-          onToggleTiltRotation={() => setTiltSteeringRotated(!tiltSteeringRotated)}
           onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
+          podDocked={podDocked}
+          {...hamburgerSettingsProps}
         />
       )}
 

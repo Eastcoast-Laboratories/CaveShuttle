@@ -1,0 +1,45 @@
+/* Unified top-right control bar shown on all non-game screens (menu, lobbies,
+   highscores, legal pages). Attached to the top-right edge with a thin green
+   border and a rounded bottom-left corner. In-game controls are handled
+   separately in App.jsx. */
+.top-right-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid #6ee66ec5;
+  border-top: none;
+  border-right: none;
+  border-bottom-left-radius: 12px;
+  backdrop-filter: blur(6px);
+}
+
+.top-right-menu .trm-icon-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-right-menu .trm-editor-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6644ff, #4422cc);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.top-right-menu .trm-hamburger-btn {
+  font-size: 24px;
+}

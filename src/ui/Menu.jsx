@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import HamburgerMenu from './HamburgerMenu';
 import Impressum from './Impressum';
 import Datenschutz from './Datenschutz';
 import HighscoresPage from './HighscoresPage';
@@ -22,8 +21,7 @@ function setLegalPageHash(page) {
   window.location.hash = `#/${page}`;
 }
 
-export default function Menu({ onStart, onMultiplayer, levelButtons, onBackToMenu, onOpenLevelEditor, appVersion, showTouchButtons, onToggleTouchButtons, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer = false, onTogglePlayerMode, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, soundVolume = 1, onSoundVolumeChange, touchButtonOpacity = 1, onTouchButtonOpacityChange, vibrationEnabled = true, onToggleVibration, tiltSteering = false, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated = false, onToggleTiltRotation }) {
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode }) {
   const [legalPage, setLegalPage] = useState(() => getLegalPageFromHash());
 
   // Sync legal page when the URL hash changes (e.g. browser back/forward).
@@ -70,79 +68,6 @@ export default function Menu({ onStart, onMultiplayer, levelButtons, onBackToMen
       position: 'relative',
       padding: '20px',
     }}>
-      {/* Level editor button - circle next to hamburger menu */}
-      {ENABLE_LEVEL_EDITOR && onOpenLevelEditor && (
-        <button
-          onClick={onOpenLevelEditor}
-          style={{ 
-            position: 'fixed', 
-            top: '8px', 
-            right: '45px', 
-            marginTop: '10px',
-            width: '24px', 
-            height: '24px', 
-            borderRadius: '50%', 
-            background: 'linear-gradient(135deg, #6644ff, #4422cc)', 
-            border: '1px solid rgba(255, 255, 255, 0.3)', 
-            color: '#fff', 
-            fontSize: '12px', 
-            cursor: 'pointer', 
-            padding: '0', 
-            zIndex: 1001,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: '600'
-          }}
-          title="Level Editor"
-        >
-          ✎
-        </button>
-      )}
-
-      {/* Hamburger menu button - always on the right */}
-      <button
-        id="menu-hamburger-button"
-        onClick={() => setShowMobileMenu(!showMobileMenu)}
-        style={{ position: 'fixed', top: '10px', right: '10px', background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px', zIndex: 1001 }}
-      >
-        ☰
-      </button>
-
-      {/* Hamburger menu overlay */}
-      <HamburgerMenu
-        isOpen={showMobileMenu}
-        onClose={() => setShowMobileMenu(false)}
-        levelButtons={levelButtons || []}
-        onBackToMenu={onBackToMenu}
-        appVersion={appVersion}
-        showTouchButtons={showTouchButtons}
-        onToggleTouchButtons={onToggleTouchButtons}
-        installedPacks={installedPacks || []}
-        currentPackId={currentPackId}
-        onSwitchPack={onSwitchPack}
-        onPackImported={onPackImported}
-        onPackDeleted={onPackDeleted}
-        twoPlayer={twoPlayer}
-        podDocked={false}
-        playerName={playerName}
-        onPlayerNameChange={onPlayerNameChange}
-        player2Name={player2Name}
-        onPlayer2NameChange={onPlayer2NameChange}
-        onShowTutorial={() => { if (onShowTutorial) onShowTutorial(); setShowMobileMenu(false); }}
-        soundVolume={soundVolume}
-        onSoundVolumeChange={onSoundVolumeChange}
-        touchButtonOpacity={touchButtonOpacity}
-        onTouchButtonOpacityChange={onTouchButtonOpacityChange}
-        vibrationEnabled={vibrationEnabled}
-        onToggleVibration={onToggleVibration}
-        tiltSteering={tiltSteering}
-        onToggleTiltSteering={onToggleTiltSteering}
-        tiltSensorRef={tiltSensorRef}
-        onCalibrateTilt={onCalibrateTilt}
-        tiltSteeringRotated={tiltSteeringRotated}
-        onToggleTiltRotation={onToggleTiltRotation}
-      />
       <div id="menu-content" className="cave-panel" style={{
         textAlign: 'center',
         padding: 'clamp(20px, 5vw, 60px)',
