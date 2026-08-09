@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cave Shuttle</string>
+    <string name="title_activity_main">CaveShuttle</string>
+    <string name="package_name">de.z11.caveshuttle</string>
+    <string name="custom_url_scheme">de.z11.caveshuttle</string>
+</resources>
