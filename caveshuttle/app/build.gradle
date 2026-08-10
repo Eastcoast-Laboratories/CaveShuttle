@@ -11,6 +11,10 @@ android {
     namespace = "de.z11.caveshuttle"
     compileSdk = rootProject.ext.compileSdkVersion
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     signingConfigs {
         fdroidRelease {
             storeFile file('fdroid-release.keystore')
