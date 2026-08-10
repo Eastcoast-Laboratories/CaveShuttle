@@ -24,7 +24,15 @@ export class GeckosAdapter extends EventEmitter {
       // Monkey-patch RTCPeerConnection to log ICE events before onConnect fires
       const OrigRTC = window.RTCPeerConnection || window.webkitRTCPeerConnection
       const PatchedRTC = function (...args) {
-        const pc = new OrigRTC(...args)
+        let pc
+        try {
+          pc = new OrigRTC(...args)
+        } catch (e) {
+          console.error('[GECKOS-CLIENT] RTCPeerConnection creation failed:', e.message)
+          window.RTCPeerConnection = OrigRTC
+          reject(e)
+          throw e
+        }
         console.log('[GECKOS-CLIENT] RTCPeerConnection created with config:', JSON.stringify(args[0]))
         pc.addEventListener('iceconnectionstatechange', () => {
           console.log('[GECKOS-CLIENT] ICE state:', pc.iceConnectionState)

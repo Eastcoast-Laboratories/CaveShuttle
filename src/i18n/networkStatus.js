@@ -15,6 +15,7 @@ export const networkStatusTranslations = {
     directConnected: 'Direktverbindung hergestellt.',
     localLobbyCreated: 'Lokale Lobby erstellt. Zeige den QR-Code dem zweiten Gerät.',
     connectedToHost: 'Mit Host verbunden.',
+    noInternetConnection: 'Keine Internetverbindung',
   },
   en: {
     backToLobby: 'Back in lobby.',
@@ -31,5 +32,6 @@ export const networkStatusTranslations = {
     directConnected: 'Direct connection established.',
     localLobbyCreated: 'Local lobby created. Show the QR code to the other device.',
     connectedToHost: 'Connected to host.',
+    noInternetConnection: 'No internet connection',
   },
 }

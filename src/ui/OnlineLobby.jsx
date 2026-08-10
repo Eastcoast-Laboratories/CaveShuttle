@@ -3,6 +3,7 @@ import { useNetwork } from '../network/NetworkContext.jsx'
 import { HighScoreManager } from '../game/high-score-manager.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { multiplayerTranslations } from '../i18n/multiplayer.js'
+import { networkStatusTranslations } from '../i18n/networkStatus.js'
 import { Capacitor } from '@capacitor/core'
 import './cave-theme.css'
 
@@ -55,6 +56,7 @@ export default function OnlineLobby({ onBack }) {
   const { manager, state } = useNetwork()
   const { language } = useLanguage()
   const t = multiplayerTranslations[language] || multiplayerTranslations.en
+  const nt = networkStatusTranslations[language] || networkStatusTranslations.en
   const [view, setView] = useState('select')
   const [serverUrl, setServerUrl] = useState(defaultServerUrl())
   const [joinCode, setJoinCode] = useState('')
@@ -89,7 +91,7 @@ export default function OnlineLobby({ onBack }) {
       const name = HighScoreManager.getPlayerProfile().name
       await manager.createOnlineLobby(serverUrl, undefined, false, name)
     } catch (e) {
-      manager.addStatus(`Fehler: ${e.message}`, 'error')
+      manager.addStatus(nt.noInternetConnection, 'error')
     }
   }
 
@@ -98,7 +100,7 @@ export default function OnlineLobby({ onBack }) {
       const name = HighScoreManager.getPlayerProfile().name
       await manager.joinRandomOnlineLobby(serverUrl, undefined, name)
     } catch (e) {
-      manager.addStatus(`Fehler: ${e.message}`, 'error')
+      manager.addStatus(nt.noInternetConnection, 'error')
     }
   }
 
@@ -107,7 +109,7 @@ export default function OnlineLobby({ onBack }) {
       const name = HighScoreManager.getPlayerProfile().name
       await manager.joinOnlineLobby(serverUrl, undefined, joinCode, name)
     } catch (e) {
-      manager.addStatus(`Fehler: ${e.message}`, 'error')
+      manager.addStatus(nt.noInternetConnection, 'error')
     }
   }
 
@@ -126,6 +128,23 @@ export default function OnlineLobby({ onBack }) {
     return null
   }
 
+  const errorMessages = state.statusMessages.filter(m => m.type === 'error')
+  const latestError = errorMessages.length > 0 ? errorMessages[errorMessages.length - 1] : null
+
+  const errorBanner = latestError && (
+    <div style={{
+      padding: '12px 16px',
+      background: 'rgba(220, 50, 50, 0.15)',
+      border: '1px solid rgba(220, 50, 50, 0.5)',
+      borderRadius: '8px',
+      color: '#ff6666',
+      fontSize: '14px',
+      fontFamily: '"Commodore 64", "Courier New", monospace',
+    }}>
+      {latestError.text}
+    </div>
+  )
+
   if (view === 'select') {
     return (
       <div className="cave-background" style={{
@@ -137,6 +156,7 @@ export default function OnlineLobby({ onBack }) {
           display: 'flex', flexDirection: 'column', gap: '20px',
         }}>
           <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineTitle}</h2>
+          {errorBanner}
           <label style={{ textAlign: 'left', fontSize: '12px', color: '#aaa' }}>
             {t.serverUrl}
             <input
@@ -175,6 +195,7 @@ export default function OnlineLobby({ onBack }) {
           display: 'flex', flexDirection: 'column', gap: '20px',
         }}>
           <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineHost}</h2>
+          {errorBanner}
           {!state.lobbyCode ? (
             <>
               <button style={buttonBase} onClick={handleCreatePrivate}>{t.createPrivate}</button>
@@ -215,6 +236,7 @@ export default function OnlineLobby({ onBack }) {
         display: 'flex', flexDirection: 'column', gap: '20px',
       }}>
         <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineJoin}</h2>
+        {errorBanner}
         <label style={{ textAlign: 'left', fontSize: '12px', color: '#aaa' }}>
           {t.serverUrl}
           <input
