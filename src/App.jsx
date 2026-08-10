@@ -77,7 +77,7 @@ function App() {
       const parsed = parseFloat(stored);
       return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0.7;
     }
-    return 0.7; // default: full slider (70% max volume)
+    return 0.2; // default: 20% volume (max is 70%)
   });
   const [touchButtonOpacity, setTouchButtonOpacity] = useState(() => {
     const stored = localStorage.getItem(storageKey('touchButtonOpacity'));
@@ -85,7 +85,7 @@ function App() {
       const parsed = parseFloat(stored);
       return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 1;
     }
-    return 1; // default: fully visible touch buttons
+    return 0.5; // default: 50% opacity
   });
   const [vibrationEnabled, setVibrationEnabled] = useState(() => {
     const stored = localStorage.getItem(storageKey('vibrationEnabled'));
@@ -108,6 +108,10 @@ function App() {
   const [tiltSteeringRotated, setTiltSteeringRotated] = useState(() => {
     const stored = localStorage.getItem(storageKey('tiltSteeringRotated'));
     return stored === 'true';
+  });
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(() => {
+    const stored = localStorage.getItem(storageKey('analyticsEnabled'));
+    return stored === null ? true : stored === 'true';
   });
   const tiltSensorRef = useRef({ beta: 0, gamma: 0, alpha: 0 });
 
@@ -151,6 +155,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(storageKey('tiltSteeringRotated'), tiltSteeringRotated.toString());
   }, [tiltSteeringRotated]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey('analyticsEnabled'), analyticsEnabled.toString());
+  }, [analyticsEnabled]);
 
   useEffect(() => {
     localStorage.setItem(storageKey('soundVolume'), soundVolume.toString());
@@ -796,6 +804,8 @@ function App() {
     onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
     tiltSteeringRotated,
     onToggleTiltRotation: () => setTiltSteeringRotated(!tiltSteeringRotated),
+    analyticsEnabled,
+    onToggleAnalytics: () => setAnalyticsEnabled(!analyticsEnabled),
   };
 
   return (

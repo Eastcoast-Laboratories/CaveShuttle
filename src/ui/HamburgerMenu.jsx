@@ -40,7 +40,7 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer = false, podDocked = false, soundVolume = 1, onSoundVolumeChange, touchButtonOpacity = 1, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled = true, onToggleVibration, tiltSteering = false, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated = false, onToggleTiltRotation }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics }) {
   const menuRef = useRef(null);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -81,6 +81,11 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const handleToggleTiltRotation = () => {
     console.log('[TOGGLE] Tilt Rotation 90°:', tiltSteeringRotated ? 'ON -> OFF' : 'OFF -> ON');
     if (onToggleTiltRotation) onToggleTiltRotation();
+  };
+
+  const handleToggleAnalytics = () => {
+    console.log('[TOGGLE] Analytics:', analyticsEnabled ? 'ON -> OFF' : 'OFF -> ON');
+    if (onToggleAnalytics) onToggleAnalytics();
   };
 
   const handleResetHighscores = () => {
@@ -530,6 +535,22 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         {showVibrationHint && (
           <p className="hamburger-hint">Make sure vibration is also enabled in your device settings.</p>
         )}
+      </div>
+
+      <hr />
+      <h3 className="hamburger-section-title">ERROR ANALYSIS</h3>
+      <div className="hamburger-settings-group">
+        <div className="hamburger-toggle-row">
+          <span className="toggle-label">Send crash reports</span>
+          <button
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={handleToggleAnalytics}
+            className={`hamburger-toggle-btn ${analyticsEnabled ? 'on' : 'off'}`}
+          >
+            {analyticsEnabled ? 'ON' : 'OFF'}
+          </button>
+        </div>
+        <p className="hamburger-hint">When enabled, anonymous error and crash data is sent to help improve the game. No personal data is collected.</p>
       </div>
 
       <hr />
