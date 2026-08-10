@@ -745,10 +745,15 @@ function App() {
   };
 
   const handleBackFromHighscores = () => {
-    if (networkRole) {
-      networkManager.backToLobby();
+    const prev = previousGameStateRef.current;
+    if (prev && prev !== 'highscores') {
+      setGameState(prev);
+    } else {
+      if (networkRole) {
+        networkManager.backToLobby();
+      }
+      setGameState('menu');
     }
-    setGameState('menu');
   };
 
   // Keyboard shortcuts for game over and level complete screens
@@ -878,7 +883,16 @@ function App() {
       {gameState === 'highscores' && (
         <HighscoresPage
           onBack={handleBackFromHighscores}
-          onPlay={null}
+          onPlay={() => {
+            const prev = previousGameStateRef.current;
+            if (prev === 'gameover') {
+              handlePlayAgain();
+            } else if (prev === 'levelcomplete') {
+              handleNextLevel();
+            } else {
+              handleStartGame();
+            }
+          }}
           installedPacks={installedPacks}
           currentPackId={currentPackId}
           twoPlayer={twoPlayer}

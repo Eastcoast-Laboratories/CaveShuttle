@@ -132,6 +132,18 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
           </div>
         )}
 
+        
+        <div className="end-overlay-breakdown">
+          {breakdown.map((item, i) => (
+            visibleRow >= i && (
+              <div key={item.key} className="end-overlay-breakdown-row">
+                <span>{item.label}</span>
+                <span>{displayedValues[i]}</span>
+              </div>
+            )
+          ))}
+        </div>
+
         {playerName !== undefined && (
           <div className="end-overlay-player-names">
             <div className="end-overlay-player-row">
@@ -154,17 +166,6 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
             )}
           </div>
         )}
-
-        <div className="end-overlay-breakdown">
-          {breakdown.map((item, i) => (
-            visibleRow >= i && (
-              <div key={item.key} className="end-overlay-breakdown-row">
-                <span>{item.label}</span>
-                <span>{displayedValues[i]}</span>
-              </div>
-            )
-          ))}
-        </div>
 
       </div>
     </div>
