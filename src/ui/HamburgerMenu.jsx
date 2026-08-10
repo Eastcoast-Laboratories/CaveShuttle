@@ -320,8 +320,8 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
 
             <SettingsSlider
               label="Transparency"
-              value={100 - Math.round(touchButtonOpacity * 100)}
-              onChange={(e) => onTouchButtonOpacityChange && onTouchButtonOpacityChange(1 - parseInt(e.target.value, 10) / 100)}
+              value={Math.round((0.5 - touchButtonOpacity) / 0.5 * 100)}
+              onChange={(e) => onTouchButtonOpacityChange && onTouchButtonOpacityChange(0.5 * (1 - parseInt(e.target.value, 10) / 100))}
               disabled={!showTouchButtons}
             />
           </div>
