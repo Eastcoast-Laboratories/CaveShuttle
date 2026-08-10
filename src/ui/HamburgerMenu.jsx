@@ -301,7 +301,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         onPointerDown={(e) => e.stopPropagation()}
         onClick={() => setShowControls(!showControls)}
       >
-        CONTROLS {showControls ? '▲' : '▼'}
+        {showControls ? '▼' : '▶'} CONTROLS
       </h3>
       {showControls && (
         <>
@@ -607,7 +607,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         onPointerDown={(e) => e.stopPropagation()}
         onClick={() => setShowErrorAnalysis(!showErrorAnalysis)}
       >
-        ERROR ANALYSIS {showErrorAnalysis ? '▲' : '▼'}
+        {showErrorAnalysis ? '▼' : '▶'} ERROR ANALYSIS 
       </h3>
       {showErrorAnalysis && (
         <div className="hamburger-settings-group">
