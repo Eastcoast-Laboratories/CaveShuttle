@@ -7,7 +7,7 @@ const ROW_DURATION = 500; // ms each row counts up
 const ROW_DELAY = 300; // ms between rows
 const TOTAL_FLASH_DURATION = 600; // ms the total flashes
 
-export default function LevelCompleteOverlay({ title, breakdown, total, totalLabel, buttons, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, newHighscore, twoPlayer, levelNumber, networkRole, hsName, hsPlayer2Name, onShowHighscores }) {
+export default function EndOverlay({ title, breakdown, total, totalLabel, buttons, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, newHighscore, twoPlayer, levelNumber, networkRole, hsName, hsPlayer2Name, onShowHighscores }) {
   const { language } = useLanguage();
   const t = getHighscoreTranslations(language);
   const [visibleRow, setVisibleRow] = useState(-1);
@@ -93,8 +93,8 @@ export default function LevelCompleteOverlay({ title, breakdown, total, totalLab
   }, [breakdown]);
 
   return (
-    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.45)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', padding: '40px', background: 'linear-gradient(135deg, rgba(30, 30, 30, 0.55), rgba(20, 20, 20, 0.65))', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(2px)', boxShadow: '0 8px 40px rgba(0, 0, 0, 0.6)', maxHeight: '100%', overflow: 'auto' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0, 0, 0, 0.45)', zIndex: 1000, overflow: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', padding: '40px', background: 'linear-gradient(135deg, rgba(30, 30, 30, 0.55), rgba(20, 20, 20, 0.65))', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(2px)', boxShadow: '0 8px 40px rgba(0, 0, 0, 0.6)' }}>
         <h1 style={{ margin: '0 0 10px 0', color: '#00ff88', fontWeight: '800', fontSize: '48px', letterSpacing: '-2px', textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)' }}>{title}</h1>
 
         <div style={{ display: 'flex', gap: '15px' }}>
