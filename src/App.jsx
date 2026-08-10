@@ -835,6 +835,7 @@ function App() {
             currentPackId={currentPackId}
             twoPlayer={twoPlayer}
             onTogglePlayerMode={() => setTwoPlayer(!twoPlayer)}
+            networkRole={networkRole}
           />
         </div>
       )}

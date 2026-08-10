@@ -23,7 +23,7 @@ function setLegalPageHash(page) {
   window.location.hash = `#/${page}`;
 }
 
-export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode }) {
+export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode, networkRole = null }) {
   const [legalPage, setLegalPage] = useState(() => getLegalPageFromHash());
 
   // Sync legal page when the URL hash changes (e.g. browser back/forward).
@@ -129,7 +129,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
             START GAME
           </button>
 
-          {twoPlayer && (
+          {twoPlayer && !networkRole && (
             <button
               onClick={() => onMultiplayer?.()}
               style={{
@@ -158,6 +158,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
             </button>
           )}
 
+          {!networkRole && (
           <div
             onClick={() => onTogglePlayerMode && onTogglePlayerMode()}
             style={{
@@ -234,6 +235,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
               </div>
             </div>
           </div>
+          )}
         </div>
 
         <p style={{
