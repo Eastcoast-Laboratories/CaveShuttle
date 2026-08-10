@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Menu from './ui/Menu';
 import GameCanvas from './ui/GameCanvas';
-import LevelCompleteOverlay from './ui/LevelCompleteOverlay';
+import EndOverlay from './ui/EndOverlay';
 import HamburgerMenu from './ui/HamburgerMenu';
 import TopRightMenu from './ui/TopRightMenu';
 import TutorialOverlay from './ui/TutorialOverlay';
@@ -983,7 +983,7 @@ function App() {
 
               {/* Game over overlay - centered over canvas */}
               {gameState === 'gameover' && (
-                <LevelCompleteOverlay
+                <EndOverlay
                   title={t.gameOver}
                   breakdown={scoreBreakdown}
                   total={score}
@@ -1025,7 +1025,7 @@ function App() {
 
               {/* Level complete overlay - centered over canvas */}
               {gameState === 'levelcomplete' && (
-                <LevelCompleteOverlay
+                <EndOverlay
                   title={t.levelComplete}
                   breakdown={scoreBreakdown}
                   total={levelScore}
