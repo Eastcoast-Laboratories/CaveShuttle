@@ -216,14 +216,8 @@ export default function LocalLobby({ onBack }) {
   if (view === 'select') {
     return (
       <>
-      <div className="cave-background" style={{
-        position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '20px', zIndex: 2000,
-      }}>
-        <div className="cave-panel" style={{
-          textAlign: 'center', padding: 'clamp(20px, 5vw, 40px)', maxWidth: '480px', width: '100%',
-          display: 'flex', flexDirection: 'column', gap: '20px',
-        }}>
+      <div className="cave-background cave-overlay">
+        <div className="cave-panel cave-overlay-panel">
         <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.title}</h2>
           <p style={{ color: '#aaa', fontSize: '12px', textTransform: 'none' }}>
             {t.subtitle}
@@ -241,14 +235,8 @@ export default function LocalLobby({ onBack }) {
   if (view === 'host') {
     return (
       <>
-      <div className="cave-background" style={{
-        position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '20px', zIndex: 2000, overflow: 'auto',
-      }}>
-        <div className="cave-panel" style={{
-          textAlign: 'center', padding: 'clamp(20px, 5vw, 40px)', maxWidth: '520px', width: '100%',
-          display: 'flex', flexDirection: 'column', gap: '20px',
-        }}>
+      <div className="cave-background cave-overlay">
+        <div className="cave-panel cave-overlay-panel" style={{ maxWidth: '520px' }}>
         <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.hostTitle}</h2>
 
           {!state.localOffer ? (
@@ -306,14 +294,8 @@ export default function LocalLobby({ onBack }) {
   // client view
   return (
     <>
-    <div className="cave-background" style={{
-      position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px', zIndex: 2000, overflow: 'auto',
-    }}>
-      <div className="cave-panel" style={{
-        textAlign: 'center', padding: 'clamp(20px, 5vw, 40px)', maxWidth: '520px', width: '100%',
-        display: 'flex', flexDirection: 'column', gap: '20px',
-      }}>
+    <div className="cave-background cave-overlay">
+      <div className="cave-panel cave-overlay-panel" style={{ maxWidth: '520px' }}>
         <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.clientTitle}</h2>
 
         {!state.connected && !state.localAnswer && (

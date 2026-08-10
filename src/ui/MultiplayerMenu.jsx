@@ -29,24 +29,8 @@ export default function MultiplayerMenu({ onLocal, onOnline, onBack }) {
   }
 
   return (
-    <div className="cave-background" style={{
-      position: 'fixed',
-      inset: 0,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      zIndex: 2000,
-    }}>
-      <div className="cave-panel" style={{
-        textAlign: 'center',
-        padding: 'clamp(20px, 5vw, 60px)',
-        maxWidth: '480px',
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px',
-      }}>
+    <div className="cave-background cave-overlay">
+      <div className="cave-panel cave-overlay-panel" style={{ gap: '24px' }}>
         <h2 style={{
           fontSize: 'clamp(18px, 4vw, 32px)',
           margin: 0,

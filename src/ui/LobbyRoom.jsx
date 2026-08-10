@@ -43,14 +43,8 @@ export default function LobbyRoom({ onStartGame, onLeave, onSyncHighscores }) {
   const allReady = state.players.length === 2 && state.players.every(p => p.ready)
 
   return (
-    <div className="cave-background" style={{
-      position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px', zIndex: 2000,
-    }}>
-      <div className="cave-panel" style={{
-        width: '100%', maxWidth: '560px', padding: 'clamp(20px, 5vw, 40px)',
-        display: 'flex', flexDirection: 'column', gap: '20px',
-      }}>
+    <div className="cave-background cave-overlay">
+      <div className="cave-panel cave-overlay-panel" style={{ maxWidth: '560px' }}>
         <h2 style={{
           margin: 0, textAlign: 'center', fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0'
         }}>

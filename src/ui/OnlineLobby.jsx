@@ -159,14 +159,8 @@ export default function OnlineLobby({ onBack }) {
 
   if (view === 'select') {
     return (
-      <div className="cave-background" style={{
-        position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '20px', zIndex: 2000,
-      }}>
-        <div className="cave-panel" style={{
-          textAlign: 'center', padding: 'clamp(20px, 5vw, 40px)', maxWidth: '480px', width: '100%',
-          display: 'flex', flexDirection: 'column', gap: '20px',
-        }}>
+      <div className="cave-background cave-overlay">
+        <div className="cave-panel cave-overlay-panel">
           <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineTitle}</h2>
           <label style={{ textAlign: 'left', fontSize: '12px', color: '#aaa' }}>
             {t.serverUrl}
@@ -198,14 +192,8 @@ export default function OnlineLobby({ onBack }) {
 
   if (view === 'host') {
     return (
-      <div className="cave-background" style={{
-        position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '20px', zIndex: 2000,
-      }}>
-        <div className="cave-panel" style={{
-          textAlign: 'center', padding: 'clamp(20px, 5vw, 40px)', maxWidth: '480px', width: '100%',
-          display: 'flex', flexDirection: 'column', gap: '20px',
-        }}>
+      <div className="cave-background cave-overlay">
+        <div className="cave-panel cave-overlay-panel">
           <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineHost}</h2>
           {!state.lobbyCode ? (
             <>
@@ -239,14 +227,8 @@ export default function OnlineLobby({ onBack }) {
 
   // client view
   return (
-    <div className="cave-background" style={{
-      position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '20px', zIndex: 2000,
-    }}>
-      <div className="cave-panel" style={{
-        textAlign: 'center', padding: 'clamp(20px, 5vw, 40px)', maxWidth: '480px', width: '100%',
-        display: 'flex', flexDirection: 'column', gap: '20px',
-      }}>
+    <div className="cave-background cave-overlay">
+      <div className="cave-panel cave-overlay-panel">
         <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineJoin}</h2>
         <label style={{ textAlign: 'left', fontSize: '12px', color: '#aaa' }}>
           {t.serverUrl}
