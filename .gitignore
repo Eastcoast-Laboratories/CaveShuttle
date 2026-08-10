@@ -47,3 +47,4 @@ test-results/*
 
 # Dev certificates
 .dev-certs/
+*/keystore.properties

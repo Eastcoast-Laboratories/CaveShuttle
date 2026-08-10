@@ -1,8 +1,32 @@
 apply plugin: 'com.android.application'
 
+// Load keystore properties from file (works in Android Studio and CLI)
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "de.z11.caveshuttle"
     compileSdk = rootProject.ext.compileSdkVersion
+
+    signingConfigs {
+        fdroidRelease {
+            storeFile file('fdroid-release.keystore')
+            storePassword 'fdroidpass'
+            keyAlias 'fdroidkey'
+            keyPassword 'fdroidpass'
+        }
+        release {
+            // Google Play upload key
+            storeFile file(keystoreProperties['uploadStoreFile'] ?: '/home/ruben/android-keystore/upload-keystore.jks')
+            storePassword keystoreProperties['uploadStorePassword'] ?: System.env.KEYSTORE_PASSWORD ?: ''
+            keyAlias keystoreProperties['uploadKeyAlias'] ?: System.env.KEY_ALIAS ?: 'key0'
+            keyPassword keystoreProperties['uploadKeyPassword'] ?: System.env.KEY_PASSWORD ?: ''
+        }
+    }
+
     defaultConfig {
         applicationId "de.z11.caveshuttle"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -18,8 +42,18 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // Enable minification by default (Android Studio), disable for F-Droid builds
+            minifyEnabled project.hasProperty('fdroid') ? false : true
+            
+            // Enable resource shrinking by default (Android Studio), disable for F-Droid builds
+            shrinkResources project.hasProperty('fdroid') ? false : true
+            
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "IS_DEBUG_BUILD", "false"
+            
+            // Sign with F-Droid key for F-Droid builds, otherwise with Google Play upload key
+            signingConfig project.hasProperty('fdroid') ? signingConfigs.fdroidRelease : signingConfigs.release
+        
         }
     }
 }
