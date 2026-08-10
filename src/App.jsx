@@ -649,7 +649,7 @@ function App() {
           disabled={!isUnlocked}
           title={isUnlocked ? `Level ${i}` : 'Complete previous level to unlock'}
           style={{
-            padding: '12px 16px',
+            padding: '8px 4px',
             cursor: isUnlocked ? 'pointer' : 'not-allowed',
             background: completedLevels.has(i)
               ? 'linear-gradient(135deg, #00ff88, #00cc66)'
@@ -662,10 +662,9 @@ function App() {
               : isUnlocked
               ? '1px solid #555'
               : '1px solid #333',
-            borderRadius: '8px',
-            margin: '4px',
+            borderRadius: '6px',
             fontWeight: '600',
-            fontSize: '14px',
+            fontSize: '12px',
             transition: 'all 0.2s ease',
             opacity: isUnlocked ? 1 : 0.5,
             boxShadow: completedLevels.has(i)

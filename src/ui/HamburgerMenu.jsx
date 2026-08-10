@@ -53,9 +53,10 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [dataTransferMsg, setDataTransferMsg] = useState(null);
   const [showVibrationHint, setShowVibrationHint] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [showErrorAnalysis, setShowErrorAnalysis] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) setShowControls(false);
+    if (!isOpen) { setShowControls(false); setShowErrorAnalysis(false); }
   }, [isOpen]);
 
   const handleToggleVibration = () => {
@@ -294,125 +295,6 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">LEVEL PACK</h3>
-      <div className="hamburger-pack-list">
-        {(() => {
-          // Find duplicate names
-          const nameCounts = {};
-          installedPacks.forEach(p => {
-            nameCounts[p.name] = (nameCounts[p.name] || 0) + 1;
-          });
-          
-          return installedPacks.map(pack => {
-            const showId = nameCounts[pack.name] > 1 && pack.id !== pack.name;
-            const isCustomPack = pack.source === 'local';
-            return (
-              <div key={pack.id} className="hamburger-pack-row">
-                <button
-                  onClick={() => onSwitchPack && onSwitchPack(pack.id)}
-                  disabled={pack.id === currentPackId}
-                  className={`hamburger-pack-btn ${pack.id === currentPackId ? 'active' : 'inactive'}`}
-                >
-                  {pack.name}
-                  {showId && ` (${pack.id})`}
-                  {pack.id === currentPackId && ' ✓'}
-                </button>
-                {isCustomPack && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteClick(pack);
-                    }}
-                    className="hamburger-pack-delete-btn"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            );
-          });
-        })()}
-        <label className="hamburger-import-pack-label">
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImportPack}
-          />
-          <span className="hamburger-import-pack-span">
-            Import Pack (.json)
-          </span>
-        </label>
-        {importError && (
-          <div className="hamburger-msg-error">
-            {importError}
-          </div>
-        )}
-        {importSuccess && (
-          <div className="hamburger-msg-success">
-            Pack imported successfully!
-          </div>
-        )}
-        {conflictDialog && (
-          <div className="hamburger-dialog">
-            <div className="hamburger-dialog-text">
-              Pack ID "{conflictDialog.parsed.meta.id}" already exists.
-            </div>
-            <div className="hamburger-dialog-actions">
-              <button
-                onClick={handleOverwrite}
-                className="hamburger-btn-danger-sm"
-              >
-                Overwrite
-              </button>
-              <div className="hamburger-rename-row">
-                <input
-                  type="text"
-                  value={renameId}
-                  onChange={(e) => setRenameId(e.target.value)}
-                  placeholder="New ID"
-                  className="hamburger-rename-input"
-                />
-                <button
-                  onClick={handleRename}
-                  disabled={!renameId.trim()}
-                  className={`hamburger-rename-btn ${renameId.trim() ? 'active' : 'inactive'}`}
-                >
-                  ✓
-                </button>
-              </div>
-              <button
-                onClick={() => setConflictDialog(null)}
-                className="hamburger-btn-neutral-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-        {deleteDialog && (
-          <div className="hamburger-dialog">
-            <div className="hamburger-dialog-text">
-              Delete pack "{deleteDialog.name}"?
-            </div>
-            <div className="hamburger-dialog-actions">
-              <button
-                onClick={handleConfirmDelete}
-                className="hamburger-btn-danger-sm"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => setDeleteDialog(null)}
-                className="hamburger-btn-neutral-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <hr />
       <h3
         className="hamburger-section-title"
         style={{ cursor: 'pointer', userSelect: 'none' }}
@@ -538,19 +420,122 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">ERROR ANALYSIS</h3>
-      <div className="hamburger-settings-group">
-        <div className="hamburger-toggle-row">
-          <span className="toggle-label">Send crash reports</span>
-          <button
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={handleToggleAnalytics}
-            className={`hamburger-toggle-btn ${analyticsEnabled ? 'on' : 'off'}`}
-          >
-            {analyticsEnabled ? 'ON' : 'OFF'}
-          </button>
-        </div>
-        <p className="hamburger-hint">When enabled, anonymous error and crash data is sent to help improve the game. No personal data is collected.</p>
+      <h3 className="hamburger-section-title">LEVEL PACK</h3>
+      <div className="hamburger-pack-list">
+        {(() => {
+          // Find duplicate names
+          const nameCounts = {};
+          installedPacks.forEach(p => {
+            nameCounts[p.name] = (nameCounts[p.name] || 0) + 1;
+          });
+          
+          return installedPacks.map(pack => {
+            const showId = nameCounts[pack.name] > 1 && pack.id !== pack.name;
+            const isCustomPack = pack.source === 'local';
+            return (
+              <div key={pack.id} className="hamburger-pack-row">
+                <button
+                  onClick={() => onSwitchPack && onSwitchPack(pack.id)}
+                  disabled={pack.id === currentPackId}
+                  className={`hamburger-pack-btn ${pack.id === currentPackId ? 'active' : 'inactive'}`}
+                >
+                  {pack.name}
+                  {showId && ` (${pack.id})`}
+                  {pack.id === currentPackId && ' ✓'}
+                </button>
+                {isCustomPack && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(pack);
+                    }}
+                    className="hamburger-pack-delete-btn"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            );
+          });
+        })()}
+        <label className="hamburger-import-pack-label">
+          <input
+            type="file"
+            accept=".json"
+            onChange={handleImportPack}
+          />
+          <span className="hamburger-import-pack-span">
+            Import Pack (.json)
+          </span>
+        </label>
+        {importError && (
+          <div className="hamburger-msg-error">
+            {importError}
+          </div>
+        )}
+        {importSuccess && (
+          <div className="hamburger-msg-success">
+            Pack imported successfully!
+          </div>
+        )}
+        {conflictDialog && (
+          <div className="hamburger-dialog">
+            <div className="hamburger-dialog-text">
+              Pack ID "{conflictDialog.parsed.meta.id}" already exists.
+            </div>
+            <div className="hamburger-dialog-actions">
+              <button
+                onClick={handleOverwrite}
+                className="hamburger-btn-danger-sm"
+              >
+                Overwrite
+              </button>
+              <div className="hamburger-rename-row">
+                <input
+                  type="text"
+                  value={renameId}
+                  onChange={(e) => setRenameId(e.target.value)}
+                  placeholder="New ID"
+                  className="hamburger-rename-input"
+                />
+                <button
+                  onClick={handleRename}
+                  disabled={!renameId.trim()}
+                  className={`hamburger-rename-btn ${renameId.trim() ? 'active' : 'inactive'}`}
+                >
+                  ✓
+                </button>
+              </div>
+              <button
+                onClick={() => setConflictDialog(null)}
+                className="hamburger-btn-neutral-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {deleteDialog && (
+          <div className="hamburger-dialog">
+            <div className="hamburger-dialog-text">
+              Delete pack "{deleteDialog.name}"?
+            </div>
+            <div className="hamburger-dialog-actions">
+              <button
+                onClick={handleConfirmDelete}
+                className="hamburger-btn-danger-sm"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteDialog(null)}
+                className="hamburger-btn-neutral-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <hr />
@@ -616,6 +601,31 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           Reset all Data
         </button>
       </div>
+
+      <hr />
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowErrorAnalysis(!showErrorAnalysis)}
+      >
+        ERROR ANALYSIS {showErrorAnalysis ? '▲' : '▼'}
+      </h3>
+      {showErrorAnalysis && (
+        <div className="hamburger-settings-group">
+          <div className="hamburger-toggle-row">
+            <span className="toggle-label">Send crash reports</span>
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={handleToggleAnalytics}
+              className={`hamburger-toggle-btn ${analyticsEnabled ? 'on' : 'off'}`}
+            >
+              {analyticsEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
+          <p className="hamburger-hint">When enabled, anonymous error and crash data is sent to help improve the game. No personal data is collected.</p>
+        </div>
+      )}
 
       <hr />
       <br />

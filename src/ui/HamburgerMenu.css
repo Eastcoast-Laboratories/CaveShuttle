@@ -61,9 +61,9 @@
 }
 
 .hamburger-level-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   margin-bottom: 20px;
 }
 
