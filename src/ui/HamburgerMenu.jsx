@@ -305,44 +305,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </h3>
       {showControls && (
         <>
-          <h3 className="hamburger-section-title" style={{ marginTop: '8px' }}>KEYBOARD</h3>
-          {!twoPlayer ? (
-            <div className="hamburger-controls-list single-player">
-              <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> - Accelerate</div>
-              <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> - Rotate Left</div>
-              <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Right</div>
-              <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel></div>
-              <div className="indent-row" ><span className="nbsp">&nbsp;</span>Tractor Beam &Shield</div>
-              <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> - Shoot</div>
-            </div>
-          ) : (
-            <>
-              <div className="hamburger-controls-list">
-                <div className="player-label">Player 1 — Ship</div>
-                <div><KeyLabel>↑</KeyLabel> - Accelerate</div>
-                <div><KeyLabel>←</KeyLabel> / <KeyLabel>→</KeyLabel> - Rotate</div>
-                <div><KeyLabel>Space</KeyLabel> - Tractor Beam & Shield</div>
-                {podDocked && <div><KeyLabel>Ctrl</KeyLabel> - Shoot (with Pod)</div>}
-              </div>
-              <div className="hamburger-controls-list">
-                <div className="player-label">Player 2 — {podDocked ? 'Pod' : 'Turret'}</div>
-                {!podDocked ? (
-                  <>
-                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Turret</div>
-                    <div><KeyLabel>Shift</KeyLabel> - Shoot</div>
-                  </>
-                ) : (
-                  <>
-                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Pod</div>
-                    <div><KeyLabel>W</KeyLabel> - Thrust</div>
-                    <div><KeyLabel>Shift</KeyLabel> - Shoot</div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-
-          <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>TOUCH BUTTONS</h3>
+          <h3 className="hamburger-section-title" style={{ marginTop: '8px' }}>TOUCH BUTTONS</h3>
           <div className="hamburger-settings-group">
             <div className="hamburger-toggle-row">
               <span className="toggle-label">Visibility</span>
@@ -398,6 +361,43 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               </>
             )}
           </div>
+
+          <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>KEYBOARD</h3>
+          {!twoPlayer ? (
+            <div className="hamburger-controls-list single-player">
+              <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> - Accelerate</div>
+              <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> - Rotate Left</div>
+              <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Right</div>
+              <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel></div>
+              <div className="indent-row" ><span className="nbsp">&nbsp;</span>Tractor Beam &Shield</div>
+              <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> - Shoot</div>
+            </div>
+          ) : (
+            <>
+              <div className="hamburger-controls-list">
+                <div className="player-label">Player 1 — Ship</div>
+                <div><KeyLabel>↑</KeyLabel> - Accelerate</div>
+                <div><KeyLabel>←</KeyLabel> / <KeyLabel>→</KeyLabel> - Rotate</div>
+                <div><KeyLabel>Space</KeyLabel> - Tractor Beam & Shield</div>
+                {podDocked && <div><KeyLabel>Ctrl</KeyLabel> - Shoot (with Pod)</div>}
+              </div>
+              <div className="hamburger-controls-list">
+                <div className="player-label">Player 2 — {podDocked ? 'Pod' : 'Turret'}</div>
+                {!podDocked ? (
+                  <>
+                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Turret</div>
+                    <div><KeyLabel>Shift</KeyLabel> - Shoot</div>
+                  </>
+                ) : (
+                  <>
+                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Pod</div>
+                    <div><KeyLabel>W</KeyLabel> - Thrust</div>
+                    <div><KeyLabel>Shift</KeyLabel> - Shoot</div>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
 
