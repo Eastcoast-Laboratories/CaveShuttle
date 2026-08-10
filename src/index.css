@@ -1,3 +1,15 @@
+@font-face {
+  font-family: 'Commodore 64';
+  src: url('/fonts/Commodore Rounded v1.2.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Commodore 64 Thin';
+  src: url('/fonts/Commodore Rounded Thin75 v1.2.ttf') format('truetype');
+  font-display: swap;
+}
+
 * {
   margin: 0;
   padding: 0;
