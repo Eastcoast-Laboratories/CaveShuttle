@@ -16,7 +16,7 @@ export default function TopRightMenu({ language, onLanguageChange, onOpenLevelEd
 
   return (
     <>
-      <div className="top-right-menu">
+      <div className={`top-right-menu${open ? ' open' : ''}`}>
         <LanguageSwitcher language={language} onLanguageChange={onLanguageChange} />
         {showEditor && (
           <button className="trm-icon-btn trm-editor-btn" onClick={onOpenLevelEditor} title="Level Editor">

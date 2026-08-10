@@ -11,7 +11,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(20, 20, 20, 0.85);
+  background: rgba(20, 20, 20, 0.95);
   border: 1px solid #6ee66ec5;
   border-top: none;
   border-right: none;
@@ -42,4 +42,9 @@
 
 .top-right-menu .trm-hamburger-btn {
   font-size: 24px;
+}
+
+.top-right-menu.open {
+  width: 250px;
+  justify-content: flex-end;
 }
