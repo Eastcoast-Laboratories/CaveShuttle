@@ -1078,6 +1078,7 @@ function App() {
           onOpenLevelEditor={() => { setGameState('editor'); setShowMobileMenu(false); }}
           onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
           podDocked={podDocked}
+          networkRole={networkRole}
           {...hamburgerSettingsProps}
         />
       )}

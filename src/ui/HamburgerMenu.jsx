@@ -40,7 +40,7 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, networkRole = null }) {
   const menuRef = useRef(null);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -275,7 +275,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       <div className="hamburger-settings-group">
         <PlayerNameInput playerName={playerName} onPlayerNameChange={onPlayerNameChange} />
       </div>
-      {twoPlayer && (
+      {twoPlayer && !networkRole && (
         <>
           <h3 className="hamburger-section-title">PLAYER 2 NAME</h3>
           <div className="hamburger-settings-group">

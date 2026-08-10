@@ -129,7 +129,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
             START GAME
           </button>
 
-          {twoPlayer && !networkRole && (
+          {twoPlayer && (
             <button
               onClick={() => onMultiplayer?.()}
               style={{
