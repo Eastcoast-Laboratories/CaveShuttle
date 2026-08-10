@@ -53,3 +53,10 @@
 .nbsp {
   font-family: Arial, sans-serif;
 }
+
+/* Global button click effect (DRY): applies to all buttons in cave-themed UIs */
+.cave-background button:active,
+.hamburger-menu button:active {
+  transform: scale(0.95);
+  filter: brightness(1.2);
+}

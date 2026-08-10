@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNetwork } from '../network/NetworkContext.jsx'
 import { HighScoreManager } from '../game/high-score-manager.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
@@ -62,6 +62,18 @@ export default function OnlineLobby({ onBack }) {
   const [joinCode, setJoinCode] = useState('')
   const [copied, setCopied] = useState(false)
   const [publicLobbyAvailable, setPublicLobbyAvailable] = useState(false)
+  const [errorVisible, setErrorVisible] = useState(false)
+  const errorTimerRef = useRef(null)
+
+  useEffect(() => {
+    const errorMessages = state.statusMessages.filter(m => m.type === 'error')
+    if (errorMessages.length > 0) {
+      setErrorVisible(true)
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
+      errorTimerRef.current = setTimeout(() => setErrorVisible(false), 5000)
+    }
+    return () => { if (errorTimerRef.current) clearTimeout(errorTimerRef.current) }
+  }, [state.statusMessages])
 
   useEffect(() => {
     if (view !== 'select') return
@@ -131,7 +143,7 @@ export default function OnlineLobby({ onBack }) {
   const errorMessages = state.statusMessages.filter(m => m.type === 'error')
   const latestError = errorMessages.length > 0 ? errorMessages[errorMessages.length - 1] : null
 
-  const errorBanner = latestError && (
+  const errorBanner = latestError && errorVisible && (
     <div style={{
       padding: '12px 16px',
       background: 'rgba(220, 50, 50, 0.15)',
@@ -156,7 +168,6 @@ export default function OnlineLobby({ onBack }) {
           display: 'flex', flexDirection: 'column', gap: '20px',
         }}>
           <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineTitle}</h2>
-          {errorBanner}
           <label style={{ textAlign: 'left', fontSize: '12px', color: '#aaa' }}>
             {t.serverUrl}
             <input
@@ -178,6 +189,7 @@ export default function OnlineLobby({ onBack }) {
             </>
           )}
           <button style={buttonBase} onClick={() => setView('client')}>{t.joinGame}</button>
+          {errorBanner}
           <button style={secondaryButtonBase} onClick={onBack}>{t.back}</button>
         </div>
       </div>
@@ -195,7 +207,6 @@ export default function OnlineLobby({ onBack }) {
           display: 'flex', flexDirection: 'column', gap: '20px',
         }}>
           <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineHost}</h2>
-          {errorBanner}
           {!state.lobbyCode ? (
             <>
               <button style={buttonBase} onClick={handleCreatePrivate}>{t.createPrivate}</button>
@@ -219,6 +230,7 @@ export default function OnlineLobby({ onBack }) {
               </p>
             </>
           )}
+          {errorBanner}
           <button style={secondaryButtonBase} onClick={() => { manager.reset(); setView('select') }}>{t.back}</button>
         </div>
       </div>
@@ -236,7 +248,6 @@ export default function OnlineLobby({ onBack }) {
         display: 'flex', flexDirection: 'column', gap: '20px',
       }}>
         <h2 style={{ margin: 0, fontFamily: '"Commodore 64", "Courier New", monospace', color: '#0f0' }}>{t.onlineJoin}</h2>
-        {errorBanner}
         <label style={{ textAlign: 'left', fontSize: '12px', color: '#aaa' }}>
           {t.serverUrl}
           <input
@@ -253,6 +264,7 @@ export default function OnlineLobby({ onBack }) {
           style={{ ...inputStyle, textAlign: 'center', fontSize: '18px' }}
         />
         <button style={buttonBase} onClick={handleJoin} disabled={joinCode.length < 4}>{t.join}</button>
+        {errorBanner}
         <button style={secondaryButtonBase} onClick={() => { manager.reset(); setView('select') }}>{t.back}</button>
       </div>
     </div>
