@@ -305,10 +305,9 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </h3>
       {showControls && (
         <>
-          <h3 className="hamburger-section-title" style={{ marginTop: '8px' }}>TOUCH BUTTONS</h3>
           <div className="hamburger-settings-group">
             <div className="hamburger-toggle-row">
-              <span className="toggle-label">Visibility</span>
+              <span className="toggle-label">Touch Buttons</span>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={handleToggleTouchButtons}
@@ -326,10 +325,9 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
             />
           </div>
 
-          <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>TILT STEERING</h3>
           <div className="hamburger-settings-group">
             <div className="hamburger-toggle-row">
-              <span className="toggle-label">Enabled</span>
+              <span className="toggle-label">Tilt Steering</span>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={handleToggleTiltSteering}
