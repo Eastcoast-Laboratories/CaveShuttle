@@ -12,7 +12,7 @@ import { TileRenderer } from '../game/tile-renderer.js';
 import { LevelLoader } from '../levels/level-loader.js';
 import { CollisionDetection } from '../physics/collision.js';
 import { SoundManager } from '../audio/sound-manager.js';
-import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE } from '../core/constants.js';
+import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE } from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 
@@ -150,6 +150,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const [touchActive, setTouchActive] = useState(false); // tractor-beam touch button pressed
   const [accelerateActive, setAccelerateActive] = useState(false); // accelerate button pressed
   const [fireActive, setFireActive] = useState(false); // fire button pressed
+  const fireTapRef = useRef(false); // momentary fire from tap (read and reset by game loop)
   const [rotateLeftActive, setRotateLeftActive] = useState(false); // rotate left button pressed
   const [rotateRightActive, setRotateRightActive] = useState(false); // rotate right button pressed
   const [p2RotateLeftActive, setP2RotateLeftActive] = useState(false); // player 2 rotate left button pressed
@@ -174,6 +175,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const joystickRotationSpeedRef = useRef(0); // Ref for rotation speed to avoid state updates
   const joystickLastXRef = useRef(0); // Last horizontal pointer position to compute movement velocity
   const joystickLastMoveTimeRef = useRef(0); // Timestamp of last horizontal movement (to stop rotation when finger holds still)
+  const joystickTapTimerRef = useRef(null); // Timer to distinguish short tap (fire) from long press (joystick)
   const doorsRef = useRef([]); // Door system: sliding doors between H and G tiles
   const [level, setLevel] = useState(null);
   const [camera, setCamera] = useState({ x: 0, y: 0 });
@@ -519,19 +521,40 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           pointerButtonMap.current.set(e.pointerId, 'fire');
           buttonPointerIds.current.add(e.pointerId);
         } else if (!twoPlayer || !isMobile || networkRole) {
-          // Virtual joystick: activate anywhere on screen, but only if this pointerId is not pressing a button
+          // Virtual joystick with tap-to-fire: a short tap triggers fire,
+          // a longer press or movement activates the joystick.
           e.preventDefault();
-          setJoystickActive(true);
+          if (joystickTapTimerRef.current) clearTimeout(joystickTapTimerRef.current);
+          joystickTapTimerRef.current = setTimeout(() => {
+            joystickTapTimerRef.current = null;
+            setJoystickActive(true);
+            joystickPointerId.current = e.pointerId;
+            joystickStartRef.current = { x: e.clientX, y: e.clientY };
+            joystickRotationSpeedRef.current = 0;
+            joystickLastXRef.current = e.clientX;
+            joystickLastMoveTimeRef.current = performance.now();
+          }, JOYSTICK_TAP_FIRE_MS);
+          // Track this pointer as a pending joystick tap so pointermove can promote it
           joystickPointerId.current = e.pointerId;
           joystickStartRef.current = { x: e.clientX, y: e.clientY };
-          joystickRotationSpeedRef.current = 0;
           joystickLastXRef.current = e.clientX;
-          joystickLastMoveTimeRef.current = performance.now();
         }
       }
     };
 
     const handlePointerMove = (e) => {
+      // Promote pending tap to joystick immediately if finger moves before tap timer expires
+      if (joystickTapTimerRef.current && joystickPointerId.current === e.pointerId) {
+        const dx = e.clientX - joystickStartRef.current.x;
+        const dy = e.clientY - joystickStartRef.current.y;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+          clearTimeout(joystickTapTimerRef.current);
+          joystickTapTimerRef.current = null;
+          setJoystickActive(true);
+          joystickLastXRef.current = e.clientX;
+          joystickLastMoveTimeRef.current = performance.now();
+        }
+      }
       // Handle joystick movement
       if (joystickActive) {
         // Horizontal: rotation speed is driven by pointer movement velocity (delta per event),
@@ -595,6 +618,14 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
     };
 
     const handlePointerUp = (e) => {
+      // If tap timer is still pending, this was a short tap on empty area = fire
+      if (joystickTapTimerRef.current && joystickPointerId.current === e.pointerId) {
+        clearTimeout(joystickTapTimerRef.current);
+        joystickTapTimerRef.current = null;
+        fireTapRef.current = true;
+        joystickPointerId.current = null;
+        return;
+      }
       // Only reset joystick states when joystick is active and this pointerId is controlling it
       if (joystickActive && joystickPointerId.current === e.pointerId) {
         setJoystickActive(false);
@@ -632,6 +663,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
+      if (joystickTapTimerRef.current) clearTimeout(joystickTapTimerRef.current);
     };
   }, [width, height, joystickActive, showTouchButtons, isMobile, twoPlayer, tiltSteering, networkRole]);
 
@@ -1740,9 +1772,11 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       // Determine firing input this frame.
       // Single player: X / Shift. Two-player: player 1 Ctrl (after pod docked), player 2 Shift.
       // In network mode the client never fires locally; it receives bullets from the host.
+      const tapFire = fireTapRef.current;
+      fireTapRef.current = false;
       const playerOneFire = networkRole === 'client' ? false : (
-        ((!twoPlayer || networkRole === 'host') && (keys['x'] || keys['X'] || keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || fireActive)) ||
-        (twoPlayer && !networkRole && pod && pod.towed && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'] || fireActive))
+        ((!twoPlayer || networkRole === 'host') && (keys['x'] || keys['X'] || keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || fireActive || tapFire)) ||
+        (twoPlayer && !networkRole && pod && pod.towed && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'] || fireActive || tapFire))
       );
       const playerTwoFire = networkRole === 'client' ? false : (twoPlayer && (keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || p2FireActive || p2Fire));
       // Firing requires fuel

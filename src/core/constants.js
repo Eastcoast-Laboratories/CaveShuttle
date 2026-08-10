@@ -63,6 +63,8 @@ export const JOYSTICK_THRESHOLD = 30;
 export const JOYSTICK_VELOCITY_FACTOR = 0.004;
 // Virtual joystick: time (ms) without horizontal movement after which rotation stops
 export const JOYSTICK_STOP_MS = 60;
+// Virtual joystick: max press duration (ms) for a tap to count as fire instead of joystick
+export const JOYSTICK_TAP_FIRE_MS = 200;
 
 // Door system: automatic close timeout (ms) after door fully opens
 export const DOOR_AUTO_CLOSE_MS = 6000;
