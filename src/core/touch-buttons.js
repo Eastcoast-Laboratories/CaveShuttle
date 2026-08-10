@@ -112,9 +112,19 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
 
   // Special / POD (tractor beam) button - visible when showTouchButtons
   if (includePod && (forceVisible || showTouchButtons)) {
-    buttons.push(
-      { type: podType, x: specialX, y: specialY, w: specialWidth, h: specialHeight, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: specialX - buttonHitMargin, hitY: specialY - buttonHitMargin, hitW: specialWidth + buttonHitMargin * 2, hitH: specialHeight + buttonHitMargin * 2 }
-    );
+    if (tiltSteeringMode) {
+      // In tilt steering mode: POD button fills full height at the far right edge
+      const podX = w - specialWidth * 1.7 - buttonMargin;
+      const podY = topEdge + HUD_HEIGHT - 80; // positioned 80px shifted up, because the image is rendered at the bottom of the button
+      const podH = h - podY - buttonMargin;
+      buttons.push(
+        { type: podType, x: podX, y: podY, w: specialWidth * 1.7, h: podH, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: specialWidth * 1.7 + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
+      );
+    } else {
+      buttons.push(
+        { type: podType, x: specialX, y: specialY, w: specialWidth, h: specialHeight, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: specialX - buttonHitMargin, hitY: specialY - buttonHitMargin, hitW: specialWidth + buttonHitMargin * 2, hitH: specialHeight + buttonHitMargin * 2 }
+      );
+    }
   }
 
   // Fire button (directly below thrust) - visible when showTouchButtons and showFire
