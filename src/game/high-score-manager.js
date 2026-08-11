@@ -323,6 +323,22 @@ export class HighScoreManager {
     return top10.some(r => r.runId === runId);
   }
 
+  static getLevelRank({ packId, packVersion, level, mode, attemptId }) {
+    const records = this.getLevelRecords({ packId, packVersion, level, mode });
+    const found = records.find(r => r.attemptId === attemptId);
+    return found ? found.rank : null;
+  }
+
+  static getRunRank({ packId, packVersion, mode, runId }) {
+    const data = this._getHighscoreData();
+    const entries = data.runRecords.filter(
+      r => r.packId === packId && r.packVersion === packVersion && r.mode === mode
+    );
+    const sorted = this._sortEntries(entries);
+    const index = sorted.findIndex(r => r.runId === runId);
+    return index >= 0 ? index + 1 : null;
+  }
+
   // --- Export / Import ---
 
   static exportData() {

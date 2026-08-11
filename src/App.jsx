@@ -419,16 +419,16 @@ function App() {
       });
     }
 
-    // Check for new highscores (per-level and per-run, for the current mode)
-    const hs = { level: false, run: false };
+    // Check for new highscores (per-level only; run highscore is only checked at game over)
+    const hs = { level: false, run: false, levelRank: null, runRank: null };
     if (run && levelAttemptId) {
       hs.level = HighScoreManager.isLevelTop10({
         packId: run.packId, packVersion: run.packVersion,
         level: completedLevel, mode: run.mode, attemptId: levelAttemptId
       });
-      hs.run = HighScoreManager.isRunTop10({
+      hs.levelRank = HighScoreManager.getLevelRank({
         packId: run.packId, packVersion: run.packVersion,
-        mode: run.mode, runId: run.runId
+        level: completedLevel, mode: run.mode, attemptId: levelAttemptId
       });
     }
     setNewHighscore(hs);
@@ -521,8 +521,12 @@ function App() {
       }
 
       // Check for new run highscore (game over only qualifies for run top 10)
-      const hs = { level: false, run: false };
+      const hs = { level: false, run: false, levelRank: null, runRank: null };
       hs.run = HighScoreManager.isRunTop10({
+        packId: run.packId, packVersion: run.packVersion,
+        mode: run.mode, runId: run.runId
+      });
+      hs.runRank = HighScoreManager.getRunRank({
         packId: run.packId, packVersion: run.packVersion,
         mode: run.mode, runId: run.runId
       });

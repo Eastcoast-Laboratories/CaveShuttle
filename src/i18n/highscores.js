@@ -37,7 +37,7 @@ export const highscoreTranslations = {
     noScore: 'Kein Punktestand',
 
     // Run detail popup
-    totalScore: 'Gesamtpunktzahl',
+    totalScore: 'Gesamtpunkte',
     lastPlayed: 'Zuletzt gespielt: Level {level} - {score} Pkt{suffix}',
     gameOverSuffix: ' (Spiel vorbei)',
     levelFailed: ' - fehlgeschlagen',
@@ -46,11 +46,12 @@ export const highscoreTranslations = {
     // Level complete / game over overlay
     gameOver: 'GAME OVER',
     levelComplete: 'LEVEL COMPLETE',
-    scoreLabel: 'Punktzahl',
+    scoreLabel: 'Punkte',
 
     // New highscore banner
     newHighscore: 'NEUER HIGHSCORE',
     run: 'Mission',
+    top10Rank: 'Highscore Rang {rank}',
 
     // Player name labels
     player1: 'Spieler 1:',
@@ -134,6 +135,7 @@ export const highscoreTranslations = {
     // New highscore banner
     newHighscore: 'NEW HIGHSCORE',
     run: 'Campaign',
+    top10Rank: 'Highscore Rank {rank}',
 
     // Player name labels
     player1: 'Player 1:',

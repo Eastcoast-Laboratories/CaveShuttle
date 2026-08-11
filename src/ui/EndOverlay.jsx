@@ -93,6 +93,42 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
     };
   }, [breakdown]);
 
+  // Compute rank display info from newHighscore
+  const levelRank = newHighscore?.levelRank ?? null;
+  const runRank = newHighscore?.runRank ?? null;
+
+  // Determine primary (better = lower number) and secondary rank
+  let bestRank = null;
+  let bestType = null;
+  let secondaryRank = null;
+  let secondaryType = null;
+
+  if (levelRank != null && runRank != null) {
+    if (levelRank <= runRank) {
+      bestRank = levelRank;
+      bestType = 'level';
+      secondaryRank = runRank;
+      secondaryType = 'run';
+    } else {
+      bestRank = runRank;
+      bestType = 'run';
+      secondaryRank = levelRank;
+      secondaryType = 'level';
+    }
+  } else if (levelRank != null) {
+    bestRank = levelRank;
+    bestType = 'level';
+  } else if (runRank != null) {
+    bestRank = runRank;
+    bestType = 'run';
+  }
+
+  const subRankLabel = secondaryRank != null
+    ? (secondaryType === 'level'
+        ? `${t.level} ${levelNumber}: ${t.rank} ${secondaryRank}`
+        : `${t.run}: ${t.rank} ${secondaryRank}`)
+    : null;
+
   return (
     <div className="end-overlay">
       <div className="end-overlay-panel">
@@ -102,7 +138,7 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
           {buttons}
         </div>
 
-        {showTotal && newHighscore && (newHighscore.level || newHighscore.run) && (
+        {showTotal && bestRank === 1 && (
           <div
             className={`end-overlay-highscore-box${onShowHighscores ? '' : ' no-click'}`}
             onClick={onShowHighscores || undefined}
@@ -118,6 +154,9 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
               {newHighscore.level && newHighscore.run && <span>&</span>}
               {newHighscore.run && <span>{t.run}</span>}
             </div>
+            {subRankLabel && (
+              <div className="end-overlay-sub-rank">{subRankLabel}</div>
+            )}
             {twoPlayer && hsName && (
               <div className="end-overlay-highscore-names">
                 {hsName}{hsPlayer2Name ? ` & ${hsPlayer2Name}` : ''}
@@ -126,9 +165,29 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
           </div>
         )}
 
-        {showTotal && !(newHighscore && (newHighscore.level || newHighscore.run)) && (
+        {showTotal && bestRank != null && bestRank >= 2 && bestRank <= 10 && (
+          <div
+            className={`end-overlay-rank-box${onShowHighscores ? '' : ' no-click'}`}
+            onClick={onShowHighscores || undefined}
+          >
+            <span className="end-overlay-rank-label">
+              {t.top10Rank.replace('{rank}', bestRank)}
+            </span>
+            <span className={`end-overlay-rank-score${flash ? ' flash' : ''}`}>
+              {total}
+            </span>
+            {subRankLabel && (
+              <div className="end-overlay-sub-rank">{subRankLabel}</div>
+            )}
+          </div>
+        )}
+
+        {showTotal && (bestRank === null || bestRank > 10) && (
           <div className={`end-overlay-score-box${flash ? ' flash' : ''}`}>
-            {totalLabel}: {total}
+            <span>{totalLabel}: {total}{bestRank != null && <span className="end-overlay-score-rank"> ({t.rank} {bestRank})</span>}</span>
+            {subRankLabel && (
+              <div className="end-overlay-sub-rank">{subRankLabel}</div>
+            )}
           </div>
         )}
 
