@@ -40,7 +40,7 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, networkRole = null }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, networkRole = null }) {
   const menuRef = useRef(null);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -323,6 +323,25 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               onChange={(e) => onTouchButtonOpacityChange && onTouchButtonOpacityChange(0.5 * (1 - parseInt(e.target.value, 10) / 100))}
               disabled={!showTouchButtons}
             />
+          </div>
+
+          <div className="hamburger-settings-group">
+            <div className="hamburger-toggle-row">
+              <span className="toggle-label">Joystick</span>
+              <button
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={onToggleJoystick}
+                className={`hamburger-toggle-btn ${joystickEnabled ? 'on' : 'off'}`}
+              >
+                {joystickEnabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            {!joystickEnabled && (
+              <p className="hamburger-hint">Tap anywhere to fire. No steering or thrust via touch.</p>
+            )}
+            {joystickEnabled && (
+              <p className="hamburger-hint">Tap and swipe to steer and thrust. Tap the fire button to shoot.</p>
+            )}
           </div>
 
           <div className="hamburger-settings-group">

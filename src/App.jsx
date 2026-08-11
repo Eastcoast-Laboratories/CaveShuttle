@@ -71,6 +71,10 @@ function App() {
     // Default: on for mobile, off for laptop
     return isMobile;
   });
+  const [joystickEnabled, setJoystickEnabled] = useState(() => {
+    const stored = localStorage.getItem(storageKey('joystickEnabled'));
+    return stored === null ? true : stored === 'true';
+  });
   const [soundVolume, setSoundVolume] = useState(() => {
     const stored = localStorage.getItem(storageKey('soundVolume'));
     if (stored !== null) {
@@ -135,6 +139,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(storageKey('showTouchButtons'), JSON.stringify(showTouchButtons));
   }, [showTouchButtons]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey('joystickEnabled'), joystickEnabled.toString());
+  }, [joystickEnabled]);
 
   useEffect(() => {
     localStorage.setItem(storageKey('vibrationEnabled'), vibrationEnabled.toString());
@@ -785,7 +793,17 @@ function App() {
   const hamburgerSettingsProps = {
     appVersion: APP_VERSION,
     showTouchButtons,
-    onToggleTouchButtons: () => setShowTouchButtons(!showTouchButtons),
+    onToggleTouchButtons: () => {
+      if (!showTouchButtons && touchButtonOpacity === 0) {
+        setTouchButtonOpacity(0.1);
+      }
+      setShowTouchButtons(!showTouchButtons);
+    },
+    joystickEnabled,
+    onToggleJoystick: () => {
+      setJoystickEnabled(!joystickEnabled);
+      if (!joystickEnabled) setTiltSteering(false);
+    },
     installedPacks,
     currentPackId,
     onSwitchPack: handleSwitchPack,
@@ -803,7 +821,10 @@ function App() {
     vibrationEnabled,
     onToggleVibration: () => setVibrationEnabled(!vibrationEnabled),
     tiltSteering,
-    onToggleTiltSteering: () => setTiltSteering(!tiltSteering),
+    onToggleTiltSteering: () => {
+      setTiltSteering(!tiltSteering);
+      if (!tiltSteering) setJoystickEnabled(false);
+    },
     tiltSensorRef,
     onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
     tiltSteeringRotated,
@@ -977,6 +998,7 @@ function App() {
                 gravityMultiplier={gravityMultiplier}
                 frozen={gameState === 'gameover' || gameState === 'levelcomplete' || showTutorial || showMobileMenu}
                 showTouchButtons={showTouchButtons}
+                joystickEnabled={joystickEnabled}
                 isMobile={isMobile}
                 isEditorTestMode={isEditorTestMode}
                 editorLevelData={editorLevelData}
@@ -1019,7 +1041,15 @@ function App() {
                   vibrationEnabled={vibrationEnabled}
                   onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
                   tiltSteering={tiltSteering}
-                  onToggleTiltSteering={() => setTiltSteering(!tiltSteering)}
+                  onToggleTiltSteering={() => {
+                    setTiltSteering(!tiltSteering);
+                    if (!tiltSteering) setJoystickEnabled(false);
+                  }}
+                  joystickEnabled={joystickEnabled}
+                  onToggleJoystick={() => {
+                    setJoystickEnabled(!joystickEnabled);
+                    if (!joystickEnabled) setTiltSteering(false);
+                  }}
                   tiltSensorRef={tiltSensorRef}
                   onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
                   tiltSteeringRotated={tiltSteeringRotated}

@@ -136,7 +136,7 @@ function pointerToCanvas(canvas, clientX, clientY, w, h) {
   };
 }
 
-export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, showTouchButtons = true, isMobile = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, twoPlayer = false, networkRole = null, soundVolume = 1, touchButtonOpacity = 1, vibrationEnabled = true, bonusLifePopup = null, tiltSteering = false, tiltNeutralBeta = 0, tiltNeutralGamma = 0, tiltSteeringRotated = false, tiltSensorRef }) {
+export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, showTouchButtons = true, joystickEnabled = true, isMobile = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, twoPlayer = false, networkRole = null, soundVolume = 1, touchButtonOpacity = 1, vibrationEnabled = true, bonusLifePopup = null, tiltSteering = false, tiltNeutralBeta = 0, tiltNeutralGamma = 0, tiltSteeringRotated = false, tiltSensorRef }) {
   const canvasRef = useRef(null);
   const soundManager = useRef(null);
   const { manager: networkManager } = useNetwork();
@@ -514,8 +514,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           case 'p2Fire': setP2FireActive(true); break;
         }
       } else {
-        // In tilt steering mode, tapping anywhere (not on a button) activates fire
-        if (tiltSteering && (!twoPlayer || networkRole)) {
+        // In tilt steering mode or joystick-disabled mode, tapping anywhere (not on a button) activates fire
+        if ((tiltSteering || !joystickEnabled) && (!twoPlayer || networkRole)) {
           e.preventDefault();
           setFireActive(true);
           pointerButtonMap.current.set(e.pointerId, 'fire');
@@ -665,7 +665,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       window.removeEventListener('pointercancel', handlePointerUp);
       if (joystickTapTimerRef.current) clearTimeout(joystickTapTimerRef.current);
     };
-  }, [width, height, joystickActive, showTouchButtons, isMobile, twoPlayer, tiltSteering, networkRole]);
+  }, [width, height, joystickActive, showTouchButtons, joystickEnabled, isMobile, twoPlayer, tiltSteering, networkRole]);
 
   useEffect(() => {
     const loadAssets = async () => {
