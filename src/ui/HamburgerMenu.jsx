@@ -285,16 +285,6 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       )}
 
       <hr />
-      <h3 className="hamburger-section-title">SOUND</h3>
-      <div className="hamburger-settings-group">
-        <SettingsSlider
-          label="Sound Volume"
-          value={volumeToSlider(soundVolume)}
-          onChange={(e) => onSoundVolumeChange && onSoundVolumeChange(sliderToVolume(parseInt(e.target.value, 10)))}
-        />
-      </div>
-
-      <hr />
       <h3
         className="hamburger-section-title"
         style={{ cursor: 'pointer', userSelect: 'none' }}
@@ -337,10 +327,12 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               </button>
             </div>
             {!joystickEnabled && (
-              <p className="hamburger-hint">Tap anywhere to fire. No steering or thrust via touch.</p>
+              <p className="hamburger-hint">
+                Tap anywhere to fire.
+              </p>
             )}
             {joystickEnabled && (
-              <p className="hamburger-hint">Tap and swipe to steer and thrust. Tap the fire button to shoot.</p>
+              <p className="hamburger-hint">Hold and swipe to steer and thrust. Quick tap to fire.</p>
             )}
           </div>
 
@@ -419,6 +411,16 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       )}
 
       <hr />
+      <h3 className="hamburger-section-title">SOUND</h3>
+      <div className="hamburger-settings-group">
+        <SettingsSlider
+          label="Sound Volume"
+          value={volumeToSlider(soundVolume)}
+          onChange={(e) => onSoundVolumeChange && onSoundVolumeChange(sliderToVolume(parseInt(e.target.value, 10)))}
+        />
+      </div>
+
+      <hr />
       <h3 className="hamburger-section-title">VIBRATION</h3>
       <div className="hamburger-settings-group">
         <div className="hamburger-toggle-row">
@@ -437,7 +439,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">LEVEL PACK</h3>
+      <h3 className="hamburger-section-title">LEVEL PACKS</h3>
       <div className="hamburger-pack-list">
         {(() => {
           // Find duplicate names
