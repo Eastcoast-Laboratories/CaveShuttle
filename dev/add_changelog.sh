@@ -10,7 +10,7 @@ CHANGELOG_DE_MD="CHANGELOG_de.md"
 PLAYSTORE_DIR="dev/playstore"
 
 # Must be the same as version from build.gradle
-VERSION_NAME=3.4
+VERSION_NAME=4.0
 # Extract versionCode from build.gradle (exclude comment lines)
 VERSION_CODE=$(grep "versionCode" "$BUILD_GRADLE" | grep -v "//" | awk '{print $2}')
 # Get current date
