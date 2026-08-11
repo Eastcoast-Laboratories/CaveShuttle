@@ -79,7 +79,7 @@ Für jeden Levelversuch kann höchstens ein `LevelScoreRecord` gespeichert werde
 
 Ein erfolgreicher Levelabschluss wird immer gespeichert. Ein fehlgeschlagener Levelversuch wird nur gespeichert, wenn für diese Kombination aus Pack-Version, Level und Spielmodus noch kein erfolgreicher Level-Record existiert. Dadurch bleibt sichtbar, dass der Level noch nicht geschafft wurde, ohne spätere erfolgreiche Ergebnisse durch Game-Over-Versuche zu ersetzen.
 
-### 3.3 Gesamt-Run
+### 3.3 Gesamt-Run (enlg. Campaign / deut. Mission)
 
 Ein `RunScoreRecord` wird mit den IDs der zugehörigen Level-Records verbunden. Der Gesamt-Score und die dauerhafte Detailauflistung werden dadurch nachvollziehbar, ohne die Level-Aufschlüsselung doppelt zu speichern.
 

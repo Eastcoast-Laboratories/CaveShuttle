@@ -10,7 +10,7 @@ export const highscoreTranslations = {
     stage: 'Stage',
 
     // Tabs
-    runs: 'Läufe',
+    runs: 'Missionen',
     levels: 'Level',
 
     // Filter options
@@ -31,7 +31,7 @@ export const highscoreTranslations = {
     player: 'Spieler',
 
     // Empty states
-    noRunHighscores: 'Noch keine Lauf-Highscores.',
+    noRunHighscores: 'Noch keine Mission-Highscores.',
     noLevelRecords: 'Keine Level-Einträge.',
     noEntriesYet: 'Noch keine Einträge.',
     noScore: 'Kein Punktestand',
@@ -50,7 +50,7 @@ export const highscoreTranslations = {
 
     // New highscore banner
     newHighscore: 'NEUER HIGHSCORE',
-    run: 'Lauf',
+    run: 'Mission',
 
     // Player name labels
     player1: 'Spieler 1:',
@@ -93,7 +93,7 @@ export const highscoreTranslations = {
     stage: 'Stage',
 
     // Tabs
-    runs: 'Runs',
+    runs: 'Campaigns',
     levels: 'Levels',
 
     // Filter options
@@ -114,7 +114,7 @@ export const highscoreTranslations = {
     player: 'Player',
 
     // Empty states
-    noRunHighscores: 'No run highscores yet.',
+    noRunHighscores: 'No campaign highscores yet.',
     noLevelRecords: 'No level records.',
     noEntriesYet: 'No entries yet.',
     noScore: 'No score',
@@ -133,7 +133,7 @@ export const highscoreTranslations = {
 
     // New highscore banner
     newHighscore: 'NEW HIGHSCORE',
-    run: 'Run',
+    run: 'Campaign',
 
     // Player name labels
     player1: 'Player 1:',
