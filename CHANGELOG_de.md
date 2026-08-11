@@ -1,0 +1,12 @@
+# Changelog
+
+## 3.4 — August 2026
+
+- Netzwerk-Multiplayer: Level-Auswahl, Next-Level und Neustart werden zwischen beiden Spielern synchronisiert
+- Highscores: Automatische Synchronisation neuer Rekorde zwischen den Spielern
+- Touch-Steuerung: Joystick-Modus mit Tap-to-Fire (kurzer Tap = schießen, langer Druck = Joystick)
+- POD-Button immer sichtbar, auch im Joystick-only-Modus
+- Hamburger-Menü: Einheitliche Overlay-Styling und Button-Klick-Effekte
+- Fehlerbehebungen und allgemeine UI-Verbesserungen
+
+=========

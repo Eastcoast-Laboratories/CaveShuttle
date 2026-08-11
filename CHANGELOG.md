@@ -2,6 +2,16 @@
 
 ## 3.4 — August 2026
 
+- Network multiplayer: Level selection, next-level and restart synced between both players
+- Highscores: Auto-sync of new records between players
+- Touch controls: Joystick mode with tap-to-fire (short tap = fire, long press = joystick)
+- POD button always visible, also in joystick-only mode
+- Hamburger menu: Unified overlay styling and button click effects
+- Bug fixes and general UI improvements
+
+
+## 3.3 — August 2026
+
 ### Network Multiplayer
 
 - **Level selection sync**: Starting a specific level from the menu now syncs to the other player — both start the same level
