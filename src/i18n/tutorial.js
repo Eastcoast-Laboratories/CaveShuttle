@@ -3,7 +3,7 @@
 export const tutorialTranslations = {
   de: {
     title: 'Willkommen bei Cave Shuttle',
-    intro: 'Hier erfährst du in Kürze, wie du deinen ersten Flug steuerst.',
+    intro: 'Hier erfährst du in Kürze, wie du deine erste Mission steuerst.',
     
     objective: 'Ziel',
     objectiveText: 'Fliege über den Pod und aktiviere den Traktorstrahl, damit er an deinem Schiff andockt. Schleppe ihn an die Oberfläche und dort in den Himmel, um das Level zu beenden.',
@@ -46,7 +46,7 @@ export const tutorialTranslations = {
   },
   en: {
     title: 'Welcome to Cave Shuttle',
-    intro: 'This is a quick overview of how to control your first flight.',
+    intro: 'This is a quick overview of how to control your first campaign.',
 
     objective: 'Objective',
     objectiveText: 'Fly over the pod and activate the tractor beam to dock it under your ship.<br>Then carry it up to the sky to finish the level.',

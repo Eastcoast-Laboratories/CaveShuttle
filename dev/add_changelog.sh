@@ -43,22 +43,14 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Netzwerk-Multiplayer: Level-Auswahl, Next-Level und Neustart werden zwischen beiden Spielern synchronisiert
-- Highscores: Automatische Synchronisation neuer Rekorde zwischen den Spielern
-- Touch-Steuerung: Joystick-Modus mit Tap-to-Fire (kurzer Tap = schießen, langer Druck = Joystick)
-- POD-Button immer sichtbar, auch im Joystick-only-Modus
-- Hamburger-Menü: Einheitliche Overlay-Styling und Button-Klick-Effekte
+- Highscore zeigt die Missionen
 - Fehlerbehebungen und allgemeine UI-Verbesserungen
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Network multiplayer: Level selection, next-level and restart synced between both players
-- Highscores: Auto-sync of new records between players
-- Touch controls: Joystick mode with tap-to-fire (short tap = fire, long press = joystick)
-- POD button always visible, also in joystick-only mode
-- Hamburger menu: Unified overlay styling and button click effects
+- fix level editor generate level functionality
 - Bug fixes and general UI improvements
 EOF
 )

@@ -34,7 +34,7 @@ for (let i = 0; i < height; i++) {
 }
 
 const rng = mulberry32(seed);
-const newWidth = addRightSurfaceHill(grid, width, height, rng);
+const { width: newWidth } = addRightSurfaceHill(grid, width, height, rng);
 
 header[0] = newWidth.toString();
 
