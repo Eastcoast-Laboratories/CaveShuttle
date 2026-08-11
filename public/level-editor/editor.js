@@ -2181,7 +2181,7 @@ class LevelEditor {
 
     const btn = document.getElementById('generateBtn');
     btn.disabled = true;
-    btn.textContent = 'Generating...';
+    btn.innerHTML = '<span class="gen-spinner"></span>Generating...';
     try {
       const opts = {
         width: this.levelData.header.width,
@@ -2199,7 +2199,7 @@ class LevelEditor {
       console.error('[LEVEL_EDITOR_GENERATE]', err);
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Generate';
+      btn.innerHTML = 'Generate';
     }
   }
   

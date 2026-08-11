@@ -108,6 +108,23 @@ body {
   background: #2980b9;
 }
 
+/* Spinner for generate button */
+.gen-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: gen-spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes gen-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Main content */
 .editor-main {
   display: flex;

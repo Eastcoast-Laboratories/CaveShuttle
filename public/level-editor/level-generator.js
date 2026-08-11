@@ -1078,7 +1078,7 @@
     for (let r = 0; r < grid.length; r++) {
       const row = grid[r];
       const split = row.length - MOVE_COLUMNS;
-      grid[r] = row.slice(split) + row.slice(0, split);
+      grid[r] = [...row.slice(split), ...row.slice(0, split)];
     }
 
     // 13. Build .def text
