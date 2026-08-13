@@ -208,6 +208,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const shipOnImageRef = useRef(null);
   const shipOffImageRef = useRef(null);
   const mineImageRef = useRef(null);
+  const mineRedImageRef = useRef(null);
   const [buttons, setButtons] = useState([]);
   const [sliders, setSliders] = useState([]);
   const [screenShake, setScreenShake] = useState({ x: 0, y: 0, intensity: 0 });
@@ -1090,6 +1091,22 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
     mineImg.src = '/images/mine.png';
     mineImg.onload = () => {
       mineImageRef.current = mineImg;
+      // Create a copy with a red blinking dot in the center
+      const redImg = new Image();
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = mineImg.naturalWidth;
+      offCanvas.height = mineImg.naturalHeight;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.drawImage(mineImg, 0, 0);
+      const dotRadius = Math.max(1, Math.round(offCanvas.width * 0.08)); // 8% of the mine width
+      offCtx.fillStyle = '#ff0000';
+      offCtx.beginPath();
+      offCtx.arc(offCanvas.width / 2, offCanvas.height / 2, dotRadius, 0, Math.PI * 2);
+      offCtx.fill();
+      redImg.src = offCanvas.toDataURL();
+      redImg.onload = () => {
+        mineRedImageRef.current = redImg;
+      };
     };
   }, []);
 
@@ -2672,13 +2689,16 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       // Buttons are rendered by tileRenderer.render() using their actual tile appearance (L, N)
 
       // Draw enemy mines with camera offset
+      const showRedDot = Math.floor(performance.now() / 500) % 2 === 0;
       enemyMines.forEach((es, i) => {
         if (!es.active) return;
         ctx.save();
         ctx.translate(es.x - camera.x, es.y - camera.y);
         ctx.rotate(es.angle);
         const MINE_SIZE = 20;
-        const mineSprite = mineImageRef.current;
+        const mineSprite = (showRedDot && mineRedImageRef.current && mineRedImageRef.current.complete)
+          ? mineRedImageRef.current
+          : mineImageRef.current;
         if (mineSprite && mineSprite.complete) {
           ctx.drawImage(mineSprite, -MINE_SIZE / 2, -MINE_SIZE / 2, MINE_SIZE, MINE_SIZE);
         } else {
