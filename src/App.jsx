@@ -651,7 +651,7 @@ function App() {
   };
 
   const scoreBreakdown = useMemo(() => [
-    { key: 'time', label: t.time, value: levelScoreBreakdown.time + t.seconds },
+    { key: 'time', label: t.time, value: levelScoreBreakdown.time > 0 ? levelScoreBreakdown.time + t.seconds : 0 }, // use just 0 instead of 0s  so the filter below works for 0 time on game over too
     { key: 'bunker', label: levelScoreBreakdown.bunker > SCORE_BUNKER_DESTROYED ? t.bunkerDestroyedPlural : t.bunkerDestroyed, value: levelScoreBreakdown.bunker },
     { key: 'button', label: t.buttonActivated, value: levelScoreBreakdown.button },
     { key: 'pod', label: t.podConnected, value: levelScoreBreakdown.pod },
@@ -659,7 +659,7 @@ function App() {
     { key: 'level', label: t.levelCompleteLabel, value: levelScoreBreakdown.level },
     { key: 'reactor', label: t.reactorEscape, value: levelScoreBreakdown.reactor },
     { key: 'timeBonus', label: t.timeBonus, value: levelScoreBreakdown.timeBonus }
-  ].filter(item => item.value !== 0 || (item.key === 'time' && levelScoreBreakdown.time > 0)), [levelScoreBreakdown, t]);
+  ].filter(item => item.value !== 0), [levelScoreBreakdown, t]);
 
   // Generate level buttons (DRY: used by hamburger menu)
   const generateLevelButtons = (onClose) => {
