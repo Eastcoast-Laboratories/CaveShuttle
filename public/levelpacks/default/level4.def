@@ -5,9 +5,9 @@
 25          ; height of bedrock
    0   84  164 ; background/tractor (wall color)
  164    0    0 ; gun/reactor/stand
- 0 164    0 ; pod/blip
-   0    0    0 ; text
- 164  164    0 ; shield
+   0  164    0 ; pod/blip
+   0  164  164 ; text
+ 164   84   84 ; shield
                                                                                                                                                       
                                              *                                                                                                        
                                                                                                                                                       
@@ -54,7 +54,7 @@ pppppppppppppppppppppppppppppuv                                      ppppppppppp
 pppppppppppppppppppppppppppuv                                        ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppuv                                          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                          +                     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
@@ -74,11 +74,11 @@ pppppppppppppppppppppppppppppuv                                      ppppppppppp
 pppppppppppppppppppppppppppuv                                        ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppuv                                          ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                  +                             ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppp                           +                    ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp                                                ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppqr                                         stpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppqr                                     stpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
@@ -105,6 +105,23 @@ ppppppppppppppppppppppppppppppppppppppp     12     ppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppppppp     34     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppppppp     pp     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
+                                                                                                                                                      
