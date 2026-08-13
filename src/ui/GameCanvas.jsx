@@ -2060,6 +2060,21 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
                 destroyShip();
               }
             }
+            // Collision with pod (only when off the holder and not already exploded)
+            if (pod && pod.active && !pod.onHolder && !podExploded) {
+              const pdx = es.x - pod.x;
+              const pdy = es.y - pod.y;
+              const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+              if (pdist < es.radius + 10) {
+                if (godModeActiveRef.current) {
+                  es.active = false;
+                  particleSystem.current.spawnExplosion(es.x, es.y, 25, '#ff3333');
+                  if (soundManager.current) soundManager.current.playOnce('explosion');
+                } else {
+                  detonatePod('mine');
+                }
+              }
+            }
           }
         });
 
