@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.1 — August 13, 2026
+
+- Highscore-Rang wird am Game-Over-Screen angezeigt (Gold/Silber/Grün je nach Platzierung)
+- Name kann im EndOverlay geändert werden und wird in der Highscore aktualisiert
+- Enter im Namensfeld speichert nur den Namen statt das nächste Level zu starten
+- Zeitstempel mit Datum und Uhrzeit im Highscore-Detail-Popup
+- Blinkender roter Punkt auf feindlichen Minen
+
+
 ## 3.4 — August 2026
 
 - Netzwerk-Multiplayer: Level-Auswahl, Next-Level und Neustart werden zwischen beiden Spielern synchronisiert

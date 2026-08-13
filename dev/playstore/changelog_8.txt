@@ -1,0 +1,16 @@
+# Play Store Changelogs für Version 4.1
+
+<en-GB>
+- Highscore rank display at game over with gold/silver/green styling based on rank position
+- Player name can be changed in end overlay and updates highscore records retroactively
+- Enter in name field only saves name instead of starting next level
+- Timestamp with localized date and time in highscore detail popup
+- Blinking red dot on enemy mines
+</en-GB>
+<de-DE>
+- Highscore-Rang wird am Game-Over-Screen angezeigt (Gold/Silber/Grün je nach Platzierung)
+- Name kann im EndOverlay geändert werden und wird in der Highscore aktualisiert
+- Enter im Namensfeld speichert nur den Namen statt das nächste Level zu starten
+- Zeitstempel mit Datum und Uhrzeit im Highscore-Detail-Popup
+- Blinkender roter Punkt auf feindlichen Minen
+</de-DE>

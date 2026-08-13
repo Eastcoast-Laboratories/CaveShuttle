@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.1 — August 13, 2026
+
+- Highscore rank display at game over with gold/silver/green styling based on rank position
+- Player name can be changed in end overlay and updates highscore records retroactively
+- Enter in name field only saves name instead of starting next level
+- Timestamp with localized date and time in highscore detail popup
+- Blinking red dot on enemy mines
+
+
 ## 3.4 — August 2026
 
 - Network multiplayer: Level selection, next-level and restart synced between both players

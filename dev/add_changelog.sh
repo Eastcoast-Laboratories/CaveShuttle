@@ -9,8 +9,8 @@ CHANGELOG_MD="CHANGELOG.md"
 CHANGELOG_DE_MD="CHANGELOG_de.md"
 PLAYSTORE_DIR="dev/playstore"
 
-# Must be the same as version from build.gradle
-VERSION_NAME=4.0
+# Extract version from package.json (kept in sync by mobile-build.sh -u)
+VERSION_NAME=$(grep -oP '"version":\s*"\K[^"]+' package.json)
 # Extract versionCode from build.gradle (exclude comment lines)
 VERSION_CODE=$(grep "versionCode" "$BUILD_GRADLE" | grep -v "//" | awk '{print $2}')
 # Get current date
@@ -43,15 +43,21 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Highscore zeigt die Missionen
-- Fehlerbehebungen und allgemeine UI-Verbesserungen
+- Highscore-Rang wird am Game-Over-Screen angezeigt (Gold/Silber/Grün je nach Platzierung)
+- Name kann im EndOverlay geändert werden und wird in der Highscore aktualisiert
+- Enter im Namensfeld speichert nur den Namen statt das nächste Level zu starten
+- Zeitstempel mit Datum und Uhrzeit im Highscore-Detail-Popup
+- Blinkender roter Punkt auf feindlichen Minen
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- fix level editor generate level functionality
-- Bug fixes and general UI improvements
+- Highscore rank display at game over with gold/silver/green styling based on rank position
+- Player name can be changed in end overlay and updates highscore records retroactively
+- Enter in name field only saves name instead of starting next level
+- Timestamp with localized date and time in highscore detail popup
+- Blinking red dot on enemy mines
 EOF
 )
 
@@ -153,7 +159,7 @@ else
     head -n $((VERSION_LINE - 1)) "$CHANGELOG_MD" > "$TEMP_FILE"
     
     # Update the version header with current date
-    echo "## ${VERSION_NAME} — $(date +'%B %Y')" >> "$TEMP_FILE"
+    echo "## ${VERSION_NAME} — $(date +'%B %d, %Y')" >> "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
     
     # Add the updated changes
@@ -172,7 +178,7 @@ else
     # Version doesn't exist, add a new entry at the top (after title)
     head -n 1 "$CHANGELOG_MD" > "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
-    echo "## ${VERSION_NAME} — $(date +'%B %Y')" >> "$TEMP_FILE"
+    echo "## ${VERSION_NAME} — $(date +'%B %d, %Y')" >> "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
     echo "$EN_CHANGES" >> "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
@@ -205,7 +211,7 @@ else
     head -n $((VERSION_LINE - 1)) "$CHANGELOG_DE_MD" > "$TEMP_FILE"
     
     # Update the version header with current date
-    echo "## ${VERSION_NAME} — $(date +'%B %Y')" >> "$TEMP_FILE"
+    echo "## ${VERSION_NAME} — $(date +'%B %d, %Y')" >> "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
     
     # Add the updated changes
@@ -224,7 +230,7 @@ else
     # Version doesn't exist, add a new entry at the top (after title)
     head -n 1 "$CHANGELOG_DE_MD" > "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
-    echo "## ${VERSION_NAME} — $(date +'%B %Y')" >> "$TEMP_FILE"
+    echo "## ${VERSION_NAME} — $(date +'%B %d, %Y')" >> "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
     echo "$DE_CHANGES" >> "$TEMP_FILE"
     echo "" >> "$TEMP_FILE"
