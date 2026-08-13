@@ -14,7 +14,7 @@ export const SOUND_FILES = {
   explosion: 'explosion.mp3',
   fuelDrain: 'fuel_drain.wav',
   podDock: 'pod_dock.wav',
-  wormholeAmbient: 'wormhole_ambient.wav',
+  wormholeAmbient: 'wormhole_ambient.mp3',
   wormholeComplete: 'wormhole_complete.wav',
   noFuel: 'no-fuel.mp3',
 };
