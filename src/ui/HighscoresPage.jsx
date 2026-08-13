@@ -25,6 +25,20 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
 
   const getDisplayName = (entry) => entry.player2Name ? `${entry.name} & ${entry.player2Name}` : entry.name;
   const isOwnEntry = (entry) => entry.name === playerName || entry.player2Name === playerName;
+  const formatDateTime = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yy = String(d.getFullYear()).slice(-2);
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    if (language === 'en') {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[d.getMonth()]} ${dd}, '${yy} ${hh}:${mi}`;
+    }
+    return `${dd}.${mm}.${yy} ${hh}:${mi}`;
+  };
 
   useEffect(() => {
     setProfile(HighScoreManager.getPlayerProfile());
@@ -265,6 +279,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
             <h2>{runDetail.startLevel === runDetail.lastLevel ? `${runDetail.startLevel}` : `${runDetail.startLevel} - ${runDetail.lastLevel}`}: {getDisplayName(runDetail)}</h2>
             <p className="total-score">{t.totalScore}: {runDetail.totalScore}</p>
             <p className="player-mode">{runDetail.mode === 'two' ? t.twoPlayer : t.onePlayer}</p>
+            {runDetail.recordedAt && (
+              <p className="popup-datetime">{formatDateTime(runDetail.recordedAt)}</p>
+            )}
             {lastRecord && (
               <p className="last-level">
                 {t.lastPlayed.replace('{level}', lastRecord.level).replace('{score}', lastRecord.score).replace('{suffix}', lastRecord.completed ? '' : t.gameOverSuffix)}
@@ -304,6 +321,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
                           {breakdown.time > 0 && breakdown.timeBonus > 0 && (
                             <span>{breakdown.time}s</span>
                           )}
+                          <span className="popup-level-datetime">{formatDateTime(r.recordedAt)}</span>
                         </span>
                       </div>
                       <div className="popup-categories">

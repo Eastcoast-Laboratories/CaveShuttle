@@ -390,6 +390,17 @@ td.edge-img:nth-child(1), td.solid-col:nth-child(3) {
   border-radius: 8px;
 }
 
+.popup-datetime {
+  font-size: 13px;
+  color: #888;
+  margin: 2px 0 0 0;
+}
+
+.popup-level-datetime {
+  font-size: 11px;
+  color: #777;
+}
+
 .close-button {
   margin-top: 16px;
   padding: 8px 16px;
