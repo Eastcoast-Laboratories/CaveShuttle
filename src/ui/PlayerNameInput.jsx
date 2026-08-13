@@ -45,7 +45,7 @@ export default function PlayerNameInput({ playerName, onPlayerNameChange, readOn
           onChange={(e) => { setEditName(e.target.value); setNameError(null); }}
           onFocus={() => setShowSave(true)}
           onBlur={() => { if (!isDirty) setShowSave(false); }}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); handleSave(); } }}
           className="player-name-input-field"
           readOnly={readOnly}
         />

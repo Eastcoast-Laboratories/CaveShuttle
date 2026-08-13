@@ -3115,7 +3115,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           fontWeight: '700',
           textAlign: 'center',
           pointerEvents: 'none',
-          zIndex: 100,
+          zIndex: 1100,
           boxShadow: '0 4px 20px rgba(0, 255, 136, 0.4)',
           animation: 'bonusLifePop 0.3s ease-out'
         }}>

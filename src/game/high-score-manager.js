@@ -339,6 +339,29 @@ export class HighScoreManager {
     return index >= 0 ? index + 1 : null;
   }
 
+  static updateRecordNames({ levelAttemptIds, runId, name, player2Name }) {
+    const data = this._getHighscoreData();
+    let changed = false;
+
+    const ids = Array.isArray(levelAttemptIds) ? levelAttemptIds : [];
+    for (const attemptId of ids) {
+      const record = data.levelRecords.find(r => r.attemptId === attemptId);
+      if (!record) continue;
+      if (name !== undefined && record.name !== name) { record.name = name; changed = true; }
+      if (player2Name !== undefined && record.player2Name !== player2Name) { record.player2Name = player2Name; changed = true; }
+    }
+    if (runId) {
+      const runRecord = data.runRecords.find(r => r.runId === runId);
+      if (runRecord) {
+        if (name !== undefined && runRecord.name !== name) { runRecord.name = name; changed = true; }
+        if (player2Name !== undefined && runRecord.player2Name !== player2Name) { runRecord.player2Name = player2Name; changed = true; }
+      }
+    }
+
+    if (changed) this._setHighscoreData(data);
+    return changed;
+  }
+
   // --- Export / Import ---
 
   static exportData() {

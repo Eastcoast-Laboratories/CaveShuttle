@@ -93,9 +93,9 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
     };
   }, [breakdown]);
 
-  // Compute rank display info from newHighscore
-  const levelRank = newHighscore?.levelRank ?? null;
-  const runRank = newHighscore?.runRank ?? null;
+  // Compute rank display info from newHighscore (no rank for zero score)
+  const levelRank = (total > 0 && newHighscore?.levelRank != null) ? newHighscore.levelRank : null;
+  const runRank = (total > 0 && newHighscore?.runRank != null) ? newHighscore.runRank : null;
 
   // Determine primary (better = lower number) and secondary rank
   let bestRank = null;

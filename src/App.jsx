@@ -241,6 +241,7 @@ function App() {
   const [bonusLifePopup, setBonusLifePopup] = useState(null); // { threshold, id } to signal GameCanvas
   const runContextRef = useRef(null);
   const levelRecordIdsRef = useRef([]);
+  const currentLevelAttemptIdRef = useRef(null);
   const gameOverSavedRef = useRef(false);
   const [newHighscore, setNewHighscore] = useState(null); // { level: boolean, run: boolean }
   const [twoPlayer, setTwoPlayer] = useState(() => {
@@ -401,6 +402,7 @@ function App() {
     const levelAttemptId = recordResult.saved ? recordResult.record.attemptId : null;
     if (levelAttemptId) {
       levelRecordIdsRef.current.push(levelAttemptId);
+      currentLevelAttemptIdRef.current = levelAttemptId;
     }
 
     const newTotalScore = score + levelCompleteBonus;
@@ -503,6 +505,7 @@ function App() {
       });
       if (failResult.saved && failResult.record.attemptId) {
         levelRecordIdsRef.current.push(failResult.record.attemptId);
+        currentLevelAttemptIdRef.current = failResult.record.attemptId;
       }
 
       if (run.startLevel > 1 || levelRecordIdsRef.current.length > 0) {
@@ -551,13 +554,27 @@ function App() {
 
   const handlePlayerNameChange = (name) => {
     const result = HighScoreManager.savePlayerName(name);
-    if (result.success) setPlayerName(result.profile.name);
+    if (result.success) {
+      setPlayerName(result.profile.name);
+      HighScoreManager.updateRecordNames({
+        levelAttemptIds: currentLevelAttemptIdRef.current ? [currentLevelAttemptIdRef.current] : [],
+        runId: runContextRef.current?.runId,
+        name: result.profile.name,
+      });
+    }
     return result;
   };
 
   const handlePlayer2NameChange = (name) => {
     const result = HighScoreManager.savePlayer2Name(name);
-    if (result.success) setPlayer2Name(result.profile.player2Name);
+    if (result.success) {
+      setPlayer2Name(result.profile.player2Name);
+      HighScoreManager.updateRecordNames({
+        levelAttemptIds: currentLevelAttemptIdRef.current ? [currentLevelAttemptIdRef.current] : [],
+        runId: runContextRef.current?.runId,
+        player2Name: result.profile.player2Name,
+      });
+    }
     return result;
   };
 
