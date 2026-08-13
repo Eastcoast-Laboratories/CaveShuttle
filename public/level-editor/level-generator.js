@@ -981,8 +981,8 @@
     // below the slope tiles. This prevents open pockets from forming under/over
     // the p-fill part of the ramp while preserving the open side of the slope.
     // Only fill open ' ' cells, never overwrite features, doors, start or pod.
-    // To avoid blocking vertical shafts or open air, only extend p up/down when
-    // there is already a solid p wall one row further away.
+    // The validator requires pp directly below qr/st and above uv/wx, so we
+    // unconditionally fill any open cells in those rows.
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width - 1; x++) {
         const ch = grid[y][x];
@@ -990,18 +990,18 @@
         if (ch === 'q' && ch2 === 'r') {
           // qr floor ramp: p floor below from left wall to r column.
           const c = x + 1;
-          if (y + 2 < height) {
+          if (y + 1 < height) {
             for (let c2 = 0; c2 <= c; c2++) {
-              if (grid[y + 1][c2] === ' ' && grid[y + 2][c2] === 'p') {
+              if (grid[y + 1][c2] === ' ') {
                 setChar(grid, y + 1, c2, 'p');
               }
             }
           }
         } else if (ch === 's' && ch2 === 't') {
           // st floor ramp: p floor below from s column to right wall.
-          if (y + 2 < height) {
+          if (y + 1 < height) {
             for (let c2 = x; c2 < width; c2++) {
-              if (grid[y + 1][c2] === ' ' && grid[y + 2][c2] === 'p') {
+              if (grid[y + 1][c2] === ' ') {
                 setChar(grid, y + 1, c2, 'p');
               }
             }
@@ -1009,18 +1009,18 @@
         } else if (ch === 'u' && ch2 === 'v') {
           // uv ceiling ramp: p ceiling above from left wall to v column.
           const c = x + 1;
-          if (y - 2 >= 0) {
+          if (y - 1 >= 0) {
             for (let c2 = 0; c2 <= c; c2++) {
-              if (grid[y - 1][c2] === ' ' && grid[y - 2][c2] === 'p') {
+              if (grid[y - 1][c2] === ' ') {
                 setChar(grid, y - 1, c2, 'p');
               }
             }
           }
         } else if (ch === 'w' && ch2 === 'x') {
           // wx ceiling ramp: p ceiling above from w column to right wall.
-          if (y - 2 >= 0) {
+          if (y - 1 >= 0) {
             for (let c2 = x; c2 < width; c2++) {
-              if (grid[y - 1][c2] === ' ' && grid[y - 2][c2] === 'p') {
+              if (grid[y - 1][c2] === ' ') {
                 setChar(grid, y - 1, c2, 'p');
               }
             }
