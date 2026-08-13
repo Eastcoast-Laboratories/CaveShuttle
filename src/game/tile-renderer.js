@@ -59,7 +59,7 @@ export class TileRenderer {
     const terrainChars = [
       'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',      // platform / slope tiles
       'n', 'o', // slopes that end in a half wall
-      '$', '%', // steep slopes
+      '$', '%', '(', ')', // steep slopes
       'y', 'z'   // Half Wall right, quarter Wall right-bottom
     ];
     const terrainIndices = new Set();
@@ -208,7 +208,7 @@ export class TileRenderer {
     // Small wall components with mostly empty space — no collision
     if (NO_COLLISION_TILES.has(tile)) return false;
     // Steep slope tiles are solid
-    if (tile === '$' || tile === '%') return true;
+    if (tile === '$' || tile === '%' || tile === '(' || tile === ')') return true;
     const code = tile.charCodeAt(0);
     // Characters 76-108 (L-l range) are solid landscape
     // Platform tiles p-t (112-116) and many landscape chars are solid

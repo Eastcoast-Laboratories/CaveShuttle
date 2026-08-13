@@ -191,7 +191,7 @@ export class LevelRenderer {
   }
 
   isWall(tile) {
-    return tile === '#' || ['p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', '$', '%'].includes(tile);
+    return tile === '#' || ['p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', '$', '%', '(', ')'].includes(tile);
   }
 
   getTileAt(level, x, y) {

@@ -168,7 +168,11 @@ const TILE_DEFINITIONS = [
   { char: 'o', color: '#5a5a6a', name: 'descending slope right offset (no-collision)', category: TILE_CATEGORIES.SPECIAL_SLOPES },  
   // steep slopes
   { char: '$', color: '#888888', name: 'Slope steep descending', category: TILE_CATEGORIES.SPECIAL_SLOPES },
-  { char: '%', color: '#888888', name: 'Slope steep ascending', category: TILE_CATEGORIES.SPECIAL_SLOPES },
+  { char: '%', color: '#888888', name: 'Slope steep ascending', category: TILE_CATEGORIES.SPECIAL_SLOPES }, // percent 
+
+  { char: '(', color: '#888888', name: 'ceiling Slope steep descending', category: TILE_CATEGORIES.SPECIAL_SLOPES },
+  { char: ')', color: '#888888', name: 'ceiling Slope steep ascending', category: TILE_CATEGORIES.SPECIAL_SLOPES },
+
   // useless slope tiles with celing and bottom on one tile
   { char: char(136), color: '#888888', name: 'descending slope and ceiling (C1-0x88, Character Tabulation Set)', category: TILE_CATEGORIES.SPECIAL_SLOPES },
   { char: char(137), color: '#888888', name: 'descending half slope and ceiling (C1-0x89, Character Tabulation with Justification)', category: TILE_CATEGORIES.SPECIAL_SLOPES },
@@ -183,8 +187,6 @@ const TILE_DEFINITIONS = [
   { char: '!', color: '#888888', name: 'Tile !', category: TILE_CATEGORIES.OTHER },
   { char: '"', color: '#888888', name: 'Tile "', category: TILE_CATEGORIES.OTHER },
   { char: '&', color: '#888888', name: 'Tile &', category: TILE_CATEGORIES.OTHER },
-  { char: '(', color: '#888888', name: 'Tile (', category: TILE_CATEGORIES.OTHER },
-  { char: ')', color: '#888888', name: 'Tile )', category: TILE_CATEGORIES.OTHER },
   { char: ',', color: '#888888', name: 'Tile ,', category: TILE_CATEGORIES.OTHER },
   { char: '-', color: '#888888', name: 'Tile -', category: TILE_CATEGORIES.OTHER },
   { char: '.', color: '#888888', name: 'Tile .', category: TILE_CATEGORIES.OTHER },

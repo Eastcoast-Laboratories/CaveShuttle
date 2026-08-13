@@ -65,7 +65,7 @@ export function validateLevel(level) {
     if (tile === 'à') return false;
     if (tile === undefined || tile === null) return false;
     // Steep slope tiles are solid
-    if (tile === '$' || tile === '%') return true;
+    if (tile === '$' || tile === '%' || tile === '(' || tile === ')') return true;
     return tile.charCodeAt(0) >= 76;
   }
 
@@ -517,8 +517,8 @@ export function validateLevel(level) {
   //   but a wall is required directly below.
   // uv/wx slopes retreat from the corridor — open space below is valid (corridor),
   //   but a wall is required directly above.
-  const SLOPES_REQUIRE_WALL_BELOW = ['q', 'r', 's', 't'];
-  const SLOPES_REQUIRE_WALL_ABOVE = ['u', 'v', 'w', 'x'];
+  const SLOPES_REQUIRE_WALL_BELOW = ['q', 'r', 's', 't', '$', '%'];
+  const SLOPES_REQUIRE_WALL_ABOVE = ['u', 'v', 'w', 'x', '(', ')'];
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < width; x++) {
       const tile = padded[y][x];
