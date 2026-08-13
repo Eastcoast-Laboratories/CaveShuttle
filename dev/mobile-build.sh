@@ -138,11 +138,6 @@ if [ "$FORCE_SYNC" = false ]; then
   npm run build
 fi
 
-# Copy image assets to dist before sync
-echo "Copying image assets to dist..."
-mkdir -p dist/dev/ideas
-cp dev/ideas/*.png dist/dev/ideas/
-
 # Disable Capacitor telemetry
 echo "Disabling Capacitor telemetry..."
 npx cap telemetry off 2>/dev/null || true
