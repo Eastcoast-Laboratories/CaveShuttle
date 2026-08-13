@@ -515,6 +515,15 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           case 'p2Fire': setP2FireActive(true); break;
         }
       } else {
+        // Second finger tap while joystick is in use → activate shield
+        const joystickInUse = joystickActive || (joystickTapTimerRef.current !== null);
+        if (joystickInUse && joystickPointerId.current !== e.pointerId && (!twoPlayer || networkRole)) {
+          e.preventDefault();
+          setShieldActive(true);
+          pointerButtonMap.current.set(e.pointerId, 'shield');
+          buttonPointerIds.current.add(e.pointerId);
+          return;
+        }
         // In tilt steering mode or joystick-disabled mode, tapping anywhere (not on a button) activates fire
         if ((tiltSteering || !joystickEnabled) && (!twoPlayer || networkRole)) {
           e.preventDefault();
@@ -556,8 +565,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           joystickLastMoveTimeRef.current = performance.now();
         }
       }
-      // Handle joystick movement
-      if (joystickActive) {
+      // Handle joystick movement (only for the pointer that controls the joystick)
+      if (joystickActive && joystickPointerId.current === e.pointerId) {
         // Horizontal: rotation speed is driven by pointer movement velocity (delta per event),
         // not absolute offset. pointermove only fires while the finger actually moves, so when
         // the finger holds still no events arrive; the render loop zeroes rotation after
@@ -588,6 +597,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             // Deactivate old button
             switch (currentButtonType) {
               case 'pod': setTouchActive(false); setShieldActive(false); break;
+              case 'shield': setShieldActive(false); break;
               case 'accelerate': setAccelerateActive(false); break;
               case 'fire': setFireActive(false); break;
               case 'rotateLeft': setRotateLeftActive(false); break;
@@ -641,6 +651,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           buttonPointerIds.current.delete(e.pointerId);
           switch (buttonType) {
             case 'pod': setTouchActive(false); setShieldActive(false); break;
+            case 'shield': setShieldActive(false); break;
             case 'accelerate': setAccelerateActive(false); break;
             case 'fire': setFireActive(false); break;
             case 'rotateLeft': setRotateLeftActive(false); break;
