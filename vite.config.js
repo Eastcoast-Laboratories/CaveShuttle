@@ -26,6 +26,12 @@ export default defineConfig({
           key: join(__dirname, '.dev-certs/localhost-key.pem'),
         }
       : true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+      },
+    },
     fs: {
       // Allow serving files from dev/external-levelpacks for editor access
       allow: ['..', 'dev/external-levelpacks']

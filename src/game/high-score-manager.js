@@ -42,6 +42,24 @@ function generateUid(name) {
   return `${name.replace(/\s+/g, '')}-${Date.now().toString(36)}`;
 }
 
+function generatePassword() {
+  const length = 32;
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  const bytes = new Uint32Array(length);
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < length; i++) {
+      bytes[i] = Math.floor(Math.random() * 0xFFFFFFFF);
+    }
+  }
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += charset[bytes[i] % charset.length];
+  }
+  return password;
+}
+
 function safeGet(key, defaultValue) {
   try {
     const stored = localStorage.getItem(key);
@@ -103,6 +121,7 @@ export class HighScoreManager {
     if (!isPlainObject(profile) || typeof profile.name !== 'string' || !profile.name.trim()) {
       profile = { name: this.generatePlayerName() };
       profile.uid = generateUid(profile.name);
+      profile.password = generatePassword();
       safeSet(PLAYER_PROFILE_KEY, profile);
       console.log('[PLAYER_PROFILE] Generated new profile with uid:', profile.uid);
     }
@@ -110,6 +129,11 @@ export class HighScoreManager {
       profile.uid = generateUid(profile.name);
       safeSet(PLAYER_PROFILE_KEY, profile);
       console.log('[PLAYER_PROFILE] Added missing uid:', profile.uid);
+    }
+    if (typeof profile.password !== 'string' || profile.password.length < 8) {
+      profile.password = generatePassword();
+      safeSet(PLAYER_PROFILE_KEY, profile);
+      console.log('[PLAYER_PROFILE] Generated missing password');
     }
     if (typeof profile.player2Name !== 'string' || !profile.player2Name.trim()) {
       profile.player2Name = this.generatePlayerName();
@@ -553,6 +577,6 @@ export class HighScoreManager {
   static resetAll() {
     this.resetHighscores();
     const name = this.generatePlayerName();
-    safeSet(PLAYER_PROFILE_KEY, { name, uid: generateUid(name) });
+    safeSet(PLAYER_PROFILE_KEY, { name, uid: generateUid(name), password: generatePassword() });
   }
 }

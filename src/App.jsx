@@ -15,6 +15,7 @@ import { useNetwork } from './network/NetworkContext.jsx';
 import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS } from './core/constants.js';
 import { ScoringSystem } from './game/scoring.js';
 import { HighScoreManager } from './game/high-score-manager.js';
+import { autoAccountManager } from './game/auto-account.js';
 import { APP_VERSION } from './version.js';
 import { storageKey } from './core/storage-keys.js';
 import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './core/progress-storage.js';
@@ -122,6 +123,12 @@ function App() {
   // One-time migration of legacy completedLevels to classic pack
   useEffect(() => {
     migrateLegacyProgress();
+  }, []);
+
+  // Auto-register/login with backend using profile.uid
+  useEffect(() => {
+    autoAccountManager.startOnlineListener();
+    autoAccountManager.tryAutoRegister();
   }, []);
 
   // Load meta for the current pack (built-in packs fetch meta.json lazily)
