@@ -14,9 +14,11 @@ const isCapacitorNative = typeof window !== 'undefined'
   && typeof Capacitor !== 'undefined'
   && Capacitor.isNativePlatform?.();
 
-const COMMUNITY_API_URL = isCapacitorNative
-  ? 'https://community.caveshuttle.z11.de/api/mobile/caveshuttle'
-  : `${window.location.origin}/api/mobile/caveshuttle`;
+const isLocalDev = typeof window !== 'undefined' && import.meta.env?.DEV === true;
+
+const COMMUNITY_API_URL = isLocalDev
+  ? '/api/mobile/caveshuttle'
+  : 'https://community.caveshuttle.z11.de/api/mobile/caveshuttle';
 
 function safeGet(key, defaultValue) {
   try {
