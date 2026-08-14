@@ -261,6 +261,7 @@ function App() {
   const { manager: networkManager, state: networkState } = useNetwork();
   const [multiplayerView, setMultiplayerView] = useState(null);
   const [networkRole, setNetworkRole] = useState(null);
+  const [networkDisconnectMessage, setNetworkDisconnectMessage] = useState(null);
 
   useEffect(() => {
     if (gameState === 'menu' && networkRole && networkState.state !== 'lobby' && networkState.state !== 'ready') {
@@ -268,6 +269,17 @@ function App() {
       setNetworkRole(null);
     }
   }, [gameState, networkRole, networkManager, networkState.state]);
+
+  // [NETWORK] Handle disconnection during gameplay: switch client to single-player
+  useEffect(() => {
+    if (networkState.state === 'disconnected' && networkRole === 'client' && gameState === 'playing') {
+      console.log('[NETWORK] Host disconnected during gameplay, switching to single-player');
+      networkManager.reset();
+      setNetworkRole(null);
+      setTwoPlayer(false);
+      setNetworkDisconnectMessage(t.hostLeft || 'Host left the game.');
+    }
+  }, [networkState.state, networkRole, gameState, networkManager, t]);
 
   // [NETWORK] Listen for playagain event from the other player
   useEffect(() => {
@@ -1029,6 +1041,22 @@ function App() {
               </div>
             </div>
           </div>
+
+          {networkDisconnectMessage && (
+            <div style={{
+              position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)',
+              background: 'rgba(220, 40, 40, 0.95)', color: '#fff', padding: '12px 24px',
+              borderRadius: '8px', fontSize: '14px', fontWeight: '600', zIndex: 100,
+              display: 'flex', alignItems: 'center', gap: '12px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+            }}>
+              <span>{networkDisconnectMessage}</span>
+              <button onClick={() => setNetworkDisconnectMessage(null)} style={{
+                background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#fff',
+                borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '12px',
+              }}>✕</button>
+            </div>
+          )}
 
           {/* Canvas wrapper for scaled canvas and centered overlays */}
           <div id="canvas-wrapper" style={{ flex: 1, width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
