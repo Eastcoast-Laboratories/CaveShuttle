@@ -4,7 +4,7 @@
 
 Phase 1 implementiert lokale Highscores, lokale Benutzernamen sowie Import und Export. Danach wird diese Funktion getestet, im Play Store beschrieben und mit dem Android-Bundle veröffentlicht.
 
-Das Spiel bleibt in Phase 1 ohne Benutzerkonto und ohne Online-Zwang vollständig nutzbar. Die spätere Online-Funktion wird ausschließlich in `Highscore-System-Phase-2.md` geplant.
+Das Spiel bleibt in Phase 1 ohne Benutzerkonto und ohne Online-Zwang vollständig nutzbar. Die spätere Online-Funktion wurde ursprünglich in einem separaten Phase-2-Dokument geplant (Score-Sync-Backend inzwischen umgesetzt) und wird seither in `Cave-Shuttle-Community-Website.md` fortgeführt (Abschnitt 0: Status, Abschnitt 4.1/4.2: noch offene Punkte wie Vertrauensmodell und Datenschutz).
 
 ## 1. Zielarchitektur und Datenmodell
 
@@ -205,4 +205,4 @@ Vor der Veröffentlichung müssen Tests erfolgreich sein sowie das Android-Bundl
 
 Phase 2 verwendet `PlayerProfile`, `RunContext`, `LevelScoreRecord` und `RunScoreRecord` als lokale Ausgangsdaten. Diese Objekte werden dort nicht neu definiert, sondern um Synchronisationsstatus und Serverreferenzen ergänzt.
 
-Die Laravel-Erweiterung, Konto- und API-Planung, serverseitige Score-Prüfung, Datenschutzänderungen und der Online-Rollout stehen ausschließlich in `Highscore-System-Phase-2.md`.
+Die ursprünglich in Phase 2 geplante Laravel-Erweiterung, Konto- und API-Planung sind umgesetzt; siehe `Cave-Shuttle-Community-Website.md` Abschnitt 0 für den Statusabgleich. Serverseitige Score-Prüfung, Datenschutzänderungen und der Online-Rollout stehen weiterhin aus, siehe `Cave-Shuttle-Community-Website.md` Abschnitt 4.1/4.2/4.3.

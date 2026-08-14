@@ -25,6 +25,37 @@ Logik, (3) weitere kleinere Aufräumarbeiten (Abschnitt 4).
 
 ---
 
+## 0. Bezug zum ehemaligen `Highscore-System-Phase-2.md`
+
+`Highscore-System-Phase-2.md` hat ursprünglich den **Score-Sync-Backend-
+Teil** spezifiziert. Dieser Teil ist inzwischen umgesetzt; das Dokument
+wurde gelöscht, da sein gesamter Inhalt hier aufgegangen ist (dieser
+Abschnitt für den Status, Abschnitt 4.1-4.3 für die daraus noch offenen
+Punkte). Dieses Dokument setzt dort an, wo Phase-2 aufhört (Packs,
+Rankings). Statusabgleich Phase-2 → Ist-Zustand:
+
+| Phase-2-Abschnitt | Inhalt | Status |
+|---|---|---|
+| §3.1 Tabelle/Modell | `cave_shuttle_scores`, `CaveShuttleScore` | ✅ erledigt |
+| §3.2 API-Endpunkte | `scores/sync`, `leaderboard`, `scores`, `export`, `account/delete` | ✅ erledigt |
+| §3.3 Controller | `CaveShuttleApiController`, idempotente Uploads, Konflikterkennung | ✅ erledigt |
+| §3.4 Trennung | eigene Tabelle, `pack_version`-Whitelist (`config/caveshuttle.php`) | ✅ erledigt |
+| §4 Konto/Auth | Login/Register/Token wiederverwendet — jetzt pro Checkout in eigener isolierter DB (stärkere Trennung als ursprünglich geplant, siehe `dev/PROJECT_SEPARATION.md`) | ✅ erledigt (verändert: keine geteilten Accounts mehr zwischen Roboyard/Cave Shuttle) |
+| §5 API-Vertrag | Request-/Response-Format, Sync-Semantik (`created`/`skipped`/`conflict`) | ✅ erledigt, inkl. Tests (`tests/Feature/CaveShuttleApiTest.php`) |
+| §6 Vertrauensmodell | Serverseitige Score-Validierung/Anti-Cheat-Strategie | ⏳ **offen** — siehe Abschnitt 4.1 |
+| §7 Level-Packs/Versionen | `packVersion`-Whitelist | ✅ erledigt (Whitelist); Pack-Speicherung/-Sharing selbst noch offen → Abschnitt 2 |
+| §8 Datenschutz/Play Store | Datenschutzerklärung, Data-Safety-Formular, Play-Store-Texte | ⏳ **offen** — siehe Abschnitt 4.2 |
+| §9 Rollout Schritte 1-6 | Migration, Modell, Routen, Controller, Tests | ✅ erledigt |
+| §9 Rollout Schritte 7-9 | Datenschutztexte, Staging-Test, gestufte Freigabe | ⏳ **offen** — siehe Abschnitt 4.2/4.3 |
+| §10 Tests | Auth, Idempotenz, Konflikte, Trennung, Leaderboard, Export, Löschung | ✅ erledigt; Rate-Limiting-Tests fehlen noch |
+| §11 Abschlusskriterium | vollständig erst nach §6 + §8 | ⏳ **offen** |
+
+Die offenen Phase-2-Punkte (§6, §8, Rate-Limiting, Staging/Rollout) sind in
+Abschnitt 4 dieses Dokuments aufgenommen, damit sie nicht zwischen den zwei
+Dokumenten verloren gehen.
+
+---
+
 ## 1. Ziel
 
 Auf `community.caveshuttle.de` sollen Nutzer:
@@ -290,7 +321,54 @@ public function index(Request $request)
 
 ---
 
-## 4. Weitere offene Punkte (Sammelliste)
+## 4. Weitere offene Punkte (inkl. offener Phase-2-Punkte)
+
+### 4.1 Vertrauensmodell / Anti-Cheat (offen aus Phase-2 §6)
+
+Scores entstehen im Client; der Server speichert sie unvalidiert. Vor
+Freischaltung einer öffentlichen Rangliste (egal ob mobiles Leaderboard
+oder Web-Rankings aus Abschnitt 3) muss eine Strategie gewählt werden:
+
+- serverseitige Score-Validierung (z. B. Plausibilitätsgrenzen aus
+  `score_breakdown`-Summen),
+- signierter Run mit Replay-/Ereignisdaten,
+- Einschränkung auf validierbare Spielmodi,
+- oder klare Kennzeichnung als nicht manipulationssichere Rangliste (kurzfristig
+  einfachste Option, per Hinweistext auf `/rankings` und im mobilen Leaderboard).
+
+Bis zur Entscheidung darf keine Rangliste als fälschungssicher beworben werden.
+
+### 4.2 Datenschutz und Play Store (offen aus Phase-2 §8, erweitert um Packs/Rankings)
+
+Zu aktualisieren, sobald Abschnitt 2 (Packs) und Abschnitt 3 (Rankings)
+produktiv sind:
+
+- Datenschutzerklärung auf `community.caveshuttle.z11.de`: Konto-Scores
+  (bereits Phase-2), zusätzlich Pack-Uploads (Name, Inhalt, Autor-Zuordnung)
+  und öffentliche Ranking-Score-Breakdowns.
+- Speicherdauer, Empfänger, Datenexport (`export`-Endpunkt um Packs
+  erweitern), Kontolöschung (`account/delete` um `cave_shuttle_packs`
+  erweitern).
+- Play-Console-Data-Safety-Formular und Play-Store-Beschreibung: Konto,
+  Online-Highscores, nutzergenerierte Packs, Online-Galerie.
+
+### 4.3 Rate-Limiting und Staging-Rollout (offen aus Phase-2 §9/§10)
+
+- Rate-Limiting-Tests für `scores/sync` fehlen noch (nur die Route ist
+  vorbereitet, Middleware/Tests noch nicht ergänzt).
+- Rate-Limiting für die neuen Pack-Upload-Routen (Abschnitt 2.5) muss von
+  Anfang an mitgetestet werden, nicht nachträglich.
+- Aus Phase-2 §10 noch offen: Audit der Server-Logs
+  (`Log::info`/`Log::warning` in `CaveShuttleApiController`, künftig auch
+  `CaveShuttlePackController`/`PackService`) auf unnötige personenbezogene
+  Daten — aktuell werden `user_id`, `run_id`, `pack_version` geloggt, keine
+  Klarnamen/E-Mails; das sollte bei jeder neuen Log-Zeile in Packs/Rankings
+  genauso eingehalten werden.
+- Staging-Test auf `community.caveshuttle.z11.de` und schrittweise Freigabe
+  mit Monitoring stehen für Scores UND für Packs/Rankings noch aus — sollten
+  gemeinsam einmal durchgeführt werden, nicht pro Feature einzeln.
+
+### 4.4 Sonstige offene Punkte
 
 - **Kommentare**: `Comment`-Modell ist aktuell an `Map` gebunden
   (`app/Models/Comment.php`); prüfen, ob Pack-Kommentare eine eigene
@@ -305,15 +383,48 @@ public function index(Request $request)
   Abschnitt 3 sicherstellen, dass Admin-Ansichten (falls sie das Cave-
   Shuttle-System ebenfalls zeigen sollen) denselben Systemschalter nutzen,
   statt eigene Queries zu duplizieren.
-- **Datenschutz/Play-Store-Texte**: um "Pack-Upload", "Online-Bewertung"
-  und die neuen Ranking-Spalten (Score-Breakdown) ergänzen (siehe
-  `Highscore-System-Phase-2.md` §8 als Vorlage).
 - **`dev/PROJECT_SEPARATION.md`**: nach Umsetzung von Abschnitt 2 und 3 den
-  "Known TODO"-Abschnitt dort aktualisieren/entfernen.
+  "Known TODOs"-Abschnitt dort aktualisieren/entfernen.
 
 ---
 
-## 5. Offene Entscheidungen
+## 5. Roter Faden: Gesamt-Reihenfolge
+
+Konsolidiert Phase-2-Reste und die Abschnitte 2-4 dieses Dokuments in einer
+Umsetzungsreihenfolge (Abhängigkeiten zuerst):
+
+1. **Packs-Backend** (Abschnitt 2.2-2.5): Migration, Modell, `PackService`,
+   `CaveShuttlePackController`, API-Erweiterung, Validierung, Tests.
+2. **Packs-Frontend** (Abschnitt 2.6): Navigation und Startseite auf
+   "Packs" umstellen.
+3. **Editor-Integration** (Abschnitt 2.7, CaveShuttle-Repo): "Share to Web",
+   "Online Packs" im Spiel.
+4. **Rankings-Umschalter Backend** (Abschnitt 3.3): `RankingService`-
+   Erweiterung, Config-Schalter — kann parallel zu 1-3 begonnen werden, da
+   unabhängig von Packs.
+5. **Rankings-Umschalter Frontend** (Abschnitt 3.4): Controller + View.
+6. **Vertrauensmodell entscheiden** (Abschnitt 4.1) — spätestens bevor
+   Rankings (Schritt 5) oder das mobile Leaderboard öffentlich beworben
+   werden.
+7. **Rate-Limiting nachrüsten** (Abschnitt 4.3) für Score-Sync UND
+   Pack-Upload gemeinsam.
+8. **Datenschutz-/Play-Store-Texte aktualisieren** (Abschnitt 4.2) — deckt
+   Packs, Rankings und die noch offenen Score-Punkte aus Phase-2 in einem
+   Schritt ab, statt mehrfach nachzubessern.
+9. **Staging-Test + gestufte Freigabe** (Abschnitt 4.3) für Scores, Packs
+   und Rankings gemeinsam.
+10. **Aufräumen**: `dev/PROJECT_SEPARATION.md` "Known TODOs" entfernen,
+    das ursprüngliche Phase-2-Abschlusskriterium (siehe Abschnitt 0,
+    Zeile "§11 Abschlusskriterium") erneut gegen den dann aktuellen Stand
+    prüfen.
+
+Schritte 6-9 sind reine Phase-2-Reste ohne Abhängigkeit von Packs/Rankings-
+Code und können bei Bedarf vorgezogen werden, wenn das mobile Leaderboard
+schneller live gehen soll als Packs/Web-Rankings.
+
+---
+
+## 6. Offene Entscheidungen
 
 - Soll `pack_data` als JSON-Spalte in der DB oder als Datei im Storage
   liegen? (Für den erwarteten Umfang reicht `longtext`; bei sehr großen
@@ -324,7 +435,11 @@ public function index(Request $request)
   bestehenden Datensatzes (empfohlen) oder eigener Versionshistorie-
   Datensatz? `packVersion` in `cave_shuttle_scores` bleibt davon
   unabhängig korrekt, da dort die Version zum Score-Zeitpunkt gespeichert
-  ist.
+  ist. Prinzip aus Phase-2 §7, gilt weiterhin: eine neue Version erzeugt
+  einen neuen Ranglisten-Raum (Scores verschiedener Versionen werden nie
+  gemischt); nicht mehr unterstützte/gelöschte Pack-Versionen bleiben über
+  historische `cave_shuttle_scores`-Einträge referenzierbar, auch wenn der
+  Pack-Datensatz selbst soft-deleted ist.
 - Cave-Shuttle-Ranglisten in Abschnitt 3: global (bester Score über alle
   Packs) oder ausschließlich pro `pack_version` × `level` × `player_mode`
   (wie die mobile Rangliste)? Empfehlung: Website zeigt beides — ein
