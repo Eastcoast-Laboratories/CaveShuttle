@@ -1636,14 +1636,14 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           }
           // Check if rotation stops
           if (!isRotating && wasRotatingRef.current) {
-            // Snap to vertical if start angle was close to vertical and snapping is not disabled
-            if (rotationStartAngleRef.current !== null && !rotationSnapDisabledRef.current) {
-              const startAngleDeg = (rotationStartAngleRef.current * 180 / Math.PI) % 360;
-              const normalizedStart = startAngleDeg < 0 ? startAngleDeg + 360 : startAngleDeg;
-              const distToVertical = Math.min(normalizedStart, 360 - normalizedStart);
-              if (distToVertical < ROTATION_SNAP_ANGLE_THRESHOLD && distToVertical != 0) { // within snapping distance of vertical
+            // Snap to vertical if current angle is close to vertical and snapping is not disabled
+            if (!rotationSnapDisabledRef.current) {
+              const currentAngleDeg = (ship.angle * 180 / Math.PI) % 360;
+              const normalizedCurrent = currentAngleDeg < 0 ? currentAngleDeg + 360 : currentAngleDeg;
+              const distToVertical = Math.min(normalizedCurrent, 360 - normalizedCurrent);
+              if (distToVertical < ROTATION_SNAP_ANGLE_THRESHOLD && distToVertical != 0) {
                 ship.setAngle(0);
-                console.log('[ROTATION] snap from ' + normalizedStart + ' to 0');
+                console.log('[ROTATION] snap from ' + normalizedCurrent.toFixed(1) + '° to 0°');
               }
             }
             rotationStartAngleRef.current = null;
