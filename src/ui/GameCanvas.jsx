@@ -2070,7 +2070,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         enemyMines.forEach((es, i) => {
           if (es.active) {
             if (networkRole !== 'client') {
-              es.update(deltaTime, level, tileRenderer.current);
+              es.update(deltaTime, level, tileRenderer.current, ship.x, ship.y);
               if (Math.random() < 0.01) {
                 console.log('[ENEMY_MINE]', i, 'pos:', es.x.toFixed(0), es.y.toFixed(0), 'angle:', es.angle.toFixed(2), 'active:', es.active);
               }

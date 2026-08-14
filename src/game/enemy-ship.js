@@ -1,14 +1,17 @@
 // Mines - hostile mines that moves randomly in free areas
-import { MINE_RADIUS, MINE_SPEED_MIN, MINE_SPEED_MAX, MINE_CHANGE_DIR_MIN_FRAMES, MINE_CHANGE_DIR_MAX_FRAMES, MINE_BOUNCE_DAMPING, MINE_TURN_RATE, MINE_STUCK_BOUNCE_THRESHOLD, MINE_STUCK_BOUNCE_WINDOW, MINE_UNSTUCK_FRAMES } from '../core/constants.js';
+import { MINE_RADIUS, MINE_SPEED_MIN, MINE_SPEED_MAX, MINE_CHANGE_DIR_MIN_FRAMES, MINE_CHANGE_DIR_MAX_FRAMES, MINE_BOUNCE_DAMPING, MINE_TURN_RATE, MINE_STUCK_BOUNCE_THRESHOLD, MINE_STUCK_BOUNCE_WINDOW, MINE_UNSTUCK_FRAMES, MINE_ACTIVATION_DISTANCE, MINE_MAX_DISTANCE_FROM_START } from '../core/constants.js';
 
 export class EnemyMine {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.startX = x;
+    this.startY = y;
     this.vx = 0;
     this.vy = 0;
     this.angle = 0;
     this.active = true;
+    this.activated = false;
     this.radius = MINE_RADIUS;
     this.changeDirTimer = 0;
     this.changeDirInterval = MINE_CHANGE_DIR_MIN_FRAMES + Math.random() * (MINE_CHANGE_DIR_MAX_FRAMES - MINE_CHANGE_DIR_MIN_FRAMES);
@@ -23,8 +26,36 @@ export class EnemyMine {
     this.collisionDisabled = 0; // frames remaining with collision disabled
   }
 
-  update(dt, level, tileRenderer) {
+  update(dt, level, tileRenderer, shipX, shipY) {
     if (!this.active) return;
+
+    // Only start moving once the ship is within activation distance
+    if (!this.activated) {
+      if (shipX != null && shipY != null) {
+        const dx = this.x - shipX;
+        const dy = this.y - shipY;
+        const distToShip = Math.sqrt(dx * dx + dy * dy);
+        if (distToShip <= MINE_ACTIVATION_DISTANCE) {
+          this.activated = true;
+          console.log('[ENEMY_MINE] Activated at distance', distToShip.toFixed(0), 'from ship');
+        }
+      }
+      if (!this.activated) return;
+    }
+
+    // Check distance from start point; reverse 180° if max distance reached
+    const sdx = this.x - this.startX;
+    const sdy = this.y - this.startY;
+    const distFromStart = Math.sqrt(sdx * sdx + sdy * sdy);
+    if (distFromStart >= MINE_MAX_DISTANCE_FROM_START) {
+      // Reverse direction 180 degrees
+      this.targetAngle = Math.atan2(this.vy, this.vx) + Math.PI;
+      this.targetVx = Math.cos(this.targetAngle) * this.speed;
+      this.targetVy = Math.sin(this.targetAngle) * this.speed;
+      this.vx = this.targetVx;
+      this.vy = this.targetVy;
+      this.changeDirTimer = 0;
+    }
 
     // Periodically pick a new random target direction
     this.changeDirTimer += dt;

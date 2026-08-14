@@ -120,6 +120,8 @@ export const MINE_TURN_RATE = 0.01; // How fast mine velocity interpolates towar
 export const MINE_STUCK_BOUNCE_THRESHOLD = 4; // Number of bounces within MINE_STUCK_BOUNCE_WINDOW frames to trigger stuck detection
 export const MINE_STUCK_BOUNCE_WINDOW = 30; // Frame window for counting bounces
 export const MINE_UNSTUCK_FRAMES = 20; // How many frames collision is disabled while escaping
+export const MINE_ACTIVATION_DISTANCE = 500; // Mines only start moving when ship is within this distance (in pixels)
+export const MINE_MAX_DISTANCE_FROM_START = 500; // Max distance a mine can travel from its start point before reversing 180°
 
 // God mode power-up
 export const GOD_MODE_TILE = 'ý'; // Tile that grants god mode when shot

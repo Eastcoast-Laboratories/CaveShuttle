@@ -3,7 +3,7 @@
 0           ; height of start
 -5          ; height of empty space
 25          ; height of bedrock
-129    61  156 ; background/tractor (wall color)
+ 129   61  156 ; background/tractor (wall color)
  164    0    0 ; gun/reactor/stand
    0  164    0 ; pod/blip
    0  164  164 ; text
@@ -23,21 +23,21 @@ ppppppppppppppppppppp                                                           
 ppppppppppppppppppppp                                                                                                                 stpppppppppppppppppppp
 ppppppppppppppppppppp                                                                                                               stpppppppppppppppppppppp
 pppppppppppppppppppppqrPQR                                                                                                        stpppppppppppppppppppppppp
-pppppppppppppppppppppppqrS              UVW                                       UVWstpppqr                                 UVWstpppppppppppppppppppppppppp
-pppppppppppppppppppppppppqr             Tstqr    `a`a`a`a`a`a`a`a`a`a             Tstpppppppqr                               Tstpppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp          pppppqr  bcbcbcbcbcbcbcbcbcbc       UVWstpppppppppppppqr                         UVWstpppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp         NppppppppppppppppppppppppppppppppppqrTstpppppppppppppppppppppppppqr               Tstpppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp         Oppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr          stpppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppHppppppppGppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr      stpppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppHppppppppGpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppHppppppppGpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp         Npppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp         Opppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-pppppppppppppppppppppppppppppp                  wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppuv                      wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppuv[                         wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppuvXYZ     +                     wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppuv               ++    +            wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppqrS                           UVW                                 UVWstpppqr                                 UVWstppppppppppppppppppp
+pppppppppppppppppppppppppqr                          Tstqr    `a`a`a`a`a`a`a             Tstpppppppqr                               Tstppppppppppppppppppppp
+pppppppppppppppppppppppppppp                         pppppqr  bcbcbcbcbcbcbc       UVWstpppppppppppppqr                         UVWstppppppppppppppppppppppp
+pppppppppppppppppppppppppppp                        NppppppppppppppppppppppppppppqrTstpppppppppppppppppppppppppqr               Tstppppppppppppppppppppppppp
+pppppppppppppppppppppppppppp                        Oppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr          stppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppHppppppppppppppppppppppGppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr      stpppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppHppppppppppppppppppppppGpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppHppppppppppppppppppppppGpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppp                        Nppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppp                        Oppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppp                          wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppuv                            wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppuv[                               pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppuvXYZ     +                         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppuv               ++    +              pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp         +   +    ++       +         pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp         ++         + +    +    +    pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppp  ++      +            ++  ++   +    pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
@@ -55,7 +55,7 @@ ppppppppppppppppppppppppppppppppppppppppHppppppppGpppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppppppppppppppppp         Npppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppppppppppppppppp         Opppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppppppuv          wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppppppuv      *       wpppppppp pppxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppppppuv      *       wppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppuv[                pppv        \wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppuvXYZ               sppp         ]^_wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppppppppv                  stpppu              wxpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
@@ -65,9 +65,9 @@ ppppppppppppppppppppppppppppppp             stppppppppu                    ppppp
 ppppppppppppppppppppppppppppppp            ppppppppppp                     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppp            pppppppppuv                     ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppp            ppppppppv                       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppp    *     pppppppp    *      ÿÿrPQR       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppp    *     pppppppp    *      sÿrPQR       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppp##########pppppppp###########pppqrS       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-ppppppppppppppppppppppppppppppppp    *     pppppppu    *      pppppp       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+ppppppppppppppppppppppppppppppppp    *     pppppppu    *      pppppq       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppp          pppppuv           tpppppp       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppp          pppuv             ppppppp       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppp                          stppppppp       ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
@@ -130,6 +130,27 @@ ppppppppppppppppppppppppppppppppppppppppppppp|  m0 ypppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppppppppppppp|  12 ypppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppppppppppppp|  34 ypppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
 pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
+                                                                                                                                                            
                                                                                                                                                             
                                                                                                                                                             
                                                                                                                                                             
