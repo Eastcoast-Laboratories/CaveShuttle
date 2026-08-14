@@ -1,0 +1,2 @@
+- Tapping with two fingers activates the tractor beam
+- Third finger tap to activate fire while joystick and shield are active

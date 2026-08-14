@@ -1,0 +1,2 @@
+- Zwei-Finger-Tap aktiviert den Traktorstrahl
+- Dritter Finger-Tap aktiviert Feuer, während Joystick und Schild aktiv sind

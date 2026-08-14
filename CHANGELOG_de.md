@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2 — August 14, 2026
+
+- Zwei-Finger-Tap aktiviert den Traktorstrahl
+- Dritter Finger-Tap aktiviert Feuer, während Joystick und Schild aktiv sind
+
+
 ## 4.1 — August 13, 2026
 
 - Highscore-Rang wird am Game-Over-Screen angezeigt (Gold/Silber/Grün je nach Platzierung)

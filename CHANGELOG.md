@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2 — August 14, 2026
+
+- Tapping with two fingers activates the tractor beam
+- Third finger tap to activate fire while joystick and shield are active
+
+
 ## 4.1 — August 13, 2026
 
 - Highscore rank display at game over with gold/silver/green styling based on rank position

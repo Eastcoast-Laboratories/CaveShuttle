@@ -43,21 +43,15 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Highscore-Rang wird am Game-Over-Screen angezeigt (Gold/Silber/Grün je nach Platzierung)
-- Name kann im EndOverlay geändert werden und wird in der Highscore aktualisiert
-- Enter im Namensfeld speichert nur den Namen statt das nächste Level zu starten
-- Zeitstempel mit Datum und Uhrzeit im Highscore-Detail-Popup
-- Blinkender roter Punkt auf feindlichen Minen
+- Zwei-Finger-Tap aktiviert den Traktorstrahl
+- Dritter Finger-Tap aktiviert Feuer, während Joystick und Schild aktiv sind
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Highscore rank display at game over with gold/silver/green styling based on rank position
-- Player name can be changed in end overlay and updates highscore records retroactively
-- Enter in name field only saves name instead of starting next level
-- Timestamp with localized date and time in highscore detail popup
-- Blinking red dot on enemy mines
+- Tapping with two fingers activates the tractor beam
+- Third finger tap to activate fire while joystick and shield are active
 EOF
 )
 

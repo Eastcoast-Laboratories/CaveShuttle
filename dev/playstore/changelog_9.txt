@@ -1,0 +1,10 @@
+# Play Store Changelogs für Version 4.2
+
+<en-GB>
+- Tapping with two fingers activates the tractor beam
+- Third finger tap to activate fire while joystick and shield are active
+</en-GB>
+<de-DE>
+- Zwei-Finger-Tap aktiviert den Traktorstrahl
+- Dritter Finger-Tap aktiviert Feuer, während Joystick und Schild aktiv sind
+</de-DE>
