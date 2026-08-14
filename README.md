@@ -147,7 +147,7 @@ You only need to set up pm2 once on the production server:
 npm install -g pm2
 
 # Start the server and enable auto-boot (one-time)
-cd /var/kunden/webs/ruben/www/caveshuttle.z11.de
+cd /var/www/caveshuttle.z11.de
 pm2 start server/index.js --name caveshuttle-geckos
 pm2 startup
 pm2 save
