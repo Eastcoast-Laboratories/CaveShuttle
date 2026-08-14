@@ -270,16 +270,26 @@ function App() {
     }
   }, [gameState, networkRole, networkManager, networkState.state]);
 
-  // [NETWORK] Handle disconnection during gameplay: switch client to single-player
+  // [NETWORK] Handle disconnection during gameplay: switch to single-player
   useEffect(() => {
-    if (networkState.state === 'disconnected' && networkRole === 'client' && gameState === 'playing') {
-      console.log('[NETWORK] Host disconnected during gameplay, switching to single-player');
+    if (networkState.state === 'disconnected' && networkRole && gameState === 'playing') {
+      const msg = networkRole === 'client'
+        ? (t.hostLeft || 'Host left the game.')
+        : (t.clientLeft || 'Client left the game.');
+      console.log(`[NETWORK] ${networkRole} disconnected during gameplay, switching to single-player`);
       networkManager.reset();
       setNetworkRole(null);
       setTwoPlayer(false);
-      setNetworkDisconnectMessage(t.hostLeft || 'Host left the game.');
+      setNetworkDisconnectMessage(msg);
     }
   }, [networkState.state, networkRole, gameState, networkManager, t]);
+
+  // Auto-dismiss disconnect message after 20 seconds
+  useEffect(() => {
+    if (!networkDisconnectMessage) return;
+    const timer = setTimeout(() => setNetworkDisconnectMessage(null), 20000);
+    return () => clearTimeout(timer);
+  }, [networkDisconnectMessage]);
 
   // [NETWORK] Listen for playagain event from the other player
   useEffect(() => {
