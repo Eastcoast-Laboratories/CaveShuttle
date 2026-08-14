@@ -229,6 +229,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const tileRenderer = useRef(new TileRenderer());
   const collision = useRef(new CollisionDetection(tileRenderer.current));
   const levelCompleteTriggered = useRef(false);
+  const pendingLevelCompleteData = useRef(null);
   const activeLevelTimeRef = useRef(0); // active play time for the current level in ms
   const shipDestroyed = useRef(false);
   const deathAnim = useRef({ active: false, timeLeft: 0 });
@@ -447,11 +448,13 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         setGameState('gameover');
         if (onGameOver) onGameOver();
       } else if (data.type === 'levelcomplete' && networkRole === 'client') {
-        // If the client already triggered the wormhole locally, skip this event
-        // to avoid cutting the animation short or double-triggering.
+        // If the client already triggered the wormhole locally, store the host data
+        // to be used when the wormhole animation finishes.
         if (!levelCompleteTriggered.current) {
           setGameState('levelcomplete');
-          if (onLevelComplete) onLevelComplete(data.level, data.time, data.width, data.height);
+          if (onLevelComplete) onLevelComplete(data.level, data.time, data.width, data.height, { breakdown: data.breakdown, totalScore: data.totalScore, newHighscore: data.newHighscore, levelNumber: data.levelNumber });
+        } else {
+          pendingLevelCompleteData.current = { breakdown: data.breakdown, totalScore: data.totalScore, newHighscore: data.newHighscore, levelNumber: data.levelNumber, time: data.time, width: data.width, height: data.height, level: data.level };
         }
       }
     };
@@ -2522,8 +2525,15 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             soundManager.current.stopLoop('wormholeAmbient');
             soundManager.current.playOnce('wormholeComplete');
           }
-          if (onLevelComplete) onLevelComplete(currentLevel, activeLevelTimeRef.current, level.width, level.height);
-          if (networkRole === 'host' && networkManager) networkManager.sendEvent({ type: 'levelcomplete', level: currentLevel, time: activeLevelTimeRef.current, width: level.width, height: level.height });
+          if (onLevelComplete) {
+            const nd = pendingLevelCompleteData.current;
+            if (nd) {
+              onLevelComplete(nd.level, nd.time, nd.width, nd.height, { breakdown: nd.breakdown, totalScore: nd.totalScore, newHighscore: nd.newHighscore, levelNumber: nd.levelNumber });
+              pendingLevelCompleteData.current = null;
+            } else {
+              onLevelComplete(currentLevel, activeLevelTimeRef.current, level.width, level.height);
+            }
+          }
         }
       }
 

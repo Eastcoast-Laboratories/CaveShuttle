@@ -365,8 +365,21 @@ function App() {
     handleStartLevel(level);
   };
 
-  const handleLevelComplete = (completedLevel, levelTimeMs, levelWidth, levelHeight) => {
+  const handleLevelComplete = (completedLevel, levelTimeMs, levelWidth, levelHeight, networkData) => {
     setPodDocked(false);
+
+    // Client mode: use the host's calculated data directly
+    if (networkData && networkRole === 'client') {
+      if (networkData.breakdown) setLevelScoreBreakdown(networkData.breakdown);
+      if (typeof networkData.totalScore === 'number') setLevelScore(networkData.totalScore);
+      if (networkData.newHighscore) setNewHighscore(networkData.newHighscore);
+      else setNewHighscore({ level: false, run: false, levelRank: null, runRank: null });
+      const updated = markLevelCompleted(currentPackId, completedLevel);
+      setCompletedLevels(updated);
+      setGameState('levelcomplete');
+      return;
+    }
+
     const fuelRemaining = Math.max(0, Math.min(100, fuel));
     const livesLeft = Math.max(0, lives);
     const levelCompleteLives = Math.min(livesLeft, completedLevel);
@@ -437,6 +450,19 @@ function App() {
 
     // Auto-sync new highscore records to peer in network mode
     if (networkRole && networkManager) {
+      if (networkRole === 'host') {
+        networkManager.sendEvent({
+          type: 'levelcomplete',
+          level: completedLevel,
+          time: levelTimeMs,
+          width: levelWidth,
+          height: levelHeight,
+          breakdown: breakdownFull,
+          totalScore: levelTotalScore,
+          newHighscore: hs,
+          levelNumber: completedLevel,
+        });
+      }
       if (recordResult.saved && recordResult.record) {
         networkManager.sendHighscoreRecord({ type: 'level', data: recordResult.record });
         console.log('[HS_SYNC] Sent level record to peer');
