@@ -250,6 +250,8 @@ npx playwright test
 
 The game supports mobile devices with touch controls and Capacitor for native app deployment.
 
+- Minimum required Android Version: 10
+
 ### Build Mobile Apps
 
 ```bash
