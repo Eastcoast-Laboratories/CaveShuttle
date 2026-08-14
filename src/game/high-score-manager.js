@@ -8,10 +8,10 @@ const PLAYER_PROFILE_KEY = storageKey('playerProfile');
 const HIGHSCORE_DATA_KEY = storageKey('highscoreData');
 
 const SPACE_TERMS = [
-  'Star', 'Comet', 'Moon', 'Planet', 'Asteroid', 'Nebula', 'Galaxy', 'Nova', 'Quasar', 'Meteor'
+  'Star', 'Comet', 'Moon', 'Planet', 'Asteroid', 'Nebula', 'Galaxy', 'Nova', 'Quasar', 'Meteor', 'Blackhole', 'Supernova', 'Space', 'Cosmos', 'Void', 'Cosmic', 'Stellar', 'Exo', 'Galactic', 'Interstellar', 'Cosmo', 'Hyperspace', 'Warp', 'Quantum'
 ];
 const ROLES = [
-  'Pilot', 'Ranger', 'Scout', 'Commander', 'Ace', 'Voyager', 'Captain', 'Navigator', 'Explorer'
+  'Pilot', 'Ranger', 'Scout', 'Commander', 'Ace', 'Voyager', 'Captain', 'Navigator', 'Explorer', 'Hero', 'Legend', 'Conqueror', 'Leader', 'Warrior', 'Invader', 'Bob'
 ];
 const SUFFIXES = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
