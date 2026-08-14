@@ -61,6 +61,7 @@ export default function LocalLobby({ onBack }) {
   const [manualAnswer, setManualAnswer] = useState('')
   const [scanError, setScanError] = useState('')
   const [creating, setCreating] = useState(false)
+  const [connecting, setConnecting] = useState(false)
   const { language } = useLanguage()
   const [copied, setCopied] = useState('')
   const [webScanMode, setWebScanMode] = useState(null)
@@ -123,6 +124,7 @@ export default function LocalLobby({ onBack }) {
   }
 
   async function handleConnectHostWithAnswer() {
+    setConnecting(true)
     try {
       console.log('[LOCAL_LOBBY] Submitting answer SDP, length:', manualAnswer.length)
       await manager.provideLocalAnswer(manualAnswer)
@@ -130,6 +132,8 @@ export default function LocalLobby({ onBack }) {
     } catch (e) {
       console.error('[LOCAL_LOBBY] Failed to apply answer SDP:', e.message)
       manager.addStatus(`${t.error}: ${e.message}`, 'error')
+    } finally {
+      setConnecting(false)
     }
   }
 
@@ -276,7 +280,7 @@ export default function LocalLobby({ onBack }) {
                 style={{ ...inputStyle, height: '80px' }}
               />
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button style={buttonBase} onClick={handleConnectHostWithAnswer}>{t.connect}</button>
+                <button style={buttonBase} onClick={handleConnectHostWithAnswer} disabled={connecting || !manualAnswer}>{connecting ? '...' : t.connect}</button>
                 <button style={secondaryButtonBase} onClick={handleScanAnswer}>{t.scanAnswer}</button>
               </div>
             </>

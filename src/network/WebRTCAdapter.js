@@ -6,6 +6,16 @@ const DEFAULT_RTC_CONFIG = {
   ],
 }
 
+// For local P2P (same WiFi / same machine), we include a STUN server to ensure
+// Firefox starts ICE gathering properly. Host candidates (local IP / mDNS) are
+// what actually get used for same-machine connections; srflx candidates are
+// ignored but harmless.
+const LOCAL_RTC_CONFIG = {
+  iceServers: [
+    { urls: ['stun:stun.l.google.com:19302'] },
+  ],
+}
+
 function waitForIceComplete(pc) {
   return new Promise(resolve => {
     if (pc.iceGatheringState === 'complete') {
@@ -40,7 +50,7 @@ export class WebRTCAdapter extends EventEmitter {
   }
 
   // Host side: create an offer and return the full SDP string.
-  async createHostOffer(rtcConfig = DEFAULT_RTC_CONFIG) {
+  async createHostOffer(rtcConfig = LOCAL_RTC_CONFIG) {
     this.role = 'host'
     this.pc = createPeerConnection(rtcConfig)
     this._bindConnection()
@@ -54,6 +64,7 @@ export class WebRTCAdapter extends EventEmitter {
     const offer = await this.pc.createOffer()
     await this.pc.setLocalDescription(offer)
     await waitForIceComplete(this.pc)
+    this._logIceCandidates('host/offer')
     return this.pc.localDescription.sdp
   }
 
@@ -62,11 +73,18 @@ export class WebRTCAdapter extends EventEmitter {
     if (!this.pc || this.role !== 'host') {
       throw new Error('Not in host mode')
     }
+    console.log(`[WEBRTC_host] Setting remote description (answer), SDP length:`, answerSdp.length)
+    const remoteCandidates = [...answerSdp.matchAll(/a=candidate:(.*)/g)].map(m => m[1])
+    console.log(`[WEBRTC_host] Remote answer contains ${remoteCandidates.length} ICE candidates:`)
+    for (const c of remoteCandidates) {
+      console.log(`[WEBRTC_host]   remote: ${c}`)
+    }
     await this.pc.setRemoteDescription({ type: 'answer', sdp: answerSdp })
+    console.log(`[WEBRTC_host] Remote description set successfully`)
   }
 
   // Client side: connect to a host using its offer SDP and return an answer.
-  async connectToHost(offerSdp, rtcConfig = DEFAULT_RTC_CONFIG) {
+  async connectToHost(offerSdp, rtcConfig = LOCAL_RTC_CONFIG) {
     this.role = 'client'
     this.pc = createPeerConnection(rtcConfig)
     this._bindConnection()
@@ -80,21 +98,68 @@ export class WebRTCAdapter extends EventEmitter {
     const answer = await this.pc.createAnswer()
     await this.pc.setLocalDescription(answer)
     await waitForIceComplete(this.pc)
+    this._logIceCandidates('client/answer')
     return this.pc.localDescription.sdp
   }
 
   _bindConnection() {
     const pc = this.pc
     pc.addEventListener('connectionstatechange', () => {
+      console.log(`[WEBRTC_${this.role}] connectionState:`, pc.connectionState)
       if (pc.connectionState === 'connected') {
         this.emit('connected')
       } else if (['disconnected', 'failed', 'closed'].includes(pc.connectionState)) {
         this.emit('disconnected')
       }
     })
+    pc.addEventListener('iceconnectionstatechange', () => {
+      console.log(`[WEBRTC_${this.role}] iceConnectionState:`, pc.iceConnectionState)
+      if (pc.iceConnectionState === 'failed') {
+        const stats = pc.getStats ? pc.getStats() : null
+        if (stats) {
+          stats.then(report => {
+            report.forEach((item, key) => {
+              if (item.type === 'candidate-pair' && item.state === 'failed') {
+                console.error(`[WEBRTC_${this.role}] Failed candidate pair:`, {
+                  local: item.localCandidateId,
+                  remote: item.remoteCandidateId,
+                  nominated: item.nominated,
+                })
+              }
+              if (item.type === 'local-candidate' || item.type === 'remote-candidate') {
+                console.log(`[WEBRTC_${this.role}] ${item.type}:`, item.candidateType, item.address, item.port, item.protocol)
+              }
+            })
+          })
+        }
+      }
+    })
+    pc.addEventListener('icegatheringstatechange', () => {
+      console.log(`[WEBRTC_${this.role}] iceGatheringState:`, pc.iceGatheringState)
+    })
+    pc.addEventListener('icecandidate', (e) => {
+      if (e.candidate) {
+        console.log(`[WEBRTC_${this.role}] ICE candidate found:`, e.candidate.candidate)
+      } else {
+        console.log(`[WEBRTC_${this.role}] ICE candidate gathering complete (null candidate)`)
+      }
+    })
     pc.addEventListener('icecandidateerror', (e) => {
+      console.error(`[WEBRTC_${this.role}] ICE candidate error:`, e.errorText, 'code:', e.errorCode, 'url:', e.url)
       this.emit('error', { message: `ICE candidate error: ${e.errorText}` })
     })
+  }
+
+  _logIceCandidates(label) {
+    const sdp = this.pc.localDescription?.sdp || ''
+    const candidates = [...sdp.matchAll(/a=candidate:(.*)/g)].map(m => m[1])
+    console.log(`[WEBRTC_${this.role}] ICE candidates (${label}):`, candidates.length)
+    for (const c of candidates) {
+      console.log(`[WEBRTC_${this.role}]   ${c}`)
+    }
+    if (candidates.length === 0) {
+      console.warn(`[WEBRTC_${this.role}] No ICE candidates gathered! SDP:`, sdp.substring(0, 200))
+    }
   }
 
   _bindDataChannel(channel) {
