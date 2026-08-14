@@ -21,7 +21,7 @@ Im Cave-Shuttle-Level-Editor soll ein Spieler folgendes tun können:
 - `ui/HamburgerMenu.jsx` kann `.json`-Packs importieren (`handleImportPack`).
 - `src/game/high-score-manager.js` speichert `packId`, `packVersion`, `mode` und `pass` an Highscore-Datensätzen.
 
-### 2.2 Laravel (roboyard.z11)
+### 2.2 Laravel (community.caveshuttle.z11.de)
 
 - `Map`-Modell speichert einzelne Roboyard-Maps mit `map_string`.
 - `Vote`-Modell speichert `difficulty_rating` (0-5) pro Map.
