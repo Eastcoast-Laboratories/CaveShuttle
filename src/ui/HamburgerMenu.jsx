@@ -4,6 +4,7 @@ import { parseImportedPackFile } from '../levels/level-pack-import.js';
 import { registerCustomPack } from '../levels/levelpacks.js';
 import { removeInstalledPack } from '../core/progress-storage.js';
 import { HighScoreManager } from '../game/high-score-manager.js';
+import { autoAccountManager } from '../game/auto-account.js';
 import { exportAllData, importAllData } from '../core/data-transfer.js';
 import './cave-theme.css';
 import './HamburgerMenu.css';
@@ -619,6 +620,37 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         >
           Reset all Data
         </button>
+      </div>
+
+      <hr />
+      <h3 className="hamburger-section-title">ACCOUNT</h3>
+      <div className="hamburger-settings-group">
+        {(() => {
+          const authUser = autoAccountManager.getAuthUser();
+          const isRegistered = autoAccountManager.isRegistered();
+          if (!isRegistered) {
+            return <p className="hamburger-hint">Not connected to community server yet. Will connect automatically when online.</p>;
+          }
+          return (
+            <>
+              <p className="hamburger-hint">Connected as: <strong>{authUser?.name || 'Unknown'}</strong></p>
+              <button
+                onClick={() => {
+                  const token = autoAccountManager.getToken();
+                  if (!token) return;
+                  const isLocalDev = typeof window !== 'undefined' && import.meta.env?.DEV === true;
+                  const baseUrl = isLocalDev
+                    ? 'http://localhost:8001'
+                    : 'https://community.caveshuttle.z11.de';
+                  window.open(`${baseUrl}/auto-login?token=${encodeURIComponent(token)}&redirect=/settings`, '_blank');
+                }}
+                className="hamburger-btn-green"
+              >
+                Account Settings
+              </button>
+            </>
+          );
+        })()}
       </div>
 
       <hr />
