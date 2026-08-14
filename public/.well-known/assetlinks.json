@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.z11.caveshuttle",
+      "sha256_cert_fingerprints":
+        ["81:FC:57:5A:05:D7:AF:9D:2D:49:B6:14:24:88:4B:64:7B:B5:D7:4C:52:D1:C2:4E:9C:73:0C:07:C5:16:55:C8"]
+    }
+  }
+]
