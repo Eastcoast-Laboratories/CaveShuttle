@@ -388,49 +388,186 @@ produktiv sind:
 
 ---
 
-## 5. Roter Faden: Gesamt-Reihenfolge
+## 5. Automatischer Client-Login/-Registrierung per profile.uid (offline-fähig)
 
-Konsolidiert Phase-2-Reste und die Abschnitte 2-4 dieses Dokuments in einer
+### 5.1 Problem
+
+Bisher setzen Score-Sync (`CaveShuttleApiController`) und die künftigen
+Pack-Uploads (Abschnitt 2) einen **manuellen** Login/Register über
+`/mobile/login` bzw. `/mobile/register` (E-Mail + Passwort) voraus, bevor
+ein API-Token existiert. Das ist für Cave Shuttle unpassend: das Spiel hat
+bereits eine lokale, automatisch generierte `profile.uid`
+(`src/game/high-score-manager.js::getPlayerProfile()`, Format
+`{name}-{timestamp36}`), aber noch keine Verbindung dieser UID zu einem
+Laravel-Account. Das App-Konto soll möglichst ohne Nutzereingabe entstehen
+("es muss ja auch offline funktionieren, sobald das Handy wieder online ist
+automatisch anmelden/registrieren").
+
+Laravels `register`-Endpunkt (`MobileApiController::register`) verlangt
+aktuell zwingend `email` (unique) und `password` (min. 8, confirmed) — ein
+rein UID-basiertes Konto ist damit noch nicht möglich, ohne den Endpunkt
+anzupassen.
+
+### 5.2 Ziel
+
+1. Beim ersten Online-Zugriff registriert sich die App **automatisch** mit
+   der lokalen `profile.uid`, ohne dass der Nutzer etwas eingeben muss.
+2. Ist die App beim ersten Start offline, wird die Registrierung
+   zurückgestellt und automatisch nachgeholt, sobald wieder eine
+   Netzwerkverbindung besteht (Offline-Queue, kein manuelles Eingreifen
+   nötig).
+3. Der Nutzer kann **optional** später ein "echtes" Passwort und eine
+   E-Mail-Adresse hinterlegen (z. B. über Einstellungen), um das Konto auf
+   einem zweiten Gerät wiederherzustellen oder es vor Verlust der App-Daten
+   zu schützen. Ohne diesen Schritt bleibt das Konto ausschließlich über
+   die lokal gespeicherte `profile.uid` + das clientseitig generierte
+   Passwort erreichbar.
+
+### 5.3 Backend-Änderung: UID-basierte Auto-Registrierung
+
+- `MobileApiController::register` (bzw. ein neuer, expliziter Endpunkt
+  `POST /mobile/caveshuttle/auto-register`, um das bestehende
+  `/mobile/register`-Verhalten für Roboyard nicht zu verändern) akzeptiert
+  zusätzlich:
+  - `profile_uid` (Pflicht, = `profile.uid` aus der App-`localStorage`)
+  - `password` (Pflicht — siehe 5.4, wird clientseitig generiert)
+  - `email` (optional; wenn fehlend, generiert der Server eine interne,
+    nicht zustellbare Platzhalter-Adresse `{profile_uid}@device.caveshuttle.local`,
+    damit die `unique:users,email`-Regel erfüllt bleibt, ohne eine
+    zwingende Nutzereingabe zu verlangen)
+  - `name` optional; fällt auf `profile.name` zurück
+- Idempotenz: erneuter Aufruf mit demselben `profile_uid` nach Verbindungs-
+  abbruch darf **keinen** Duplikat-Account erzeugen. Serverseitig wird
+  `profile_uid` in einer neuen Spalte `users.profile_uid` (unique, nullable)
+  gespeichert; bei Kollision wird der bestehende Account per Login
+  (`profile_uid` + `password`) zurückgegeben statt neu angelegt.
+- `POST /mobile/login` wird um `profile_uid` als zusätzlichen `identifier`-
+  Typ erweitert (analog zu E-Mail/Name/ID in Abschnitt "1. Try exact email
+  match" etc. in `MobileApiController::login`).
+
+### 5.4 Passwort-Handling im Client
+
+Ja — ein Passwort ist nötig, da das Backend E-Mail/Passwort-basiert ist.
+Es wird **automatisch generiert**, nicht vom Nutzer eingegeben:
+
+- Beim Erzeugen von `profile.uid` (`getPlayerProfile()`) wird zusätzlich
+  ein zufälliges, ausreichend langes Passwort generiert (z. B.
+  `crypto.getRandomValues`, min. 24 Zeichen) und **nur lokal** in
+  `localStorage` gespeichert (`storageKey('devicePassword')` oder als Teil
+  von `profile`), niemals angezeigt.
+- Dieses Passwort wird für die automatische Registrierung/den
+  automatischen Login verwendet und bleibt für den Nutzer unsichtbar,
+  solange er kein "echtes" Passwort setzt (siehe 5.2 Punkt 3).
+- Setzt der Nutzer später ein eigenes Passwort (Kontowiederherstellung auf
+  anderem Gerät), überschreibt das serverseitig das automatisch generierte
+  Passwort (`POST /mobile/caveshuttle/account/set-password`, authentifiziert
+  per bestehendem Token).
+
+### 5.5 Offline-Queue im Client
+
+- Neuer Client-Zustand `authSyncStatus` (`pending` / `registered` /
+  `failed`), persistiert in `localStorage` neben `profile`.
+- Bei App-Start: wenn `authSyncStatus !== 'registered'` und ein Netzwerk
+  verfügbar ist (`navigator.onLine` + tatsächlicher Fetch-Versuch, da
+  `navigator.onLine` unzuverlässig sein kann), wird automatisch
+  `auto-register`/Login versucht.
+- Bei Netzwerkfehler: `authSyncStatus = 'pending'` bleibt bestehen, kein
+  Fehler-Dialog für den Nutzer (das ist ein Hintergrundvorgang). Retry bei
+  jedem App-Start und zusätzlich bei `window.addEventListener('online', ...)`.
+- Erst nach erfolgreichem Auto-Login/Register wird der API-Token
+  gespeichert und der bereits vorhandene Score-Sync
+  (`CaveShuttleApiController::syncScores`, siehe Phase-2) sowie künftige
+  Pack-Uploads (Abschnitt 2) können laufen. Bis dahin funktioniert das
+  Spiel wie bisher rein lokal (kein Online-Zwang, siehe
+  `Highscore-System.md` §Ziel und Abgrenzung).
+
+### 5.6 Sicherheits-/Datenschutzaspekte
+
+- Das automatisch generierte Passwort ist kein Geheimnis, das der Nutzer
+  sich merkt — es schützt nur vor zufälligem Fremdzugriff über die API,
+  nicht vor Verlust der App-Daten. Das muss in der Datenschutzerklärung
+  (Abschnitt 4.2) klar kommuniziert werden: ohne explizit gesetztes
+  Passwort ist das Konto an das Gerät gebunden und bei Neuinstallation/
+  App-Daten-Löschung nicht wiederherstellbar.
+- Platzhalter-E-Mails (`@device.caveshuttle.local`) dürfen nie für
+  Mailversand (`MAIL_FROM`/Benachrichtigungen) verwendet werden — bei
+  Registrierungs-E-Mails/Benachrichtigungen prüfen, ob die Adresse auf die
+  Platzhalter-Domain endet, und in diesem Fall keinen Mailversand
+  auslösen.
+- Rate-Limiting für den neuen `auto-register`-Endpunkt wie beim
+  bestehenden `register` (`UserRegistrationService::isRateLimited`).
+
+### 5.7 Umsetzungsschritte
+
+1. Migration: `users.profile_uid` (string, nullable, unique) ergänzen.
+2. `MobileApiController::login` um `profile_uid`-Identifier-Typ erweitern
+   (oder neuer `CaveShuttleApiController::autoRegisterOrLogin`, falls die
+   Trennung von Roboyard-Login sauberer ist — Entscheidung siehe
+   Abschnitt 6).
+3. Neuer Endpunkt `POST /mobile/caveshuttle/auto-register` (idempotent
+   über `profile_uid`), Platzhalter-E-Mail-Generierung, Passwort-Hash.
+4. Neuer Endpunkt `POST /mobile/caveshuttle/account/set-password` für die
+   optionale Kontowiederherstellung.
+5. Client (`src/game/high-score-manager.js` oder neues
+   `src/game/auto-account.js`): Passwort-Generierung beim Anlegen von
+   `profile`, `authSyncStatus`-State, Online/Offline-Retry-Logik.
+6. Client-UI: unauffälliger Hinweis/Einstellung "Konto sichern" (optionales
+   Passwort/E-Mail setzen), kein Pflicht-Dialog beim ersten Start.
+7. Tests: Auto-Register ist idempotent bei Mehrfachaufruf mit gleicher
+   `profile_uid`, Login über `profile_uid` funktioniert, Platzhalter-E-Mails
+   erhalten keine Mails, Rate-Limiting greift.
+
+---
+
+## 6. Roter Faden: Gesamt-Reihenfolge
+
+Konsolidiert Phase-2-Reste und die Abschnitte 2-5 dieses Dokuments in einer
 Umsetzungsreihenfolge (Abhängigkeiten zuerst):
 
-1. **Packs-Backend** (Abschnitt 2.2-2.5): Migration, Modell, `PackService`,
+1. **Auto-Login/-Registrierung** (Abschnitt 5): ohne funktionierenden
+   Auto-Account ist weder Score-Sync (bereits live, aber bisher nur mit
+   manuellem Login getestet) noch Pack-Upload für die meisten Nutzer
+   praktisch nutzbar — deshalb an den Anfang gezogen.
+2. **Packs-Backend** (Abschnitt 2.2-2.5): Migration, Modell, `PackService`,
    `CaveShuttlePackController`, API-Erweiterung, Validierung, Tests.
-2. **Packs-Frontend** (Abschnitt 2.6): Navigation und Startseite auf
+3. **Packs-Frontend** (Abschnitt 2.6): Navigation und Startseite auf
    "Packs" umstellen.
-3. **Editor-Integration** (Abschnitt 2.7, CaveShuttle-Repo): "Share to Web",
+4. **Editor-Integration** (Abschnitt 2.7, CaveShuttle-Repo): "Share to Web",
    "Online Packs" im Spiel.
-4. **Rankings-Umschalter Backend** (Abschnitt 3.3): `RankingService`-
-   Erweiterung, Config-Schalter — kann parallel zu 1-3 begonnen werden, da
+5. **Rankings-Umschalter Backend** (Abschnitt 3.3): `RankingService`-
+   Erweiterung, Config-Schalter — kann parallel zu 2-4 begonnen werden, da
    unabhängig von Packs.
-5. **Rankings-Umschalter Frontend** (Abschnitt 3.4): Controller + View.
-6. **Vertrauensmodell entscheiden** (Abschnitt 4.1) — spätestens bevor
-   Rankings (Schritt 5) oder das mobile Leaderboard öffentlich beworben
+6. **Rankings-Umschalter Frontend** (Abschnitt 3.4): Controller + View.
+7. **Vertrauensmodell entscheiden** (Abschnitt 4.1) — spätestens bevor
+   Rankings (Schritt 6) oder das mobile Leaderboard öffentlich beworben
    werden.
-7. **Rate-Limiting nachrüsten** (Abschnitt 4.3) für Score-Sync UND
-   Pack-Upload gemeinsam.
-8. **Datenschutz-/Play-Store-Texte aktualisieren** (Abschnitt 4.2) — deckt
-   Packs, Rankings und die noch offenen Score-Punkte aus Phase-2 in einem
-   Schritt ab, statt mehrfach nachzubessern.
-9. **Staging-Test + gestufte Freigabe** (Abschnitt 4.3) für Scores, Packs
-   und Rankings gemeinsam.
-10. **Aufräumen**: `dev/PROJECT_SEPARATION.md` "Known TODOs" entfernen,
+8. **Rate-Limiting nachrüsten** (Abschnitt 4.3) für Auto-Register,
+   Score-Sync UND Pack-Upload gemeinsam.
+9. **Datenschutz-/Play-Store-Texte aktualisieren** (Abschnitt 4.2 + 5.6) —
+   deckt Auto-Account, Packs, Rankings und die noch offenen Score-Punkte
+   aus Phase-2 in einem Schritt ab, statt mehrfach nachzubessern.
+10. **Staging-Test + gestufte Freigabe** (Abschnitt 4.3) für Auto-Account,
+    Scores, Packs und Rankings gemeinsam.
+11. **Aufräumen**: `dev/PROJECT_SEPARATION.md` "Known TODOs" entfernen,
     das ursprüngliche Phase-2-Abschlusskriterium (siehe Abschnitt 0,
     Zeile "§11 Abschlusskriterium") erneut gegen den dann aktuellen Stand
     prüfen.
 
-Schritte 6-9 sind reine Phase-2-Reste ohne Abhängigkeit von Packs/Rankings-
+Schritte 7-10 sind reine Phase-2-Reste ohne Abhängigkeit von Packs/Rankings-
 Code und können bei Bedarf vorgezogen werden, wenn das mobile Leaderboard
 schneller live gehen soll als Packs/Web-Rankings.
 
 ---
 
-## 6. Offene Entscheidungen
+## 7. Entscheidungen
 
 - Soll `pack_data` als JSON-Spalte in der DB oder als Datei im Storage
   liegen? (Für den erwarteten Umfang reicht `longtext`; bei sehr großen
   Packs später auf Datei-Storage + Pfad umstellen.)
+A: JSON-Spalte in der DB
 - Pack-Vorschau: erstes Level rendern (serverseitig als Bild) oder nur
   Text-/Metadaten-Vorschau in Phase 1?
+A: nur text
 - Re-Upload mit gleicher `pack_id`, neuer `version`: Update des
   bestehenden Datensatzes (empfohlen) oder eigener Versionshistorie-
   Datensatz? `packVersion` in `cave_shuttle_scores` bleibt davon
@@ -440,8 +577,10 @@ schneller live gehen soll als Packs/Web-Rankings.
   gemischt); nicht mehr unterstützte/gelöschte Pack-Versionen bleiben über
   historische `cave_shuttle_scores`-Einträge referenzierbar, auch wenn der
   Pack-Datensatz selbst soft-deleted ist.
+A: eigener Versionshistorie-Datensatz
 - Cave-Shuttle-Ranglisten in Abschnitt 3: global (bester Score über alle
   Packs) oder ausschließlich pro `pack_version` × `level` × `player_mode`
   (wie die mobile Rangliste)? Empfehlung: Website zeigt beides — ein
   globales "Gesamt"-Ranking (aggregiert, Abschnitt 3.3) und optional einen
   Drilldown pro Pack/Level, analog zu `getLevelDetails()` für Roboyard.
+A: ausschließlich pro `pack_version` × `level` × `player_mode`. ein globales ranking über verschiedene packs macht keinen sinn, da die level ganz unterschiedlich sind
