@@ -515,12 +515,19 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           case 'p2Fire': setP2FireActive(true); break;
         }
       } else {
-        // Second finger tap while joystick is in use → activate shield
+        // Multi-finger taps while joystick is in use:
+        // 2nd finger → shield, 3rd finger → fire
         const joystickInUse = joystickActive || (joystickTapTimerRef.current !== null);
         if (joystickInUse && joystickPointerId.current !== e.pointerId && (!twoPlayer || networkRole)) {
+          const shieldAlreadyActive = Array.from(pointerButtonMap.current.values()).includes('shield');
           e.preventDefault();
-          setShieldActive(true);
-          pointerButtonMap.current.set(e.pointerId, 'shield');
+          if (shieldAlreadyActive) {
+            setFireActive(true);
+            pointerButtonMap.current.set(e.pointerId, 'fire');
+          } else {
+            setShieldActive(true);
+            pointerButtonMap.current.set(e.pointerId, 'shield');
+          }
           buttonPointerIds.current.add(e.pointerId);
           return;
         }
