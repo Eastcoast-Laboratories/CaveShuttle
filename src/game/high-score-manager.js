@@ -8,12 +8,26 @@ const PLAYER_PROFILE_KEY = storageKey('playerProfile');
 const HIGHSCORE_DATA_KEY = storageKey('highscoreData');
 
 const SPACE_TERMS = [
-  'Star', 'Comet', 'Moon', 'Planet', 'Asteroid', 'Nebula', 'Galaxy', 'Nova', 'Quasar', 'Meteor', 'Blackhole', 'Supernova', 'Space', 'Cosmos', 'Void', 'Cosmic', 'Stellar', 'Exo', 'Galactic', 'Interstellar', 'Cosmo', 'Hyperspace', 'Warp', 'Quantum'
+  'Star', 'Comet', 'Moon', 'Planet', 'Asteroid', 'Nebula', 'Galaxy', 'Nova', 'Quasar', 'Meteor',
+  'Blackhole', 'Supernova', 'Space', 'Cosmos', 'Void', 'Cosmic', 'Stellar', 'Exo', 'Galactic',
+  'Interstellar', 'Cosmo', 'Hyperspace', 'Warp', 'Quantum', 'Pulsar', 'Orbit', 'Solar', 'Lunar',
+  'Photon', 'Plasma', 'Ion', 'Neutron', 'Proton', 'Electron', 'Fusion', 'Fission', 'Gravity',
+  'Helix', 'Nebulon', 'Astro', 'Cryo', 'Pyro', 'Tachyon', 'Vortex', 'Rift', 'Flux', 'Beam',
+  'Drift', 'Pulse', 'Spark', 'Glow', 'Flare', 'Shade', 'Echo', 'Nova', 'Apex', 'Zenith'
 ];
 const ROLES = [
-  'Pilot', 'Ranger', 'Scout', 'Commander', 'Ace', 'Voyager', 'Captain', 'Navigator', 'Explorer', 'Hero', 'Legend', 'Conqueror', 'Leader', 'Warrior', 'Invader', 'Bob'
+  'Pilot', 'Ranger', 'Scout', 'Commander', 'Ace', 'Voyager', 'Captain', 'Navigator', 'Explorer',
+  'Hero', 'Legend', 'Conqueror', 'Leader', 'Warrior', 'Invader', 'Bob', 'Knight', 'Paladin',
+  'Hunter', 'Gunner', 'Sniper', 'Engineer', 'Miner', 'Prospector', 'Pioneer', 'Marine',
+  'Agent', 'Operative', 'Sentinel', 'Guardian', 'Vanguard', 'Raptor', 'Falcon', 'Hawk',
+  'Phantom', 'Specter', 'Wraith', 'Ghost', 'Shadow', 'Blaze', 'Storm', 'Thunder', 'Frost',
+  'Ember', 'Onyx', 'Cobalt', 'Rogue', 'Renegade', 'Maverick', 'Nomad', 'Drifter'
 ];
-const SUFFIXES = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const SUFFIXES = [
+  'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+  'XI', 'XII', 'XIII', 'Alpha', 'Beta', 'Gamma', 'Delta', 'Omega', 'Prime', 'Zero',
+  'One', 'Neo', 'Max', 'Ultra', 'Mk1', 'Mk2', 'Mk3', 'V2', 'X1', 'Z9'
+];
 
 function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];

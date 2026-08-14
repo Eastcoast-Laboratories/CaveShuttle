@@ -150,7 +150,8 @@ export class EnemyMine {
 
   _checkCollision(level, tileRenderer) {
     if (!level || !tileRenderer) return null;
-    const r = this.radius - 2;
+    const scaledSize = tileRenderer.getScaledTileSize();
+    const r = this.radius + (scaledSize / 2) - 5; // mines keep a small distance from walls
     const points = [
       { x: this.x, y: this.y },
       { x: this.x - r, y: this.y },
