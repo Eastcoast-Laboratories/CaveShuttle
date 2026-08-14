@@ -80,6 +80,10 @@ export class HighScoreManager {
       profile = { name: this.generatePlayerName() };
       safeSet(PLAYER_PROFILE_KEY, profile);
     }
+    if (typeof profile.player2Name !== 'string' || !profile.player2Name.trim()) {
+      profile.player2Name = this.generatePlayerName();
+      safeSet(PLAYER_PROFILE_KEY, profile);
+    }
     return profile;
   }
 

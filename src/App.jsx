@@ -41,7 +41,7 @@ function App() {
     scoringVersion: ''
   });
   const [playerName, setPlayerName] = useState(() => HighScoreManager.getPlayerProfile().name);
-  const [player2Name, setPlayer2Name] = useState(() => HighScoreManager.getPlayerProfile().player2Name || HighScoreManager.generatePlayerName());
+  const [player2Name, setPlayer2Name] = useState(() => HighScoreManager.getPlayerProfile().player2Name);
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [level, setLevel] = useState(() => {
     try {
