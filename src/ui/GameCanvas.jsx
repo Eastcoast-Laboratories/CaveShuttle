@@ -362,6 +362,10 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
     const handleKeyDown = (e) => {
       // [SOUND] Resume the audio context on the first user gesture (autoplay policy).
       if (soundManager.current) soundManager.current.resume();
+      // Don't process game keys when typing in an input/textarea
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+
       setKeys(prev => ({ ...prev, [e.key]: true }));
       // Activate shield when Space or Ctrl is pressed
       if (e.key === ' ' || e.key === 'Space' || (!twoPlayer && (e.key === 'Control' || e.key === 'ControlLeft' || e.key === 'ControlRight'))) {
@@ -374,6 +378,10 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
     };
 
     const handleKeyUp = (e) => {
+      // Don't process game keys when typing in an input/textarea
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+
       setKeys(prev => ({ ...prev, [e.key]: false }));
       // Deactivate shield when Space or Ctrl is released
       if (e.key === ' ' || e.key === 'Space' || (!twoPlayer && (e.key === 'Control' || e.key === 'ControlLeft' || e.key === 'ControlRight'))) {
