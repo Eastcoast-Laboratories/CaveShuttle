@@ -68,7 +68,8 @@ export class AutoAccountManager {
 
   async tryAutoRegister() {
     if (this.isRegistered()) {
-      console.log('[AUTO_ACCOUNT] Already registered, skipping');
+      const authUser = this.getAuthUser();
+      console.log('[AUTO_ACCOUNT] Already registered, skipping, user:', authUser);
       return { success: true, alreadyRegistered: true };
     }
 
@@ -195,8 +196,12 @@ export class AutoAccountManager {
 
   async syncScoresToBackend() {
     if (!this.isRegistered()) {
-      console.log('[AUTO_ACCOUNT] Not registered, skipping score sync');
-      return { success: false, reason: 'not_registered' };
+      console.log('[AUTO_ACCOUNT] Not registered, attempting auto-register before sync');
+      const regResult = await this.tryAutoRegister();
+      if (!regResult.success) {
+        console.log('[AUTO_ACCOUNT] Auto-register failed, skipping score sync');
+        return { success: false, reason: 'not_registered' };
+      }
     }
 
     const token = this.getToken();
@@ -262,7 +267,7 @@ export class AutoAccountManager {
       }
 
       const result = await response.json();
-      console.log('[AUTO_ACCOUNT] Score sync result:', result.synced, 'synced,', result.skipped, 'skipped,', result.conflicts?.length || 0, 'conflicts');
+      console.log('[AUTO_ACCOUNT] Score sync result:', result.synced, 'synced,', result.skipped, 'skipped,', result.nameUpdated || 0, 'name_updated,', result.conflicts?.length || 0, 'conflicts');
       return { success: true, ...result };
     } catch (error) {
       console.error('[AUTO_ACCOUNT] Network error during score sync:', error);

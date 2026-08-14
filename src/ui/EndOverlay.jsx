@@ -219,7 +219,7 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
                 <PlayerNameInput
                   playerName={hsPlayer2Name || player2Name}
                   onPlayerNameChange={onPlayer2NameChange}
-                  readOnly={networkRole !== 'host'}
+                  readOnly={networkRole != null && networkRole !== 'host'}
                 />
               </div>
             )}

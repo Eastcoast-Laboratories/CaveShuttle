@@ -851,6 +851,10 @@ function App() {
   // Keyboard shortcuts for game over and level complete screens
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Don't intercept keys when typing in an input or textarea
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+
       if (gameState === 'gameover') {
         if (e.key === ' ' || e.key === 'Space' || e.key === 'Enter') {
           e.preventDefault();
