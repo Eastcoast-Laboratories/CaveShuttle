@@ -38,6 +38,10 @@ function generateId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function generateUid(name) {
+  return `${name.replace(/\s+/g, '')}-${Date.now().toString(36)}`;
+}
+
 function safeGet(key, defaultValue) {
   try {
     const stored = localStorage.getItem(key);
@@ -98,7 +102,14 @@ export class HighScoreManager {
     let profile = safeGet(PLAYER_PROFILE_KEY, null);
     if (!isPlainObject(profile) || typeof profile.name !== 'string' || !profile.name.trim()) {
       profile = { name: this.generatePlayerName() };
+      profile.uid = generateUid(profile.name);
       safeSet(PLAYER_PROFILE_KEY, profile);
+      console.log('[PLAYER_PROFILE] Generated new profile with uid:', profile.uid);
+    }
+    if (typeof profile.uid !== 'string' || !profile.uid.trim()) {
+      profile.uid = generateUid(profile.name);
+      safeSet(PLAYER_PROFILE_KEY, profile);
+      console.log('[PLAYER_PROFILE] Added missing uid:', profile.uid);
     }
     if (typeof profile.player2Name !== 'string' || !profile.player2Name.trim()) {
       profile.player2Name = this.generatePlayerName();
@@ -541,6 +552,7 @@ export class HighScoreManager {
 
   static resetAll() {
     this.resetHighscores();
-    safeSet(PLAYER_PROFILE_KEY, { name: this.generatePlayerName() });
+    const name = this.generatePlayerName();
+    safeSet(PLAYER_PROFILE_KEY, { name, uid: generateUid(name) });
   }
 }

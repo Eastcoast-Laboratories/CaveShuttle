@@ -4,7 +4,7 @@ Dieses Dokument beschreibt ausschließlich die spätere Online-Erweiterung. Loka
 
 ## 1. Ziel und Grenzen
 
-Cave Shuttle soll sich optional mit einem Benutzerkonto bei `community.caveshuttle.z11.de` verbinden können unter der eindeutigen user-id, die beim ersten app start generiert wird. Dafür wird das bereits unter `/var/www/roboyard.z11/` laufende Laravel-Backend wiederverwendet und unter `/var/kunden/webs/ruben/www/community.caveshuttle.z11.de` installiert Die Highscore-Phase 2 erfordert nur gezielte Ergänzungen für `caveshuttle`; der bestehende Roboyard-Betrieb bleibt unverändert.
+Cave Shuttle soll sich optional mit einem Benutzerkonto bei `community.caveshuttle.z11.de` verbinden können unter der eindeutigen user-id (`profile.uid`), die beim ersten app start generiert wird. Dafür wird das bereits unter `/var/www/roboyard.z11/` laufende Laravel-Backend wiederverwendet und unter `/var/kunden/webs/ruben/www/community.caveshuttle.z11.de` installiert. Die Highscore-Phase 2 erfordert nur gezielte Ergänzungen für `caveshuttle`; der bestehende Roboyard-Betrieb bleibt unverändert.
 
 - `roboyard` – bestehende App, bestehende API
 - `caveshuttle` – neue App, Erweiterung der bestehenden API
