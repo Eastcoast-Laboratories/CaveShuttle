@@ -151,6 +151,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const [accelerateActive, setAccelerateActive] = useState(false); // accelerate button pressed
   const [fireActive, setFireActive] = useState(false); // fire button pressed
   const fireTapRef = useRef(false); // momentary fire from tap (read and reset by game loop)
+  const multiTouchFireRef = useRef(false); // multi-touch fire from extra finger (ref for synchronous game loop access)
   const [rotateLeftActive, setRotateLeftActive] = useState(false); // rotate left button pressed
   const [rotateRightActive, setRotateRightActive] = useState(false); // rotate right button pressed
   const [p2RotateLeftActive, setP2RotateLeftActive] = useState(false); // player 2 rotate left button pressed
@@ -523,6 +524,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           e.preventDefault();
           if (shieldAlreadyActive) {
             setFireActive(true);
+            multiTouchFireRef.current = true;
+            fireTapRef.current = true;
             pointerButtonMap.current.set(e.pointerId, 'fire');
           } else {
             setShieldActive(true);
@@ -606,7 +609,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               case 'pod': setTouchActive(false); setShieldActive(false); break;
               case 'shield': setShieldActive(false); break;
               case 'accelerate': setAccelerateActive(false); break;
-              case 'fire': setFireActive(false); break;
+              case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
               case 'rotateLeft': setRotateLeftActive(false); break;
               case 'rotateRight': setRotateRightActive(false); break;
               case 'p2RotateLeft': setP2RotateLeftActive(false); break;
@@ -660,7 +663,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             case 'pod': setTouchActive(false); setShieldActive(false); break;
             case 'shield': setShieldActive(false); break;
             case 'accelerate': setAccelerateActive(false); break;
-            case 'fire': setFireActive(false); break;
+            case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
             case 'rotateLeft': setRotateLeftActive(false); break;
             case 'rotateRight': setRotateRightActive(false); break;
             case 'p2RotateLeft': setP2RotateLeftActive(false); break;
@@ -1810,8 +1813,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       const tapFire = fireTapRef.current;
       fireTapRef.current = false;
       const playerOneFire = networkRole === 'client' ? false : (
-        ((!twoPlayer || networkRole === 'host') && (keys['x'] || keys['X'] || keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || fireActive || tapFire)) ||
-        (twoPlayer && !networkRole && pod && pod.towed && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'] || fireActive || tapFire))
+        ((!twoPlayer || networkRole === 'host') && (keys['x'] || keys['X'] || keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || fireActive || multiTouchFireRef.current || tapFire)) ||
+        (twoPlayer && !networkRole && pod && pod.towed && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'] || fireActive || multiTouchFireRef.current || tapFire))
       );
       const playerTwoFire = networkRole === 'client' ? false : (twoPlayer && (keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || p2FireActive || p2Fire));
       // Firing requires fuel

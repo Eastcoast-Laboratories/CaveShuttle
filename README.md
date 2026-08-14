@@ -45,19 +45,21 @@ A space game built with React, Vite, and HTML5 Canvas. Features modern graphics 
 
 ### Touch / Joystick Control
 
-Works with mouse and touch: starting from the touch point, moving right rotates the ship right, moving left rotates left, moving up accelerates.
+The virtual joystick works with mouse and touch: starting from the touch point, moving right rotates the ship right, moving left rotates left, moving up accelerates.
 **Explanation:**
 It resets only the horizontal zero position (`joystickStart.x`) when horizontal movement stops, while keeping vertical movement independent. This way:
 - Horizontal rotation only happens while actively moving left/right
 - Vertical acceleration can continue independently
 - e.g. If user slides right-up then continues only up, the horizontal zero position resets to stop rotation
+- Tapping with two fingers activates the tractor beam
+- Third finger tap to activate fire while joystick and shield are active
+- if the Joystick is deactivted in the menu then touching anywhere only trigers fire 
 
-
-### Game Over Screen
+### Game Over Screen Keboard shortcuts
 
 | Key | Action |
 |-----|--------|
-| Space | Play Again |
+| Space/Enter | Play Again |
 | Esc | Back to Menu |
 
 ## Installation
