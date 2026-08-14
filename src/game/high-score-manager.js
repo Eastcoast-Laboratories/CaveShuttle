@@ -6,6 +6,7 @@ const EXPORT_FORMAT_VERSION = 1;
 
 const PLAYER_PROFILE_KEY = storageKey('playerProfile');
 const HIGHSCORE_DATA_KEY = storageKey('highscoreData');
+const MAX_NAME_LENGTH = 20;
 
 const SPACE_TERMS = [
   'Star', 'Comet', 'Moon', 'Planet', 'Asteroid', 'Nebula', 'Galaxy', 'Nova', 'Quasar', 'Meteor',
@@ -71,8 +72,13 @@ export class HighScoreManager {
   // --- Player profile ---
 
   static generatePlayerName() {
-    const name = `${pick(SPACE_TERMS)} ${pick(ROLES)} ${pick(SUFFIXES)}`;
-    return name.length > 20 ? name.slice(0, 20).trim() : name;
+    let name;
+    let attempts = 0;
+    do {
+      name = `${pick(SPACE_TERMS)} ${pick(ROLES)} ${pick(SUFFIXES)}`;
+      attempts++;
+    } while (name.length > MAX_NAME_LENGTH && attempts < 500);
+    return name.length > MAX_NAME_LENGTH ? name.slice(0, MAX_NAME_LENGTH).trim() : name;
   }
 
   static validateName(name) {
@@ -81,7 +87,7 @@ export class HighScoreManager {
     }
     const trimmed = name.trim();
     if (trimmed.length === 0) return { valid: false, error: 'Name cannot be empty' };
-    if (trimmed.length > 20) return { valid: false, error: 'Name cannot exceed 20 characters' };
+    if (trimmed.length > MAX_NAME_LENGTH) return { valid: false, error: 'Name cannot exceed ' + MAX_NAME_LENGTH + ' characters' };
     if (!/^[A-Za-z0-9 _-]+$/.test(trimmed)) {
       return { valid: false, error: 'Name contains invalid characters' };
     }
