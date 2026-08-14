@@ -477,6 +477,9 @@ function App() {
     }
     setNewHighscore(hs);
 
+    // Sync scores to backend
+    autoAccountManager.syncScoresToBackend();
+
     // Auto-sync new highscore records to peer in network mode
     if (networkRole && networkManager) {
       if (networkRole === 'host') {
@@ -604,6 +607,9 @@ function App() {
       }
     }
 
+    // Sync scores to backend
+    autoAccountManager.syncScoresToBackend();
+
     setGameState('gameover');
   };
 
@@ -616,6 +622,7 @@ function App() {
         runId: runContextRef.current?.runId,
         name: result.profile.name,
       });
+      autoAccountManager.syncScoresToBackend();
     }
     return result;
   };
@@ -629,6 +636,7 @@ function App() {
         runId: runContextRef.current?.runId,
         player2Name: result.profile.player2Name,
       });
+      autoAccountManager.syncScoresToBackend();
     }
     return result;
   };

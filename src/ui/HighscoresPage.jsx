@@ -3,6 +3,7 @@ import './LegalPages.css';
 import './cave-theme.css';
 import './HighscoresPage.css';
 import { HighScoreManager } from '../game/high-score-manager.js';
+import { autoAccountManager } from '../game/auto-account.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { getHighscoreTranslations } from '../i18n/highscores.js';
 
@@ -21,6 +22,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
   const [runDetail, setRunDetail] = useState(null);
   const [levelDetail, setLevelDetail] = useState(null);
   const [ownRunEntry, setOwnRunEntry] = useState(null);
+  const [onlineLeaderboard, setOnlineLeaderboard] = useState([]);
+  const [onlineLoading, setOnlineLoading] = useState(false);
+  const [showOnline, setShowOnline] = useState(false);
   const playerName = profile.name;
 
   const getDisplayName = (entry) => entry.player2Name ? `${entry.name} & ${entry.player2Name}` : entry.name;
@@ -92,6 +96,24 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
   }, [installedPacks, selectedPackId, selectedMode]);
 
   useEffect(() => {
+    if (!showOnline) return;
+    const mode = selectedMode === 'all' ? 'single' : selectedMode;
+    setOnlineLoading(true);
+    autoAccountManager.fetchLeaderboard({
+      packVersion,
+      playerMode: mode,
+      recordType: activeTab === 'runs' ? 'run' : 'level',
+    }).then(result => {
+      setOnlineLoading(false);
+      if (result.success) {
+        setOnlineLeaderboard(result.leaderboard || []);
+      } else {
+        setOnlineLeaderboard([]);
+      }
+    });
+  }, [showOnline, packVersion, selectedMode, activeTab]);
+
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key !== 'Escape' && e.key !== 'Esc') return;
       if (runDetail) {
@@ -154,6 +176,11 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
             >{t.levels}</button>
           </div>
           <span className="nbsp">&nbsp;</span>
+          <button
+            className={`tab-button ${showOnline ? 'active' : ''}`}
+            onClick={() => setShowOnline(!showOnline)}
+          >{showOnline ? '🌐 Online' : '🏠 Local'}</button>
+          <span className="nbsp">&nbsp;</span>
           <div className="filter-group">
             <select
               className="filter-select"
@@ -179,7 +206,49 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
           <span className="nbsp">&nbsp;&nbsp;</span>
         </div>
 
-        {activeTab === 'runs' && (
+        {showOnline ? (
+          <div>
+            {onlineLoading ? (
+              <p className="empty-message">Loading online leaderboard...</p>
+            ) : onlineLeaderboard.length === 0 ? (
+              <p className="empty-message">No online scores yet. Play and complete levels to appear here!</p>
+            ) : (
+              <table className="highscores-table">
+                <thead>
+                  <tr>
+                    <th className="solid-col edge-img edge-tl"></th>
+                    <th className="rank-col"></th>
+                    <th className="level-col">{t.rank}</th>
+                    <th className="text-right">{t.score}</th>
+                    {activeTab === 'levels' && <th className="level-col">{t.level}</th>}
+                    <th>{t.name}</th>
+                    <th className="solid-col edge-img edge-tr"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {onlineLeaderboard.map((entry, i) => (
+                    <tr key={i}>
+                      <td className="solid-col"></td>
+                      <td className="rank-col"></td>
+                      <td className="level-col">{i + 1}</td>
+                      <td className="text-right">{String(entry.score).padStart(6, '0')}</td>
+                      {activeTab === 'levels' && <td className="level-col">{entry.level}</td>}
+                      <td className="uppercase">{entry.name}</td>
+                      <td className="solid-col"></td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td className="solid-col edge-img edge-bl"></td>
+                    <td colSpan={activeTab === 'levels' ? 5 : 4}></td>
+                    <td className="solid-col edge-img edge-br"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            )}
+          </div>
+        ) : activeTab === 'runs' ? (
           <div>
             {runTop10.length === 0 ? (
               <p className="empty-message">{t.noRunHighscores}</p>
@@ -233,9 +302,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
               </table>
             )}
           </div>
-        )}
-
-        {activeTab === 'levels' && (
+        ) : (
           <div>
             <table className="highscores-table">
               <thead>

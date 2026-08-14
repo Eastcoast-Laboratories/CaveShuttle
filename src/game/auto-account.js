@@ -192,6 +192,104 @@ export class AutoAccountManager {
     safeSet(AUTH_USER_KEY, null);
     this.setAuthStatus('pending');
   }
+
+  async syncScoresToBackend() {
+    if (!this.isRegistered()) {
+      console.log('[AUTO_ACCOUNT] Not registered, skipping score sync');
+      return { success: false, reason: 'not_registered' };
+    }
+
+    const token = this.getToken();
+    const data = HighScoreManager.exportSyncData();
+
+    const scores = [];
+    for (const lr of data.levelRecords) {
+      scores.push({
+        recordType: 'level',
+        runId: lr.runId,
+        attemptId: lr.attemptId,
+        packId: lr.packId,
+        packVersion: lr.packVersion,
+        level: lr.level,
+        playerMode: lr.mode,
+        completed: lr.completed,
+        score: lr.score,
+        scoreBreakdown: lr.scoreBreakdown || null,
+        levelTimeMs: lr.activeMs ? Math.round(lr.activeMs) : null,
+        recordedAt: new Date(lr.recordedAt).toISOString(),
+      });
+    }
+    for (const rr of data.runRecords) {
+      scores.push({
+        recordType: 'run',
+        runId: rr.runId,
+        attemptId: null,
+        packId: rr.packId,
+        packVersion: rr.packVersion,
+        level: null,
+        playerMode: rr.mode,
+        completed: true,
+        score: rr.totalScore,
+        scoreBreakdown: null,
+        levelTimeMs: null,
+        recordedAt: new Date(rr.recordedAt).toISOString(),
+      });
+    }
+
+    if (scores.length === 0) {
+      console.log('[AUTO_ACCOUNT] No scores to sync');
+      return { success: true, synced: 0 };
+    }
+
+    try {
+      const response = await fetch(`${COMMUNITY_API_URL}/scores/sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ scores }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[AUTO_ACCOUNT] Score sync failed:', response.status, errorData);
+        return { success: false, reason: 'server_error', status: response.status, error: errorData };
+      }
+
+      const result = await response.json();
+      console.log('[AUTO_ACCOUNT] Score sync result:', result.synced, 'synced,', result.skipped, 'skipped,', result.conflicts?.length || 0, 'conflicts');
+      return { success: true, ...result };
+    } catch (error) {
+      console.error('[AUTO_ACCOUNT] Network error during score sync:', error);
+      return { success: false, reason: 'network_error', error };
+    }
+  }
+
+  async fetchLeaderboard({ packVersion, playerMode, level, recordType }) {
+    const params = new URLSearchParams({
+      packVersion,
+      playerMode,
+      recordType: recordType || 'level',
+    });
+    if (level != null) params.set('level', level);
+
+    try {
+      const response = await fetch(`${COMMUNITY_API_URL}/leaderboard?${params.toString()}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[AUTO_ACCOUNT] Leaderboard fetch failed:', response.status, errorData);
+        return { success: false, error: errorData };
+      }
+
+      const data = await response.json();
+      return { success: true, leaderboard: data.leaderboard };
+    } catch (error) {
+      console.error('[AUTO_ACCOUNT] Network error fetching leaderboard:', error);
+      return { success: false, error };
+    }
+  }
 }
 
 export const autoAccountManager = new AutoAccountManager();
