@@ -206,12 +206,14 @@ export class AutoAccountManager {
     for (const lr of data.levelRecords) {
       scores.push({
         recordType: 'level',
+        playerName: lr.name,
         runId: lr.runId,
         attemptId: lr.attemptId,
         packId: lr.packId,
         packVersion: lr.packVersion,
         level: lr.level,
         playerMode: lr.mode,
+        player2Name: lr.player2Name || null,
         completed: lr.completed,
         score: lr.score,
         scoreBreakdown: lr.scoreBreakdown || null,
@@ -222,12 +224,14 @@ export class AutoAccountManager {
     for (const rr of data.runRecords) {
       scores.push({
         recordType: 'run',
+        playerName: rr.name,
         runId: rr.runId,
         attemptId: null,
         packId: rr.packId,
         packVersion: rr.packVersion,
         level: null,
         playerMode: rr.mode,
+        player2Name: rr.player2Name || null,
         completed: true,
         score: rr.totalScore,
         scoreBreakdown: null,
