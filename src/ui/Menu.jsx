@@ -38,6 +38,8 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
   // Allow starting the game with Space or Enter, open the editor with E
   useEffect(() => {
     const handleKeyDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
       if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         onStart(twoPlayer);
