@@ -1920,7 +1920,6 @@ class LevelEditor {
     const h = this.levelData.header;
     document.getElementById('paramWidth').value = h.width;
     document.getElementById('paramHeight').value = h.height;
-    document.getElementById('paramStartHeight').value = h.startHeight;
     document.getElementById('paramEmptySpace').value = h.emptySpaceHeight;
     document.getElementById('paramBedrock').value = h.bedrockHeight;
     document.getElementById('paramBunkers').value = this.genBunkers;
@@ -1950,7 +1949,7 @@ class LevelEditor {
 
     h.width = newWidth;
     h.height = newHeight;
-    h.startHeight = parseInt(document.getElementById('paramStartHeight').value);
+    h.startHeight = 0; // not used by CaveShuttle, always 0
     h.emptySpaceHeight = parseInt(document.getElementById('paramEmptySpace').value);
     h.bedrockHeight = parseInt(document.getElementById('paramBedrock').value);
     this.genBunkers = parseInt(document.getElementById('paramBunkers').value) || 0;
