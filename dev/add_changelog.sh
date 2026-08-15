@@ -43,15 +43,15 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Zwei-Finger-Tap aktiviert den Traktorstrahl
-- Dritter Finger-Tap aktiviert Feuer, während Joystick und Schild aktiv sind
+- Community website online mit globaler Highscore
+- Account-Einstellungen: E-Mail und Passwort können jetzt in der Community-Website gesetzt werden
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Tapping with two fingers activates the tractor beam
-- Third finger tap to activate fire while joystick and shield are active
+- Community website online with global Highscore
+- Account Settings: email and password can now be set on the community website
 EOF
 )
 
