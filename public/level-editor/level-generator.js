@@ -147,13 +147,31 @@
       const rowsBelow = r1 - r;
       const c = leftCol + 3 + rowsBelow * 2;
       if (c < 0 || c + 1 >= rightCol) continue;
-      for (let c2 = 0; c2 < c; c2++) setChar(grid, r, c2, 'p');
+      for (let c2 = leftCol; c2 < c; c2++) setChar(grid, r, c2, 'p');
       if (r === r0) {
         // The top row is the ceiling boundary: uv slope starts here.
         setChar(grid, r, c, 'u'); setChar(grid, r, c + 1, 'v');
       } else {
         setChar(grid, r, c, 'u'); setChar(grid, r, c + 1, 'v');
       }
+      if (r === r1) setChar(grid, r, c + 2, '[');
+      if (r === r1 + 1) {
+        setChar(grid, r, c + 2, 'X');
+        setChar(grid, r, c + 3, 'Y');
+        setChar(grid, r, c + 4, 'Z');
+      }
+    }
+  }
+
+  // Offset variant of placeBunkerBracket that starts p-fill at startCol instead of col 0.
+  // This allows multiple ceiling bunkers in the same corridor at different horizontal positions.
+  function placeBunkerBracketAt(grid, r0, r1, startCol) {
+    for (let r = r0; r <= r1 + 2; r++) {
+      const rowsBelow = r1 - r;
+      const c = startCol + 3 + rowsBelow * 2;
+      if (c < 0 || c + 1 >= grid[0].length) continue;
+      for (let c2 = startCol; c2 < c; c2++) setChar(grid, r, c2, 'p');
+      setChar(grid, r, c, 'u'); setChar(grid, r, c + 1, 'v');
       if (r === r1) setChar(grid, r, c + 2, '[');
       if (r === r1 + 1) {
         setChar(grid, r, c + 2, 'X');
@@ -179,11 +197,29 @@
         for (let c2 = c + 2; c2 < maxCol; c2++) setChar(grid, r, c2, 'p');
       }
       if (r === r0) {
-        // The top row is the ceiling boundary: wx slope starts here.
         setChar(grid, r, c, 'w'); setChar(grid, r, c + 1, 'x');
       } else {
         setChar(grid, r, c, 'w'); setChar(grid, r, c + 1, 'x');
       }
+      if (r === r1 && c - 1 >= 0) setChar(grid, r, c - 1, '\\');
+      if (r === r1 + 1 && c - 3 >= 0) {
+        setChar(grid, r, c - 3, ']');
+        setChar(grid, r, c - 2, '^');
+        setChar(grid, r, c - 1, '_');
+      }
+    }
+  }
+
+  // Offset variant of placeBunkerBackslash that ends p-fill at endCol instead of grid width.
+  function placeBunkerBackslashAt(grid, r0, r1, rightCol) {
+    for (let r = r0; r <= r1 + 2; r++) {
+      const rowsBelow = r1 - r;
+      const c = rightCol - 6 - rowsBelow * 2;
+      if (c < 0 || c + 1 >= grid[0].length) continue;
+      if (c + 2 < rightCol) {
+        for (let c2 = c + 2; c2 < rightCol; c2++) setChar(grid, r, c2, 'p');
+      }
+      setChar(grid, r, c, 'w'); setChar(grid, r, c + 1, 'x');
       if (r === r1 && c - 1 >= 0) setChar(grid, r, c - 1, '\\');
       if (r === r1 + 1 && c - 3 >= 0) {
         setChar(grid, r, c - 3, ']');
@@ -204,8 +240,6 @@
     const cq = leftCol, cr = leftCol + 1, cP = leftCol + 2, cQ = leftCol + 3, cR = leftCol + 4;
     setChar(grid, r0, cq, 'q'); setChar(grid, r0, cr, 'r');
     setChar(grid, r0, cP, 'P'); setChar(grid, r0, cQ, 'Q'); setChar(grid, r0, cR, 'R');
-    // Proper 2-column-per-row staircase (offsets step by 2) so every qr has a
-    // solid 'pp' pair directly below it, never another slope tile.
     const offsets = [2, 4];
     for (let i = 0; i < offsets.length && r0 + 1 + i <= r1; i++) {
       const r = r0 + 1 + i;
@@ -215,11 +249,16 @@
       setChar(grid, r, c, 'q'); setChar(grid, r, c + 1, 'r');
       if (i === 0) setChar(grid, r, c + 2, 'S');
     }
-    // Bottom flat floor plate across the bunker footprint (no slope in the floor).
     const rb = r0 + 3;
     if (rb <= r1) {
       for (let c2 = leftCol; c2 <= leftCol + 6 && c2 < grid[0].length; c2++) setChar(grid, rb, c2, 'p');
     }
+  }
+
+  // Offset variant of placeBunkerP — identical logic, kept for API consistency
+  // with the other *At functions. leftCol is already the offset position.
+  function placeBunkerPAt(grid, r0, r1, leftCol) {
+    placeBunkerP(grid, r0, r1, leftCol);
   }
 
   // Floor bunker: U on left slope (st), placed on the RIGHT side of the corridor.
@@ -240,17 +279,21 @@
     for (let r = r0 + 1; r <= r1; r++) {
       const i = r - r0;
       const c = leftEdge + 3 - i * 2;
+      if (c < 0 || c + 1 >= grid[0].length) continue;
+      for (let c2 = c + 2; c2 <= rightCol - 1; c2++) setChar(grid, r, c2, 'p');
       if (i === 1) {
-        // Tstpppp row: st has shifted 2 columns left
         setChar(grid, r, leftEdge, 'T');
         setChar(grid, r, leftEdge + 1, 's');
         setChar(grid, r, leftEdge + 2, 't');
-        for (let c2 = leftEdge + 3; c2 <= rightCol - 1; c2++) setChar(grid, r, c2, 'p');
       } else {
-        // Bottom ppppppp row (slope has gone past the left edge)
         for (let c2 = leftEdge; c2 <= rightCol - 1; c2++) setChar(grid, r, c2, 'p');
       }
     }
+  }
+
+  // Offset variant of placeBunkerU — rightCol is already the offset position.
+  function placeBunkerUAt(grid, r0, r1, rightCol) {
+    placeBunkerU(grid, r0, r1, rightCol);
   }
 
   // ---- Slope carving ----
@@ -798,99 +841,170 @@
     let hasReactor = false;
     let hasDoor = false;
 
+    // Track occupied columns per corridor row to avoid overlapping features.
+    // Each corridor gets a Set of "used" column ranges so multiple bunkers/fuel
+    // can be placed in the same corridor at different horizontal positions.
+    function markUsedCols(sec, startCol, endCol) {
+      if (!sec._usedCols) sec._usedCols = new Set();
+      for (let c = startCol; c <= endCol; c++) sec._usedCols.add(c);
+    }
+    function isColRangeFree(sec, startCol, endCol) {
+      if (!sec._usedCols) return true;
+      for (let c = startCol; c <= endCol; c++) if (sec._usedCols.has(c)) return false;
+      return true;
+    }
+
+    // Bunker footprint widths for spacing calculations.
+    const BUNKER_BRACKET_WIDTH = 10;  // [ ceiling bunker: cols 0..9
+    const BUNKER_BACKSLASH_WIDTH = 10; // \ ceiling bunker
+    const BUNKER_P_WIDTH = 7;          // P floor bunker: cols left..left+6
+    const BUNKER_U_WIDTH = 7;          // U floor bunker: cols right-7..right-1
+    const FUEL_WIDTH = 2;              // fuel depot: 2 cols
+    const FEATURE_SPACING = 3;         // min gap between features in same corridor
+
     for (const sec of corridors) {
       const span = sec.right - sec.left;
       if (span < 10) continue;
-      const height = sec.r1 - sec.r0;
+      const secHeight = sec.r1 - sec.r0;
 
-      // Fuel: place in corridor with 2 rows clearance above and wall below.
-      // Keep away from left P (sec.left..sec.left+6) and right U (sec.right-7..sec.right-1).
-      if (fuelCount < maxFuel && rng() < fuelChance && span >= 16) {
-        const fc = sec.left + 7 + Math.floor(rng() * (span - 15));
+      // --- Fuel: try to place multiple fuel depots per corridor ---
+      // Scan from left to right, trying positions until we hit maxFuel or run out of space.
+      if (span >= 16) {
         const fuelR = sec.r1 - 2;
         if (fuelR >= 3 && fuelR + 2 < grid.length) {
-          let clear = true;
-          for (let dy = 1; dy <= 2; dy++)
-            for (let dx = 0; dx <= 1; dx++)
-              if (isWallTile(grid, fuelR - dy, fc + dx)) clear = false;
-          // Fuel cells themselves must be empty
-          if (isWallTile(grid, fuelR, fc) || isWallTile(grid, fuelR, fc + 1) ||
-              isWallTile(grid, fuelR + 1, fc) || isWallTile(grid, fuelR + 1, fc + 1))
-            clear = false;
-          // Must have wall directly below the bc row
-          if (!isWallTile(grid, fuelR + 2, fc) || !isWallTile(grid, fuelR + 2, fc + 1))
-            clear = false;
-          if (clear) {
-            placeFuel(grid, fuelR, fc);
-            fuelCount++;
+          // Try positions from left+7 to right-8, stepping by FUEL_WIDTH + FEATURE_SPACING
+          for (let fc = sec.left + 7; fc < sec.right - 8 && fuelCount < maxFuel; fc += FUEL_WIDTH + FEATURE_SPACING) {
+            // Add random jitter to avoid grid-aligned placement
+            const jitteredFc = fc + Math.floor(rng() * FEATURE_SPACING);
+            if (jitteredFc + 1 >= sec.right - 1) break;
+            if (!isColRangeFree(sec, jitteredFc, jitteredFc + 1)) continue;
+            // Check chance (skip chance check if count was explicitly requested)
+            if (rng() >= fuelChance) continue;
+            let clear = true;
+            for (let dy = 1; dy <= 2; dy++)
+              for (let dx = 0; dx <= 1; dx++)
+                if (isWallTile(grid, fuelR - dy, jitteredFc + dx)) clear = false;
+            if (isWallTile(grid, fuelR, jitteredFc) || isWallTile(grid, fuelR, jitteredFc + 1) ||
+                isWallTile(grid, fuelR + 1, jitteredFc) || isWallTile(grid, fuelR + 1, jitteredFc + 1))
+              clear = false;
+            if (!isWallTile(grid, fuelR + 2, jitteredFc) || !isWallTile(grid, fuelR + 2, jitteredFc + 1))
+              clear = false;
+            if (clear) {
+              placeFuel(grid, fuelR, jitteredFc);
+              markUsedCols(sec, jitteredFc, jitteredFc + 1);
+              fuelCount++;
+            }
           }
         }
       }
 
-      // Bunker: place on ceiling or floor using the correct templates
-      if (bunkerCount < maxBunkers && rng() < bunkerChance) {
+      // --- Bunkers: try to place multiple bunkers per corridor ---
+      // Alternate between ceiling and floor, left and right sides, scanning across the corridor.
+      // Continue until we hit maxBunkers or run out of space in the corridor.
+      const maxAttemptsPerCorridor = Math.ceil(maxBunkers / Math.max(1, corridors.length)) + 10;
+      let attemptsInThisCorridor = 0;
+      while (bunkerCount < maxBunkers && attemptsInThisCorridor < maxAttemptsPerCorridor) {
+        attemptsInThisCorridor++;
+        if (rng() >= bunkerChance) continue;
+
         let placed = false;
         const mount = rng() < 0.5 ? 'ceiling' : 'floor';
+
         if (mount === 'ceiling') {
-          const height = sec.r1 - sec.r0;
-          // Right-facing left-side ceiling bunker ([) when possible.
-          // Ceiling bunkers need a solid p row above; the first corridor's ceiling
-          // is the open sky, so skip it. Also skip if the vertical shaft above the
-          // corridor would intersect the bunker's ceiling plate.
-          if (sec.r0 > SKY_ROWS && sec.r0 + 4 < sec.r1 && height >= 5) {
+          // Try ceiling bunkers at different horizontal offsets.
+          // Ceiling bracket ([) on left side, backslash (\) on right side.
+          const side = rng() < 0.5 ? 'left' : 'right';
+          if (sec.r0 > SKY_ROWS && sec.r0 + 4 < sec.r1 && secHeight >= 5) {
             const r0 = sec.r0;
-            // The bunker's top uv row is at r0; the plate spans cols 0..8.
-            let ceilOk = true;
-            for (let c = 0; c <= 9; c++) {
-              if (grid[r0 - 1][c] !== 'p') ceilOk = false;
-            }
-            if (ceilOk) {
-              const r1 = sec.r0 + 2;
-              placeBunkerBracket(grid, r0, r1, sec.left);
-              bunkerCount++;
-              placed = true;
+            const r1 = sec.r0 + 2;
+            if (side === 'left') {
+              // Try bracket bunker at various offsets from the left wall.
+              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_BRACKET_WIDTH - FEATURE_SPACING));
+              const startCol = sec.left + offset;
+              if (startCol + BUNKER_BRACKET_WIDTH < sec.right &&
+                  isColRangeFree(sec, startCol, startCol + BUNKER_BRACKET_WIDTH)) {
+                // Check ceiling above is solid p
+                let ceilOk = true;
+                for (let c = startCol; c <= startCol + 9; c++) {
+                  if (c >= grid[0].length || grid[r0 - 1][c] !== 'p') ceilOk = false;
+                }
+                if (ceilOk) {
+                  // Place bracket bunker at offset
+                  placeBunkerBracketAt(grid, r0, r1, startCol);
+                  markUsedCols(sec, startCol, startCol + BUNKER_BRACKET_WIDTH);
+                  bunkerCount++;
+                  placed = true;
+                }
+              }
+            } else {
+              // Try backslash bunker at various offsets from the right wall.
+              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_BACKSLASH_WIDTH - FEATURE_SPACING));
+              const endCol = sec.right - 1 - offset;
+              const startCol = endCol - BUNKER_BACKSLASH_WIDTH + 1;
+              if (startCol >= sec.left &&
+                  isColRangeFree(sec, startCol, endCol)) {
+                let ceilOk = true;
+                for (let c = startCol; c <= endCol; c++) {
+                  if (c >= grid[0].length || grid[r0 - 1][c] !== 'p') ceilOk = false;
+                }
+                if (ceilOk) {
+                  placeBunkerBackslashAt(grid, r0, r1, endCol + 1);
+                  markUsedCols(sec, startCol, endCol);
+                  bunkerCount++;
+                  placed = true;
+                }
+              }
             }
           }
         }
-        // If ceiling placement failed or was not chosen, try floor bunker.
-        // Prefer the side that still has solid p floor on sec.r1+1 (the row
-        // below the plate). The next shaft may overlap one side, so fall back
-        // to the opposite side when possible.
+
         if (!placed) {
-          const height = sec.r1 - sec.r0;
-          // Determine if the floor below the plate is solid p on each side.
-          const plateRow = sec.r1;
+          // Try floor bunkers at different horizontal offsets.
+          const side = rng() < 0.5 ? 'left' : 'right';
           const floorRow = sec.r1 + 1;
-          const leftPlate = sec.left;
-          const rightPlate = sec.right - 7;
-          let leftOk = false;
-          let rightOk = false;
-          if (floorRow < grid.length && height >= 4 && sec.left + 7 < sec.right) {
-            leftOk = true;
-            for (let c = sec.left; c <= sec.left + 6; c++) {
-              if (grid[floorRow][c] !== 'p') { leftOk = false; break; }
+          if (floorRow < grid.length && secHeight >= 4) {
+            if (side === 'left') {
+              // P bunker: needs 7 cols, floor must be solid p below.
+              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_P_WIDTH - FEATURE_SPACING));
+              const startCol = sec.left + offset;
+              if (startCol + BUNKER_P_WIDTH < sec.right &&
+                  isColRangeFree(sec, startCol, startCol + BUNKER_P_WIDTH)) {
+                let floorOk = true;
+                for (let c = startCol; c <= startCol + 6; c++) {
+                  if (grid[floorRow][c] !== 'p') { floorOk = false; break; }
+                }
+                if (floorOk) {
+                  placeBunkerPAt(grid, sec.r1 - 3, sec.r1, startCol);
+                  markUsedCols(sec, startCol, startCol + BUNKER_P_WIDTH);
+                  bunkerCount++;
+                  placed = true;
+                }
+              }
+            } else {
+              // U bunker: needs 7 cols from the right.
+              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_U_WIDTH - FEATURE_SPACING));
+              const endCol = sec.right - 1 - offset;
+              const startCol = endCol - BUNKER_U_WIDTH + 1;
+              if (startCol >= sec.left &&
+                  isColRangeFree(sec, startCol, endCol)) {
+                let floorOk = true;
+                for (let c = startCol; c <= endCol; c++) {
+                  if (grid[floorRow][c] !== 'p') { floorOk = false; break; }
+                }
+                if (floorOk && secHeight >= 3) {
+                  placeBunkerUAt(grid, sec.r1 - 2, sec.r1, endCol + 1);
+                  markUsedCols(sec, startCol, endCol);
+                  bunkerCount++;
+                  placed = true;
+                }
+              }
             }
-          }
-          if (floorRow < grid.length && height >= 3 && rightPlate >= sec.left && rightPlate + 6 < sec.right) {
-            rightOk = true;
-            for (let c = rightPlate; c <= rightPlate + 6; c++) {
-              if (grid[floorRow][c] !== 'p') { rightOk = false; break; }
-            }
-          }
-          // Try the left P-bunker, then the right U-bunker, whichever fits.
-          if (leftOk && height >= 4) {
-            placeBunkerP(grid, sec.r1 - 3, sec.r1, sec.left);
-            bunkerCount++;
-          } else if (rightOk && height >= 3) {
-            placeBunkerU(grid, sec.r1 - 2, sec.r1, sec.right);
-            bunkerCount++;
           }
         }
       }
 
       // Reactor: once, placed on the corridor floor wall
-      // Keep away from left P (sec.left..sec.left+6) and right U (sec.right-7..sec.right-1).
-      if (!hasReactor && rng() < 0.4 && span > 15 && height >= 4) {
+      if (!hasReactor && rng() < 0.4 && span > 15 && secHeight >= 4) {
         const rc = sec.left + 5 + Math.floor(rng() * (span - 14));
         const rr = sec.r1 - 3;
         if (rr >= sec.r0 && rc + 3 < sec.right - 2) {
@@ -1145,8 +1259,10 @@
   async function generateValidRandomLevel(opts) {
     const validator = await loadValidator();
     const maxAttempts = 1000;
+    const bestEffortThreshold = 200;
     let baseSeed = (opts && opts.seed) || null;
     let result = { errors: [] };
+    let bestEffort = null;
 
     for (let i = 0; i < maxAttempts; i++) {
       const callOpts = Object.assign({}, opts);
@@ -1155,8 +1271,6 @@
       const defText = generateRandomLevel(callOpts);
       result = validator.validateDef(defText);
       if (result.valid) {
-        // If a count is given without an explicit chance, make sure the exact
-        // requested number was placed; otherwise keep searching.
         let matchOk = true;
         if (opts.bunkers != null && opts.bunkerChance == null) {
           if (result.inventory.bunkers !== parseInt(opts.bunkers, 10)) matchOk = false;
@@ -1174,7 +1288,24 @@
           console.log(`[GEN_OK] Valid level generated on attempt ${i + 1}`);
           return defText;
         }
+        // Track best effort for fallback
+        if (!bestEffort) {
+          bestEffort = { defText, bunkers: result.inventory.bunkers, fuel: result.inventory.fuel };
+        } else {
+          const targetBunkers = opts.bunkers != null ? parseInt(opts.bunkers, 10) : null;
+          const targetFuel = opts.fuel != null ? parseInt(opts.fuel, 10) : null;
+          const currDiff = Math.abs(bestEffort.bunkers - (targetBunkers ?? 0)) + Math.abs(bestEffort.fuel - (targetFuel ?? 0));
+          const newDiff = Math.abs(result.inventory.bunkers - (targetBunkers ?? 0)) + Math.abs(result.inventory.fuel - (targetFuel ?? 0));
+          if (newDiff < currDiff) {
+            bestEffort = { defText, bunkers: result.inventory.bunkers, fuel: result.inventory.fuel };
+          }
+        }
         console.log(`[GEN_RETRY] Attempt ${i + 1} failed: inventory count mismatch (bunkers=${result.inventory.bunkers}, fuel=${result.inventory.fuel})`);
+        // After bestEffortThreshold attempts, accept the closest match
+        if (i + 1 >= bestEffortThreshold && bestEffort) {
+          console.log(`[GEN_OK] Best-effort match after ${i + 1} attempts (bunkers=${bestEffort.bunkers}, fuel=${bestEffort.fuel})`);
+          return bestEffort.defText;
+        }
       }
       console.log(`[GEN_RETRY] Attempt ${i + 1} failed: ${result.errors.length} errors`);
       for (const e of result.errors) console.log(`  ERROR: ${e}`);

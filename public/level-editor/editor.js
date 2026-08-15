@@ -1937,8 +1937,16 @@ class LevelEditor {
   
   updateParameters() {
     const h = this.levelData.header;
-    const newWidth = parseInt(document.getElementById('paramWidth').value);
-    const newHeight = parseInt(document.getElementById('paramHeight').value);
+    const MAX_WIDTH = 200;
+    const MAX_HEIGHT = 300;
+    const MIN_WIDTH = 40;
+    const MIN_HEIGHT = 20;
+    let newWidth = parseInt(document.getElementById('paramWidth').value);
+    let newHeight = parseInt(document.getElementById('paramHeight').value);
+    if (newWidth > MAX_WIDTH) { newWidth = MAX_WIDTH; document.getElementById('paramWidth').value = MAX_WIDTH; }
+    if (newWidth < MIN_WIDTH) { newWidth = MIN_WIDTH; document.getElementById('paramWidth').value = MIN_WIDTH; }
+    if (newHeight > MAX_HEIGHT) { newHeight = MAX_HEIGHT; document.getElementById('paramHeight').value = MAX_HEIGHT; }
+    if (newHeight < MIN_HEIGHT) { newHeight = MIN_HEIGHT; document.getElementById('paramHeight').value = MIN_HEIGHT; }
 
     h.width = newWidth;
     h.height = newHeight;
