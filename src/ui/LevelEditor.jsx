@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { parseImportedPackFile } from '../levels/level-pack-import.js';
 import { storageKey } from '../core/storage-keys.js';
 import { levelEditorTranslations } from '../i18n/levelEditor.js';
+import { getAllPacks } from '../levels/levelpacks.js';
+import { getInstalledPacks } from '../core/progress-storage.js';
 import './level-editor.css';
 
 // CaveShuttle-specific imports are optional via props.
@@ -93,6 +95,35 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       iframeRef.current.contentWindow.postMessage({ type: 'SET_LANGUAGE', lang: language }, '*');
     }
   }, [language]);
+
+  // Send available level packs (built-in + imported) to the iframe editor.
+  // Imported packs include their level content so the iframe can load them without fetch.
+  useEffect(() => {
+    const sendPacks = () => {
+      if (!iframeRef.current || !iframeRef.current.contentWindow) return;
+      const allPacks = getAllPacks();
+      const installedPacks = getInstalledPacks();
+      const packsData = allPacks.map(pack => {
+        const installed = installedPacks.find(p => p.meta.id === pack.id);
+        return {
+          id: pack.id,
+          name: pack.name,
+          source: pack.source,
+          baseUrl: pack.baseUrl,
+          levelCount: pack.meta?.levelCount ?? (installed ? Object.keys(installed.levels).length : 0),
+          levels: installed ? installed.levels : null,
+        };
+      });
+      iframeRef.current.contentWindow.postMessage({ type: 'SET_LEVEL_PACKS', packs: packsData }, '*');
+    };
+    // Send once on mount, and also when iframe loads
+    sendPacks();
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('load', sendPacks);
+      return () => iframe.removeEventListener('load', sendPacks);
+    }
+  }, []);
 
   useEffect(() => {
     try {

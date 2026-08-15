@@ -22,6 +22,9 @@ class LevelEditor {
     this.genBunkerChance = null;
     this.genFuelChance = null;
 
+    // Packs received from parent via postMessage (for local/imported packs)
+    this.receivedPacks = [];
+
     // Level data
     this.levelData = {
       header: {
@@ -1988,32 +1991,40 @@ class LevelEditor {
   
   async refreshLevelSelect() {
     const levelpack = document.getElementById('levelpackSelect').value;
-    const basePath = (levelpack === 'default' || levelpack === 'dulsi') ? '/levelpacks' : '/dev/external-levelpacks';
     const select = document.getElementById('levelSelect');
     const currentValue = select.value;
     select.innerHTML = '';
 
-    let levelCount = null;
-    try {
-      const metaResp = await fetch(`${basePath}/${levelpack}/meta.json`);
-      if (metaResp.ok) {
-        const meta = await metaResp.json();
-        levelCount = meta.levelCount;
-      }
-    } catch (e) {
-      console.warn('[LEVEL_EDITOR] Failed to load meta.json for pack:', levelpack, e);
-    }
+    // Check if this is a received (local/imported) pack
+    const receivedPack = this.receivedPacks.find(p => p.id === levelpack);
+    let levelCount = 0;
 
-    if (!levelCount) {
-      // Fallback: probe for levels by fetching until 404
-      levelCount = 0;
-      for (let i = 1; i <= 100; i++) {
-        try {
-          const resp = await fetch(`${basePath}/${levelpack}/level${i}.def`, { method: 'HEAD' });
-          if (!resp.ok) break;
-          levelCount = i;
-        } catch (e) {
-          break;
+    if (receivedPack && receivedPack.levels) {
+      // Local pack: count level keys (level1, level2, ...)
+      levelCount = receivedPack.levelCount || Object.keys(receivedPack.levels).length;
+    } else {
+      // Server pack: fetch meta.json or probe
+      const basePath = (levelpack === 'default' || levelpack === 'dulsi') ? '/levelpacks' : '/dev/external-levelpacks';
+      try {
+        const metaResp = await fetch(`${basePath}/${levelpack}/meta.json`);
+        if (metaResp.ok) {
+          const meta = await metaResp.json();
+          levelCount = meta.levelCount;
+        }
+      } catch (e) {
+        console.warn('[LEVEL_EDITOR] Failed to load meta.json for pack:', levelpack, e);
+      }
+
+      if (!levelCount) {
+        levelCount = 0;
+        for (let i = 1; i <= 100; i++) {
+          try {
+            const resp = await fetch(`${basePath}/${levelpack}/level${i}.def`, { method: 'HEAD' });
+            if (!resp.ok) break;
+            levelCount = i;
+          } catch (e) {
+            break;
+          }
         }
       }
     }
@@ -2038,7 +2049,34 @@ class LevelEditor {
 
     console.log('[LEVEL_EDITOR_LOAD] Loading level:', levelpack, levelNum);
 
-    // Default and dulsi packs are in public/levelpacks/, classic pack is in dev/external-levelpacks/
+    // Check if this is a received (local/imported) pack
+    const receivedPack = this.receivedPacks.find(p => p.id === levelpack);
+    if (receivedPack && receivedPack.levels) {
+      const levelId = `level${levelNum}`;
+      const content = receivedPack.levels[levelId];
+      if (!content) {
+        alert(window.editorI18n.t('failedToLoad', { error: `Level ${levelId} not found in pack ${levelpack}` }));
+        return;
+      }
+      try {
+        this.parseLevelFile(content);
+        this._lastSnapshot = null;
+        this.saveState();
+        this.updateParameterInputs();
+        const levelName = `level${levelNum}`;
+        document.getElementById('levelNameInput').value = levelName;
+        localStorage.setItem('editorLevelName', levelName);
+        this.render();
+        this.renderPreview();
+        console.log('[LEVEL_EDITOR_LOAD] Level loaded from local pack:', levelpack, levelNum);
+      } catch (error) {
+        console.error('[LEVEL_EDITOR_LOAD] Failed to load level:', error);
+        alert(window.editorI18n.t('failedToLoad', { error: error.message }));
+      }
+      return;
+    }
+
+    // Server pack: fetch from server
     const basePath = (levelpack === 'default' || levelpack === 'dulsi') ? '/levelpacks' : '/dev/external-levelpacks';
 
     try {
@@ -2353,6 +2391,32 @@ class LevelEditor {
     }
   }
 }
+
+// Listen for level packs data from parent window (React LevelEditor component)
+window.addEventListener('message', (event) => {
+  if (!event.data) return;
+  if (event.data.type === 'SET_LEVEL_PACKS' && Array.isArray(event.data.packs)) {
+    if (!window.levelEditor) return;
+    window.levelEditor.receivedPacks = event.data.packs;
+    const select = document.getElementById('levelpackSelect');
+    if (!select) return;
+    const currentValue = select.value;
+    select.innerHTML = '';
+    for (const pack of event.data.packs) {
+      const opt = document.createElement('option');
+      opt.value = pack.id;
+      opt.textContent = pack.name || pack.id;
+      select.appendChild(opt);
+    }
+    // Restore selection or default to first
+    if (currentValue && event.data.packs.some(p => p.id === currentValue)) {
+      select.value = currentValue;
+    } else if (event.data.packs.length > 0) {
+      select.value = event.data.packs[0].id;
+    }
+    window.levelEditor.refreshLevelSelect();
+  }
+});
 
 // Initialize editor when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
