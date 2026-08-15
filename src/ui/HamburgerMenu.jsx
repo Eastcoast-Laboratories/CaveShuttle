@@ -9,6 +9,8 @@ import { exportAllData, importAllData } from '../core/data-transfer.js';
 import './cave-theme.css';
 import './HamburgerMenu.css';
 import PlayerNameInput from './PlayerNameInput.jsx';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { hamburgerMenuTranslations } from '../i18n/hamburgerMenu.js';
 
 // Logarithmic volume mapping: slider position 0-100 → audio volume 0-0.7
 // At position 50 (middle) the volume is 10%; at position 100 (full right) it is 70%.
@@ -42,6 +44,8 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
 }
 
 export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, networkRole = null }) {
+  const { language } = useLanguage();
+  const t = hamburgerMenuTranslations[language] || hamburgerMenuTranslations.en;
   const menuRef = useRef(null);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -91,7 +95,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   };
 
   const handleResetHighscores = () => {
-    if (window.confirm('Reset all local data? This cannot be undone.')) {
+    if (window.confirm(t.resetAllData + '?')) {
       HighScoreManager.resetAll();
       const keys = Object.keys(localStorage).filter(k => k.startsWith('app_'));
       keys.forEach(k => localStorage.removeItem(k));
@@ -102,31 +106,31 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const handleExportData = () => {
     const encoded = exportAllData();
     if (!encoded) {
-      setDataTransferMsg({ type: 'error', text: 'Export failed: no data found.' });
+      setDataTransferMsg({ type: 'error', text: t.exportFailed });
       return;
     }
     setExportedData(encoded);
-    setDataTransferMsg({ type: 'success', text: 'Data exported. Copy the code below.' });
+    setDataTransferMsg({ type: 'success', text: t.dataExported });
   };
 
   const handleCopyExportedData = () => {
     if (!exportedData) {
-      setDataTransferMsg({ type: 'error', text: 'Export data first.' });
+      setDataTransferMsg({ type: 'error', text: t.exportDataFirst });
       return;
     }
     navigator.clipboard.writeText(exportedData)
-      .then(() => setDataTransferMsg({ type: 'success', text: 'Copied to clipboard!' }))
-      .catch(() => setDataTransferMsg({ type: 'error', text: 'Copy failed. Select and copy manually.' }));
+      .then(() => setDataTransferMsg({ type: 'success', text: t.copiedToClipboard }))
+      .catch(() => setDataTransferMsg({ type: 'error', text: t.copyFailed }));
   };
 
   const handleImportData = () => {
     if (!importData.trim()) {
-      setDataTransferMsg({ type: 'error', text: 'Paste export code to import.' });
+      setDataTransferMsg({ type: 'error', text: t.pasteToImport });
       return;
     }
     const result = importAllData(importData);
     if (result.success) {
-      setDataTransferMsg({ type: 'success', text: `Imported ${result.restoredCount} entries. Reloading...` });
+      setDataTransferMsg({ type: 'success', text: t.importedEntries.replace('{count}', result.restoredCount) });
       setTimeout(() => window.location.reload(), 1500);
     } else {
       setDataTransferMsg({ type: 'error', text: result.error });
@@ -266,19 +270,19 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         ⌄
       </button>
 
-      <h3 className="hamburger-section-title with-margin">SELECT LEVEL</h3>
+      <h3 className="hamburger-section-title with-margin">{t.selectLevel}</h3>
       <div className="hamburger-level-buttons">
         {levelButtons}
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">PLAYER NAME</h3>
+      <h3 className="hamburger-section-title">{t.playerName}</h3>
       <div className="hamburger-settings-group">
         <PlayerNameInput playerName={playerName} onPlayerNameChange={onPlayerNameChange} />
       </div>
       {twoPlayer && !networkRole && (
         <>
-          <h3 className="hamburger-section-title">PLAYER 2 NAME</h3>
+          <h3 className="hamburger-section-title">{t.player2Name}</h3>
           <div className="hamburger-settings-group">
             <PlayerNameInput playerName={player2Name} onPlayerNameChange={onPlayer2NameChange} />
           </div>
@@ -292,24 +296,24 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         onPointerDown={(e) => e.stopPropagation()}
         onClick={() => setShowControls(!showControls)}
       >
-        {showControls ? '▼' : '▶'} CONTROLS
+        {showControls ? '▼' : '▶'} {t.controls}
       </h3>
       {showControls && (
         <>
           <div className="hamburger-settings-group">
             <div className="hamburger-toggle-row">
-              <span className="toggle-label">Touch Buttons</span>
+              <span className="toggle-label">{t.touchButtons}</span>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={handleToggleTouchButtons}
                 className={`hamburger-toggle-btn ${showTouchButtons ? 'on' : 'off'}`}
               >
-                {showTouchButtons ? 'ON' : 'OFF'}
+                {showTouchButtons ? t.on : t.off}
               </button>
             </div>
 
             <SettingsSlider
-              label="Transparency"
+              label={t.transparency}
               value={Math.round((0.5 - touchButtonOpacity) / 0.5 * 100)}
               onChange={(e) => onTouchButtonOpacityChange && onTouchButtonOpacityChange(0.5 * (1 - parseInt(e.target.value, 10) / 100))}
               disabled={!showTouchButtons}
@@ -318,91 +322,91 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
 
           <div className="hamburger-settings-group">
             <div className="hamburger-toggle-row">
-              <span className="toggle-label">Joystick</span>
+              <span className="toggle-label">{t.joystick}</span>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={onToggleJoystick}
                 className={`hamburger-toggle-btn ${joystickEnabled ? 'on' : 'off'}`}
               >
-                {joystickEnabled ? 'ON' : 'OFF'}
+                {joystickEnabled ? t.on : t.off}
               </button>
             </div>
             {!joystickEnabled && (
               <p className="hamburger-hint">
-                Tap anywhere to fire.
+                {t.tapAnywhereToFire}
               </p>
             )}
             {joystickEnabled && (
-              <p className="hamburger-hint">Hold and swipe to steer and thrust. Quick tap to fire.</p>
+              <p className="hamburger-hint">{t.holdSwipeToSteer}</p>
             )}
           </div>
 
           <div className="hamburger-settings-group">
             <div className="hamburger-toggle-row">
-              <span className="toggle-label">Tilt Steering</span>
+              <span className="toggle-label">{t.tiltSteering}</span>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={handleToggleTiltSteering}
                 className={`hamburger-toggle-btn ${tiltSteering ? 'on' : 'off'}`}
               >
-                {tiltSteering ? 'ON' : 'OFF'}
+                {tiltSteering ? t.on : t.off}
               </button>
             </div>
             {tiltSteering && (
               <>
-                <p className="hamburger-hint">Tilt left/right to rotate, tilt back to thrust. Tap anywhere to fire.</p>
+                <p className="hamburger-hint">{t.tiltHint}</p>
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={onCalibrateTilt}
                   className="hamburger-btn-green"
                 >
-                  Calibrate Neutral Position
+                  {t.calibrateNeutral}
                 </button>
                 <div className="hamburger-toggle-row">
-                  <span className="toggle-label">Rotate Steering 90°</span>
+                  <span className="toggle-label">{t.rotateSteering90}</span>
                   <button
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={handleToggleTiltRotation}
                     className={`hamburger-toggle-btn ${tiltSteeringRotated ? 'on' : 'off'}`}
                   >
-                    {tiltSteeringRotated ? 'ON' : 'OFF'}
+                    {tiltSteeringRotated ? t.on : t.off}
                   </button>
                 </div>
               </>
             )}
           </div>
 
-          <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>KEYBOARD</h3>
+          <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>{t.keyboard}</h3>
           {!twoPlayer ? (
             <div className="hamburger-controls-list single-player">
-              <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> - Accelerate</div>
-              <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> - Rotate Left</div>
-              <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Right</div>
+              <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> - {t.accelerate}</div>
+              <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> - {t.rotateLeft}</div>
+              <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotateRight}</div>
               <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel></div>
-              <div className="indent-row" ><span className="nbsp">&nbsp;</span>Tractor Beam &Shield</div>
-              <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> - Shoot</div>
+              <div className="indent-row" ><span className="nbsp">&nbsp;</span>{t.tractorBeamShield}</div>
+              <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
             </div>
           ) : (
             <>
               <div className="hamburger-controls-list">
-                <div className="player-label">Player 1 — Ship</div>
-                <div><KeyLabel>↑</KeyLabel> - Accelerate</div>
-                <div><KeyLabel>←</KeyLabel> / <KeyLabel>→</KeyLabel> - Rotate</div>
-                <div><KeyLabel>Space</KeyLabel> - Tractor Beam & Shield</div>
-                {podDocked && <div><KeyLabel>Ctrl</KeyLabel> - Shoot (with Pod)</div>}
+                <div className="player-label">{t.player1Ship}</div>
+                <div><KeyLabel>↑</KeyLabel> - {t.accelerate}</div>
+                <div><KeyLabel>←</KeyLabel> / <KeyLabel>→</KeyLabel> - {t.rotate}</div>
+                <div><KeyLabel>Space</KeyLabel> - {t.tractorBeamShield}</div>
+                {podDocked && <div><KeyLabel>Ctrl</KeyLabel> - {t.shootWithPod}</div>}
               </div>
               <div className="hamburger-controls-list">
-                <div className="player-label">Player 2 — {podDocked ? 'Pod' : 'Turret'}</div>
+                <div className="player-label">{t.player2Pod.replace('{role}', podDocked ? t.pod : t.turret)}</div>
                 {!podDocked ? (
                   <>
-                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Turret</div>
-                    <div><KeyLabel>Shift</KeyLabel> - Shoot</div>
+                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotateTurret}</div>
+                    <div><KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
                   </>
                 ) : (
                   <>
-                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - Rotate Pod</div>
-                    <div><KeyLabel>W</KeyLabel> - Thrust</div>
-                    <div><KeyLabel>Shift</KeyLabel> - Shoot</div>
+                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotatePod}</div>
+                    <div><KeyLabel>W</KeyLabel> - {t.thrust}</div>
+                    <div><KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
                   </>
                 )}
               </div>
@@ -412,35 +416,35 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       )}
 
       <hr />
-      <h3 className="hamburger-section-title">SOUND</h3>
+      <h3 className="hamburger-section-title">{t.sound}</h3>
       <div className="hamburger-settings-group">
         <SettingsSlider
-          label="Sound Volume"
+          label={t.soundVolume}
           value={volumeToSlider(soundVolume)}
           onChange={(e) => onSoundVolumeChange && onSoundVolumeChange(sliderToVolume(parseInt(e.target.value, 10)))}
         />
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">VIBRATION</h3>
+      <h3 className="hamburger-section-title">{t.vibration}</h3>
       <div className="hamburger-settings-group">
         <div className="hamburger-toggle-row">
-          <span className="toggle-label">Enabled</span>
+          <span className="toggle-label">{t.enabled}</span>
           <button
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleToggleVibration}
             className={`hamburger-toggle-btn ${vibrationEnabled ? 'on' : 'off'}`}
           >
-            {vibrationEnabled ? 'ON' : 'OFF'}
+            {vibrationEnabled ? t.on : t.off}
           </button>
         </div>
         {showVibrationHint && (
-          <p className="hamburger-hint">Make sure vibration is also enabled in your device settings.</p>
+          <p className="hamburger-hint">{t.vibrationHint}</p>
         )}
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">LEVEL PACKS</h3>
+      <h3 className="hamburger-section-title">{t.levelPacks}</h3>
       <div className="hamburger-pack-list">
         {(() => {
           // Find duplicate names
@@ -485,7 +489,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
             onChange={handleImportPack}
           />
           <span className="hamburger-import-pack-span">
-            Import Pack (.json)
+            {t.importPack}
           </span>
         </label>
         {importError && (
@@ -495,27 +499,27 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         )}
         {importSuccess && (
           <div className="hamburger-msg-success">
-            Pack imported successfully!
+            {t.packImportedSuccess}
           </div>
         )}
         {conflictDialog && (
           <div className="hamburger-dialog">
             <div className="hamburger-dialog-text">
-              Pack ID "{conflictDialog.parsed.meta.id}" already exists.
+              {t.packIdExists.replace('{id}', conflictDialog.parsed.meta.id)}
             </div>
             <div className="hamburger-dialog-actions">
               <button
                 onClick={handleOverwrite}
                 className="hamburger-btn-danger-sm"
               >
-                Overwrite
+                {t.overwrite}
               </button>
               <div className="hamburger-rename-row">
                 <input
                   type="text"
                   value={renameId}
                   onChange={(e) => setRenameId(e.target.value)}
-                  placeholder="New ID"
+                  placeholder={t.newId}
                   className="hamburger-rename-input"
                 />
                 <button
@@ -530,7 +534,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
                 onClick={() => setConflictDialog(null)}
                 className="hamburger-btn-neutral-sm"
               >
-                Cancel
+                {t.cancel}
               </button>
             </div>
           </div>
@@ -538,20 +542,20 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         {deleteDialog && (
           <div className="hamburger-dialog">
             <div className="hamburger-dialog-text">
-              Delete pack "{deleteDialog.name}"?
+              {t.deletePackConfirm.replace('{name}', deleteDialog.name)}
             </div>
             <div className="hamburger-dialog-actions">
               <button
                 onClick={handleConfirmDelete}
                 className="hamburger-btn-danger-sm"
               >
-                Delete
+                {t.delete}
               </button>
               <button
                 onClick={() => setDeleteDialog(null)}
                 className="hamburger-btn-neutral-sm"
               >
-                Cancel
+                {t.cancel}
               </button>
             </div>
           </div>
@@ -559,21 +563,21 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">DATA TRANSFER</h3>
+      <h3 className="hamburger-section-title">{t.dataTransfer}</h3>
       <div className="hamburger-settings-group">
         <div className="hamburger-data-transfer-row">
           <button
             onClick={handleExportData}
             className="hamburger-btn-green-flex"
           >
-            Export All Data
+            {t.exportAllData}
           </button>
           {exportedData && (
             <button
               onClick={handleCopyExportedData}
               className="hamburger-btn-neutral-flex active"
             >
-              Copy
+              {t.copy}
             </button>
           )}
         </div>
@@ -589,7 +593,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           <textarea
             value={importData}
             onChange={(e) => setImportData(e.target.value)}
-            placeholder="Paste export code here to import..."
+            placeholder={t.pasteExportCode}
             className="hamburger-textarea-input"
           />
         )}
@@ -604,7 +608,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           disabled={showImportTextarea && !importData.trim()}
           className={`hamburger-btn-blue ${(!showImportTextarea || importData.trim()) ? 'active' : 'inactive'}`}
         >
-          Import Data
+          {t.importData}
         </button>
         {dataTransferMsg && (
           <div className={`hamburger-data-transfer-msg ${dataTransferMsg.type}`}>
@@ -618,22 +622,22 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           onClick={handleResetHighscores}
           className="hamburger-btn-danger"
         >
-          Reset all Data
+          {t.resetAllData}
         </button>
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">ACCOUNT</h3>
+      <h3 className="hamburger-section-title">{t.account}</h3>
       <div className="hamburger-settings-group">
         {(() => {
           const authUser = autoAccountManager.getAuthUser();
           const isRegistered = autoAccountManager.isRegistered();
           if (!isRegistered) {
-            return <p className="hamburger-hint">Not connected to community server yet. Will connect automatically when online.</p>;
+            return <p className="hamburger-hint">{t.notConnected}</p>;
           }
           return (
             <>
-              <p className="hamburger-hint">Connected as: <strong>{authUser?.name || 'Unknown'}</strong></p>
+              <p className="hamburger-hint">{t.connectedAs} <strong>{authUser?.name || 'Unknown'}</strong></p>
               <button
                 onClick={() => {
                   const token = autoAccountManager.getToken();
@@ -646,7 +650,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
                 }}
                 className="hamburger-btn-green"
               >
-                Account Settings
+                {t.accountSettings}
               </button>
             </>
           );
@@ -660,21 +664,21 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         onPointerDown={(e) => e.stopPropagation()}
         onClick={() => setShowErrorAnalysis(!showErrorAnalysis)}
       >
-        {showErrorAnalysis ? '▼' : '▶'} ERROR ANALYSIS 
+        {showErrorAnalysis ? '▼' : '▶'} {t.errorAnalysis}
       </h3>
       {showErrorAnalysis && (
         <div className="hamburger-settings-group">
           <div className="hamburger-toggle-row">
-            <span className="toggle-label">Send crash reports</span>
+            <span className="toggle-label">{t.sendCrashReports}</span>
             <button
               onPointerDown={(e) => e.stopPropagation()}
               onClick={handleToggleAnalytics}
               className={`hamburger-toggle-btn ${analyticsEnabled ? 'on' : 'off'}`}
             >
-              {analyticsEnabled ? 'ON' : 'OFF'}
+              {analyticsEnabled ? t.on : t.off}
             </button>
           </div>
-          <p className="hamburger-hint">When enabled, anonymous error and crash data is sent to help improve the game. No personal data is collected.</p>
+          <p className="hamburger-hint">{t.analyticsHint}</p>
         </div>
       )}
 
@@ -685,7 +689,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           onClick={() => onShowTutorial && onShowTutorial()}
           className="hamburger-tutorial-btn"
         >
-          Show Tutorial
+          {t.showTutorial}
         </button>
       </div>
 
@@ -694,7 +698,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           onClick={onBackToMenu}
           className="hamburger-back-btn"
         >
-          Back to Menu
+          {t.backToMenu}
         </button>
       )}
       <div className="hamburger-version">

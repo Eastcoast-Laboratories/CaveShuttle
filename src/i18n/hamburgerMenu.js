@@ -1,0 +1,171 @@
+// Translations for the hamburger menu (settings sidebar).
+// New languages can be added here without touching the component.
+export const hamburgerMenuTranslations = {
+  de: {
+    // Section titles
+    selectLevel: 'Level wählen',
+    playerName: 'Spielername',
+    player2Name: 'Spieler 2',
+    controls: 'Steuerung',
+    keyboard: 'Tastatur',
+    sound: 'Sound',
+    vibration: 'Vibration',
+    levelPacks: 'Level-Packs',
+    dataTransfer: 'Datenübertragung',
+    account: 'Konto',
+    errorAnalysis: 'Fehleranalyse',
+
+    // Toggle labels
+    touchButtons: 'Touch-Buttons',
+    joystick: 'Joystick',
+    tiltSteering: 'Neigungssteuerung',
+    rotateSteering90: 'Steuerung 90° drehen',
+    enabled: 'Aktiviert',
+    sendCrashReports: 'Absturzberichte senden',
+
+    // Button labels
+    on: 'AN',
+    off: 'AUS',
+    calibrateNeutral: 'Neutrale Position kalibrieren',
+    showTutorial: 'Tutorial anzeigen',
+    backToMenu: '← Menu',
+    exportAllData: 'Alle Daten exportieren',
+    importData: 'Daten importieren',
+    copy: 'Kopieren',
+    resetAllData: 'Alle Daten zurücksetzen',
+    accountSettings: 'Kontoeinstellungen',
+
+    // Slider labels
+    transparency: 'Transparenz',
+    soundVolume: 'Lautstärke',
+
+    // Hints
+    tapAnywhereToFire: 'Tippe überall zum Schießen.',
+    holdSwipeToSteer: 'Halten und wischen zum Steuern und Beschleunigen. Kurzes Tippen zum Schießen.',
+    tiltHint: 'Nach links/rechts neigen zum Drehen, zurück neigen zum Beschleunigen. Tippe überall zum Schießen.',
+    vibrationHint: 'Stelle sicher, dass Vibration auch in den Geräteeinstellungen aktiviert ist.',
+    analyticsHint: 'Wenn aktiviert, werden anonyme Fehler- und Absturzdaten gesendet, um das Spiel zu verbessern. Es werden keine persönlichen Daten gesammelt.',
+    notConnected: 'Noch nicht mit dem Community-Server verbunden. Verbindet sich automatisch, wenn online.',
+    connectedAs: 'Verbunden als:',
+
+    // Keyboard labels
+    accelerate: 'Beschleunigen',
+    rotateLeft: 'Links drehen',
+    rotateRight: 'Rechts drehen',
+    tractorBeamShield: 'Traktorstrahl & Schild',
+    shoot: 'Schießen',
+    rotate: 'Drehen',
+    thrust: 'Schub',
+    shootWithPod: 'Schießen (mit Pod)',
+    rotateTurret: 'Geschütz drehen',
+    rotatePod: 'Pod drehen',
+    player1Ship: 'Spieler 1 — Schiff',
+    player2Pod: 'Spieler 2 — {role}',
+    pod: 'Pod',
+    turret: 'Geschütz',
+
+    // Level packs
+    importPack: 'Pack importieren (.json)',
+    packImportedSuccess: 'Pack erfolgreich importiert!',
+    overwrite: 'Überschreiben',
+    cancel: 'Abbrechen',
+    delete: 'Löschen',
+    newId: 'Neue ID',
+    packIdExists: 'Pack-ID "{id}" existiert bereits.',
+    deletePackConfirm: 'Pack "{name}" löschen?',
+
+    // Data transfer messages
+    exportFailed: 'Export fehlgeschlagen: Keine Daten gefunden.',
+    dataExported: 'Daten exportiert. Kopiere den Code unten.',
+    exportDataFirst: 'Zuerst Daten exportieren.',
+    copiedToClipboard: 'In Zwischenablage kopiert!',
+    copyFailed: 'Kopieren fehlgeschlagen. Manuell auswählen und kopieren.',
+    pasteExportCode: 'Export-Code hier einfügen zum Importieren...',
+    pasteToImport: 'Export-Code einfügen zum Importieren.',
+    importedEntries: '{count} Einträge importiert. Neuladen...',
+  },
+
+  en: {
+    // Section titles
+    selectLevel: 'SELECT LEVEL',
+    playerName: 'PLAYER NAME',
+    player2Name: 'PLAYER 2 NAME',
+    controls: 'CONTROLS',
+    keyboard: 'KEYBOARD',
+    sound: 'SOUND',
+    vibration: 'VIBRATION',
+    levelPacks: 'LEVEL PACKS',
+    dataTransfer: 'DATA TRANSFER',
+    account: 'ACCOUNT',
+    errorAnalysis: 'ERROR ANALYSIS',
+
+    // Toggle labels
+    touchButtons: 'Touch Buttons',
+    joystick: 'Joystick',
+    tiltSteering: 'Tilt Steering',
+    rotateSteering90: 'Rotate Steering 90°',
+    enabled: 'Enabled',
+    sendCrashReports: 'Send crash reports',
+
+    // Button labels
+    on: 'ON',
+    off: 'OFF',
+    calibrateNeutral: 'Calibrate Neutral Position',
+    showTutorial: 'Show Tutorial',
+    backToMenu: 'Back to Menu',
+    exportAllData: 'Export All Data',
+    importData: 'Import Data',
+    copy: 'Copy',
+    resetAllData: 'Reset all Data',
+    accountSettings: 'Account Settings',
+
+    // Slider labels
+    transparency: 'Transparency',
+    soundVolume: 'Sound Volume',
+
+    // Hints
+    tapAnywhereToFire: 'Tap anywhere to fire.',
+    holdSwipeToSteer: 'Hold and swipe to steer and thrust. Quick tap to fire.',
+    tiltHint: 'Tilt left/right to rotate, tilt back to thrust. Tap anywhere to fire.',
+    vibrationHint: 'Make sure vibration is also enabled in your device settings.',
+    analyticsHint: 'When enabled, anonymous error and crash data is sent to help improve the game. No personal data is collected.',
+    notConnected: 'Not connected to community server yet. Will connect automatically when online.',
+    connectedAs: 'Connected as:',
+
+    // Keyboard labels
+    accelerate: 'Accelerate',
+    rotateLeft: 'Rotate Left',
+    rotateRight: 'Rotate Right',
+    tractorBeamShield: 'Tractor Beam & Shield',
+    shoot: 'Shoot',
+    rotate: 'Rotate',
+    thrust: 'Thrust',
+    shootWithPod: 'Shoot (with Pod)',
+    rotateTurret: 'Rotate Turret',
+    rotatePod: 'Rotate Pod',
+    player1Ship: 'Player 1 — Ship',
+    player2Pod: 'Player 2 — {role}',
+    pod: 'Pod',
+    turret: 'Turret',
+
+    // Level packs
+    importPack: 'Import Pack (.json)',
+    packImportedSuccess: 'Pack imported successfully!',
+    overwrite: 'Overwrite',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    newId: 'New ID',
+    packIdExists: 'Pack ID "{id}" already exists.',
+    deletePackConfirm: 'Delete pack "{name}"?',
+
+    // Data transfer messages
+    exportFailed: 'Export failed: no data found.',
+    dataExported: 'Data exported. Copy the code below.',
+    exportDataFirst: 'Export data first.',
+    copiedToClipboard: 'Copied to clipboard!',
+    copyFailed: 'Copy failed. Select and copy manually.',
+    pasteExportCode: 'Paste export code here to import...',
+    pasteToImport: 'Paste export code to import.',
+    importedEntries: 'Imported {count} entries. Reloading...',
+  },
+};
