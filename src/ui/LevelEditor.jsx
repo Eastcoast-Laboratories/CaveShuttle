@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { parseImportedPackFile } from '../levels/level-pack-import.js';
 import { storageKey } from '../core/storage-keys.js';
+import { levelEditorTranslations } from '../i18n/levelEditor.js';
 import './level-editor.css';
 
 // CaveShuttle-specific imports are optional via props.
@@ -11,6 +12,7 @@ const DRAFT_KEY = storageKey('editorPackDraft');
 const LANGUAGE_KEY = 'caveShuttle_language';
 const PLAYER_NAME_KEY = storageKey('playerProfile');
 
+/* ######## replacements on standalone editor ########## */
 // Local fallback for player name (replaces HighScoreManager dependency)
 function getPlayerName() {
   try {
@@ -61,6 +63,7 @@ function defaultDraft() {
 
 export default function LevelEditor({ onBack, onEditorTest, onPackImported, installPackFn, isReservedPackIdFn }) {
   const [language, setLanguageState] = useState(getStoredLanguage);
+  const t = levelEditorTranslations[language] || levelEditorTranslations.en;
   const setLanguage = (lang) => {
     setLanguageState(lang);
     try { localStorage.setItem(LANGUAGE_KEY, lang); } catch {}
@@ -90,7 +93,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch (error) {
       console.error('[LEVEL_EDITOR_PACK] Failed to save draft', error);
-      setError('Pack draft is too large to save.');
+      setError(t.draftTooLarge);
     }
   }, [draft]);
 
@@ -116,7 +119,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
           }
         }));
         setSidebarOpen(true);
-        setMessage(`Added ${uniqueId} to pack.`);
+        setMessage(t.addedToPack.replace('{id}', uniqueId));
         setTimeout(() => setMessage(null), 2000);
       }
     };
@@ -166,7 +169,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
         meta: { ...defaultDraft().meta, ...parsed.meta, createdAt: parsed.meta.createdAt || Date.now() },
         levels: parsed.levels || {}
       });
-      setMessage(`Pack ${parsed.meta.name || parsed.meta.id} loaded.`);
+      setMessage(t.packLoaded.replace('{name}', parsed.meta.name || parsed.meta.id));
       setTimeout(() => setMessage(null), 2000);
     } catch (err) {
       setError(err.message);
@@ -177,7 +180,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
 
   const downloadPack = () => {
     if (!draft.meta.id) {
-      setError('Pack ID is required for download.');
+      setError(t.packIdRequired);
       return;
     }
     const pack = { meta: { ...draft.meta, createdAt: draft.meta.createdAt || Date.now() }, levels: draft.levels };
@@ -194,25 +197,25 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
     if (!installPackFn) return;
     setError(null);
     if (!draft.meta.id || !draft.meta.name) {
-      setError('Pack ID and name are required.');
+      setError(t.packIdNameRequired);
       return;
     }
     if (isReservedPackIdFn && isReservedPackIdFn(draft.meta.id)) {
-      setError(`Pack ID "${draft.meta.id}" is reserved for a built-in pack.`);
+      setError(t.packIdReserved.replace('{id}', draft.meta.id));
       return;
     }
     if (!draft.levels || Object.keys(draft.levels).length === 0) {
-      setError('Pack must contain at least one level.');
+      setError(t.packNeedsLevel);
       return;
     }
     try {
       const result = installPackFn(draft.meta, draft.levels, true);
       if (result.success) {
         if (onPackImported) onPackImported();
-        setMessage(`Pack ${draft.meta.id} installed.`);
+        setMessage(t.packInstalled.replace('{id}', draft.meta.id));
         setTimeout(() => setMessage(null), 2000);
       } else if (result.conflict) {
-        setError(`Pack ${draft.meta.id} could not be installed due to a conflict.`);
+        setError(t.packConflict.replace('{id}', draft.meta.id));
       }
     } catch (err) {
       setError(err.message);
@@ -220,7 +223,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
   };
 
   const newPack = () => {
-    if (window.confirm('Create a new pack? The current draft will be discarded.')) {
+    if (window.confirm(t.newPackConfirm)) {
       setDraft(defaultDraft());
     }
   };
@@ -231,10 +234,10 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
     <div className="level-editor-root">
       <div className="level-editor-toolbar">
         <button onClick={onBack} className="level-editor-btn-back">
-          Back to Menu
+          {t.backToMenu}
         </button>
         <button onClick={toggleSidebar} className="level-editor-btn-sidebar">
-          Pack Builder
+          {t.packBuilder}
         </button>
       </div>
       <div className="level-editor-language-switcher">
@@ -252,60 +255,54 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
         ref={iframeRef}
         src="/level-editor/index.html"
         className="level-editor-iframe"
-        title="Level Editor"
+        title={t.levelEditorTitle}
       />
       {sidebarOpen && (
         <div className="level-editor-sidebar">
           <div className="level-editor-sidebar-header">
-            <h3>Pack Builder</h3>
+            <h3>{t.packBuilder}</h3>
             <div className="level-editor-sidebar-header-buttons">
               <button
                 onClick={() => setShowHelp(prev => !prev)}
                 className="level-editor-btn-help"
-                title="How does the Pack Builder work?"
+                title={t.howDoesItWork}
               >
                 ?
               </button>
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="level-editor-btn-close"
-                title="Close Pack Builder"
+                title={t.closePackBuilder}
               >
                 ×
               </button>
             </div>
           </div>
           {showHelp && (
-            <div className="level-editor-help-text">
-              <strong>Pack Builder</strong> lets you collect levels into a shareable pack.<br /><br />
-              <strong>1.</strong> Design a level in the editor on the left.<br />
-              <strong>2.</strong> Click <strong>"Add to Pack"</strong> to add it to your pack.<br />
-              <strong>3.</strong> Reorder levels with ▲▼ or remove them with ×.<br />
-              <strong>4.</strong> Click a level and press <strong>Edit</strong> to load it back into the editor.<br />
-              <strong>5.</strong> Use <strong>Download Pack</strong> to save a .json file you can share.<br />
-              <strong>6.</strong> Use <strong>Install Pack in Game</strong> to play it immediately.<br /><br />
-              If you share it, everybody can import your level-pack in their game menu.
-            </div>
+            <div
+              className="level-editor-help-text"
+              dangerouslySetInnerHTML={{ __html: t.helpIntro + t.help1 + t.help2 + t.help3 + t.help4 + t.help5 + t.help6 + t.helpShare }}
+            />
           )}
           {message && <div className="level-editor-message">{message}</div>}
           {error && <div className="level-editor-error">{error}</div>}
 
-          <label className="level-editor-label">Pack ID</label>
-          <input className="level-editor-input" value={draft.meta.id} onChange={e => setMetaField('id', e.target.value)} placeholder="unique-pack-id" />
-          <label className="level-editor-label">Pack Name</label>
-          <input className="level-editor-input" value={draft.meta.name} onChange={e => setMetaField('name', e.target.value)} placeholder="My Pack" />
-          <label className="level-editor-label">Version</label>
-          <input className="level-editor-input" value={draft.meta.version} onChange={e => setMetaField('version', e.target.value)} placeholder="1.0" />
-          <label className="level-editor-label">Author</label>
-          <input className="level-editor-input" value={draft.meta.author} onChange={e => setMetaField('author', e.target.value)} placeholder="Author" />
+          <label className="level-editor-label">{t.packId}</label>
+          <input className="level-editor-input" value={draft.meta.id} onChange={e => setMetaField('id', e.target.value)} placeholder={t.packIdPlaceholder} />
+          <label className="level-editor-label">{t.packName}</label>
+          <input className="level-editor-input" value={draft.meta.name} onChange={e => setMetaField('name', e.target.value)} placeholder={t.packNamePlaceholder} />
+          <label className="level-editor-label">{t.version}</label>
+          <input className="level-editor-input" value={draft.meta.version} onChange={e => setMetaField('version', e.target.value)} placeholder={t.versionPlaceholder} />
+          <label className="level-editor-label">{t.author}</label>
+          <input className="level-editor-input" value={draft.meta.author} onChange={e => setMetaField('author', e.target.value)} placeholder={t.authorPlaceholder} />
 
-          <h4 className="level-editor-section-title">Levels</h4>
+          <h4 className="level-editor-section-title">{t.levels}</h4>
           <div>
             {Object.keys(draft.levels).map(levelId => (
               <div key={levelId} className="level-editor-level-item">
                 <span className="level-editor-level-name">{levelId}</span>
                 <div className="level-editor-level-buttons">
-                  <button onClick={() => editLevel(levelId)} className="level-editor-btn level-editor-btn-edit">Edit</button>
+                  <button onClick={() => editLevel(levelId)} className="level-editor-btn level-editor-btn-edit">{t.edit}</button>
                   <button onClick={() => moveLevel(levelId, -1)} className="level-editor-btn level-editor-btn-move">▲</button>
                   <button onClick={() => moveLevel(levelId, 1)} className="level-editor-btn level-editor-btn-move">▼</button>
                   <button onClick={() => removeLevel(levelId)} className="level-editor-btn level-editor-btn-remove">×</button>
@@ -313,17 +310,17 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
               </div>
             ))}
             {Object.keys(draft.levels).length === 0 && (
-              <div className="level-editor-empty-levels">No levels yet. Use &quot;Add to Pack&quot; in the editor.</div>
+              <div className="level-editor-empty-levels">{t.noLevelsYet}</div>
             )}
           </div>
 
           <div className="level-editor-sidebar-footer">
-            <button onClick={newPack} className="level-editor-btn level-editor-btn-new level-editor-btn-full-width">New Pack</button>
-            <button onClick={() => fileInputRef.current?.click()} className="level-editor-btn level-editor-btn-open level-editor-btn-full-width">Open Pack File</button>
+            <button onClick={newPack} className="level-editor-btn level-editor-btn-new level-editor-btn-full-width">{t.newPack}</button>
+            <button onClick={() => fileInputRef.current?.click()} className="level-editor-btn level-editor-btn-open level-editor-btn-full-width">{t.openPackFile}</button>
             <input ref={fileInputRef} type="file" accept=".json" onChange={handleOpenPack} className="level-editor-file-input" />
-            <button onClick={downloadPack} className="level-editor-btn level-editor-btn-download level-editor-btn-full-width">Download Pack</button>
+            <button onClick={downloadPack} className="level-editor-btn level-editor-btn-download level-editor-btn-full-width">{t.downloadPack}</button>
             {installPackFn && (
-              <button onClick={installPack} className="level-editor-btn level-editor-btn-install level-editor-btn-full-width">Install Pack in Game</button>
+              <button onClick={installPack} className="level-editor-btn level-editor-btn-install level-editor-btn-full-width">{t.installPackInGame}</button>
             )}
           </div>
         </div>
