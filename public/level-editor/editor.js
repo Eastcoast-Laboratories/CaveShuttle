@@ -414,8 +414,8 @@ class LevelEditor {
         if (rgbInput && rgbInput.value) {
           if (navigator.clipboard) {
             navigator.clipboard.writeText(rgbInput.value).then(() => {
-              wallColorCopy.textContent = 'Copied!';
-              setTimeout(() => wallColorCopy.textContent = 'Copy RGB', 1500);
+              wallColorCopy.textContent = window.editorI18n.t('copied');
+              setTimeout(() => wallColorCopy.textContent = window.editorI18n.t('copyRgb'), 1500);
             }).catch(() => {
               rgbInput.select();
               document.execCommand('copy');
@@ -575,7 +575,7 @@ class LevelEditor {
     const pos = this.getGridPosition(e);
 
     // Update cursor position display
-    document.getElementById('cursorPos').textContent = `X: ${pos.x}, Y: ${pos.y}`;
+    document.getElementById('cursorPos').textContent = window.editorI18n.t('cursorPos', { x: pos.x, y: pos.y });
 
     // Update canvas title with tile name
     if (pos.x >= 0 && pos.x < this.levelData.header.width && pos.y >= 0 && pos.y < this.levelData.header.height) {
@@ -1910,7 +1910,7 @@ class LevelEditor {
     this.ctx.restore();
     
     // Update size display
-    document.getElementById('levelSize').textContent = `Size: ${width} x ${height}`;
+    document.getElementById('levelSize').textContent = window.editorI18n.t('levelSize', { w: width, h: height });
   }
   
   updateParameterInputs() {
@@ -2021,7 +2021,7 @@ class LevelEditor {
     for (let i = 1; i <= levelCount; i++) {
       const opt = document.createElement('option');
       opt.value = String(i);
-      opt.textContent = `Level ${i}`;
+      opt.textContent = window.editorI18n.t('levelN', { n: i });
       select.appendChild(opt);
     }
 
@@ -2062,7 +2062,7 @@ class LevelEditor {
       console.log('[LEVEL_EDITOR_LOAD] Level loaded successfully');
     } catch (error) {
       console.error('[LEVEL_EDITOR_LOAD] Failed to load level:', error);
-      alert('Failed to load level: ' + error.message);
+      alert(window.editorI18n.t('failedToLoad', { error: error.message }));
     }
   }
   
@@ -2163,15 +2163,15 @@ class LevelEditor {
   }
   
   async generateRandom() {
-    if (!confirm('Generate a random level? Unsaved changes will be lost.')) return;
+    if (!confirm(window.editorI18n.t('generateConfirm'))) return;
     if (typeof window.generateValidRandomLevel !== 'function') {
-      alert('Level generator not loaded. Make sure level-generator.js is included.');
+      alert(window.editorI18n.t('generatorNotLoaded'));
       return;
     }
 
     const MIN_GENERATE_WIDTH = 140;
     if (this.levelData.header.width < MIN_GENERATE_WIDTH) {
-      alert(`Width is too small for the level generator (${this.levelData.header.width}). It will be increased to ${MIN_GENERATE_WIDTH}.`);
+      alert(window.editorI18n.t('widthTooSmall', { width: this.levelData.header.width, min: MIN_GENERATE_WIDTH }));
       this.levelData.header.width = MIN_GENERATE_WIDTH;
       document.getElementById('paramWidth').value = MIN_GENERATE_WIDTH;
       this.updateParameters();
@@ -2195,11 +2195,11 @@ class LevelEditor {
       this.loadLevelFromString(defContent);
       console.log('[LEVEL_EDITOR_GENERATE] Valid random level generated and loaded');
     } catch (err) {
-      alert('Failed to generate valid level: ' + err.message);
+      alert(window.editorI18n.t('failedToGenerate', { error: err.message }));
       console.error('[LEVEL_EDITOR_GENERATE]', err);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = 'Generate';
+      btn.innerHTML = window.editorI18n.t('generate');
     }
   }
   
@@ -2232,7 +2232,7 @@ class LevelEditor {
         const btn = document.getElementById('copyModalBtn');
         if (btn) {
           const original = btn.textContent;
-          btn.textContent = 'Copied!';
+          btn.textContent = window.editorI18n.t('copied');
           setTimeout(() => btn.textContent = original, 1500);
         }
       });

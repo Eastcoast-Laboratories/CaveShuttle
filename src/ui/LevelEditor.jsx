@@ -89,6 +89,12 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
   const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({ type: 'SET_LANGUAGE', lang: language }, '*');
+    }
+  }, [language]);
+
+  useEffect(() => {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch (error) {
@@ -253,7 +259,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       </div>
       <iframe
         ref={iframeRef}
-        src="/level-editor/index.html"
+        src={`/level-editor/index.html?lang=${language}`}
         className="level-editor-iframe"
         title={t.levelEditorTitle}
       />
