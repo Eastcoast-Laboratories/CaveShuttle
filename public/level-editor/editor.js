@@ -64,17 +64,17 @@ class LevelEditor {
       'bunker_right': {
         name: 'Bunker Ceiling Right ([XYZ)',
         pattern: [
-          'ppppuv',
-          'ppuv[',
-          'uvXYZ'
+          'wxppppp',
+          ' \\wxpp',
+          ' ]^_wx'
         ]
       },
       'bunker_left': {
         name: 'Bunker Ceiling Left (]^_\\)',
         pattern: [
-          'wxpppp',
-          '\\wxpp',
-          ']^_wx'
+           'ppppuv',
+          'ppuv[',
+          'uvXYZ'
         ]
       },
       'bunker_floor_p': {
@@ -82,7 +82,7 @@ class LevelEditor {
         pattern: [
           'qrPQR',
           'ppqrS',
-          'pppqr'
+          'ppppqr'
         ]
       },
       'bunker_floor_u': {
