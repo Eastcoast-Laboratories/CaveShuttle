@@ -73,7 +73,6 @@
           </div>
           <button id="loadBtn" class="btn btn-primary" data-i18n="load">Load</button>
           <button id="newBtn" class="btn btn-secondary" data-i18n="new">New</button>
-          <button id="generateBtn" class="btn btn-info" data-i18n="generate">Generate</button>
           <button id="saveBtn" class="btn btn-success" data-i18n="save">Save</button>
           <button id="testBtn" class="btn btn-warning" data-i18n="test">Test</button>
           <button id="addToPackBtn" class="btn btn-success" data-i18n="addToPack">Add to Pack</button>
@@ -90,10 +89,6 @@
             <input type="number" id="paramHeight" class="param-input" value="120" min="20" max="300">
           </div>
           <div class="param-group">
-            <label data-i18n="startHeight">Start Height:</label>
-            <input type="number" id="paramStartHeight" class="param-input" value="17" min="5" max="100">
-          </div>
-          <div class="param-group">
             <label data-i18n="emptySpace">Empty Space:</label>
             <input type="number" id="paramEmptySpace" class="param-input" value="5" min="-50" max="50">
           </div>
@@ -101,6 +96,18 @@
             <label data-i18n="bedrock">Bedrock:</label>
             <input type="number" id="paramBedrock" class="param-input" value="25" min="5" max="100">
           </div>
+          <div class="param-group pod-color-group">
+            <label data-i18n="podColor">Pod Color:</label>
+            <div class="color-rgb-inputs">
+              <input type="number" id="paramPodR" class="param-input color-input" value="0" min="0" max="255" title="Pod R">
+              <input type="number" id="paramPodG" class="param-input color-input" value="164" min="0" max="255" title="Pod G">
+              <input type="number" id="paramPodB" class="param-input color-input" value="0" min="0" max="255" title="Pod B">
+            </div>
+          </div>
+          
+          <h3>Generator</h3>
+          <button id="generateBtn" class="btn btn-info" data-i18n="generate">Generate</button>
+          
           <div class="param-group">
             <label data-i18n="bunkers">Bunkers:</label>
             <input type="number" id="paramBunkers" class="param-input" value="5" min="0" max="20">
@@ -117,14 +124,7 @@
             <label data-i18n="fuelChance">Fuel Chance:</label>
             <input type="number" id="paramFuelChance" class="param-input" value="" min="0" max="1" step="0.05">
           </div>
-          <div class="param-group pod-color-group">
-            <label data-i18n="podColor">Pod Color:</label>
-            <div class="color-rgb-inputs">
-              <input type="number" id="paramPodR" class="param-input color-input" value="0" min="0" max="255" title="Pod R">
-              <input type="number" id="paramPodG" class="param-input color-input" value="164" min="0" max="255" title="Pod G">
-              <input type="number" id="paramPodB" class="param-input color-input" value="0" min="0" max="255" title="Pod B">
-            </div>
-          </div>
+          
         </div>
 
       </aside>
