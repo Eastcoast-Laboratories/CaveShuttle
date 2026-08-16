@@ -376,6 +376,37 @@ class LevelEditor {
     document.getElementById('generateBtn').addEventListener('click', () => this.generateRandom());
     document.getElementById('levelpackSelect').addEventListener('change', () => this.refreshLevelSelect());
 
+    // - When a count > 0 is entered, set chance to divided by 100
+    const bunkersInput = document.getElementById('paramBunkers');
+    const bunkerChanceInput = document.getElementById('paramBunkerChance');
+    const fuelInput = document.getElementById('paramFuel');
+    const fuelChanceInput = document.getElementById('paramFuelChance');
+
+    bunkersInput.addEventListener('input', () => {
+      const v = parseInt(bunkersInput.value, 10);
+      if (v > 0 && bunkerChanceInput.value === '') {
+        bunkerChanceInput.value = '1';
+      }
+    });
+    fuelInput.addEventListener('input', () => {
+      const v = parseInt(fuelInput.value, 10);
+      if (v > 0 && fuelChanceInput.value === '') {
+        fuelChanceInput.value = '1';
+      }
+    });
+    bunkerChanceInput.addEventListener('input', () => {
+      const v = parseFloat(bunkerChanceInput.value);
+      if (!isNaN(v) && v > 1) {
+        bunkerChanceInput.value = (v / 100).toString();
+      }
+    });
+    fuelChanceInput.addEventListener('input', () => {
+      const v = parseFloat(fuelChanceInput.value);
+      if (!isNaN(v) && v > 1) {
+        fuelChanceInput.value = (v / 100).toString();
+      }
+    });
+
     // Level name input - save to localStorage on change
     const levelNameInput = document.getElementById('levelNameInput');
     levelNameInput.addEventListener('input', () => {
@@ -1365,7 +1396,7 @@ class LevelEditor {
       else       pair = h > 0 ? ['q', 'r'] : ['t', 's'];
     } else if (surface === 'ceiling') {
       // Ceiling hill hangs downward: descending (v>0) vs ascending (v<0).
-      if (v > 0) pair = h > 0 ? ['w', 'x'] : ['u', 'v'];
+      if (v > 0) pair = h > 0 ? ['w', 'x'] : ['v', 'u'];
       else       pair = h > 0 ? ['u', 'v'] : ['w', 'x'];
     } else if (surface === 'wallRight') {
       // Walls bulge horizontally; vertical direction is the loop axis, not relevant here.
