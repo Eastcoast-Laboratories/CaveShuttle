@@ -242,6 +242,9 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const reactorDamageMsRef = useRef(0);
   const reactorLastHitTimeRef = useRef(0);
   const reactorLastHitPointRef = useRef({ x: 0, y: 0 });
+  const vibrationEnabledRef = useRef(vibrationEnabled);
+  useEffect(() => { vibrationEnabledRef.current = vibrationEnabled; }, [vibrationEnabled]);
+  const vibrateIfEnabled = (pattern) => { if (vibrationEnabledRef.current) vibrate(pattern); };
   const meltdownActiveRef = useRef(false);
   const meltdownStartTimeRef = useRef(0);
   const meltdownExplosionTimeRef = useRef(0);
@@ -435,7 +438,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           particleSystem.current.spawnExplosion(data.x, data.y, 30, '#00ff00');
           if (soundManager.current) soundManager.current.playOnce('explosion');
           setScreenShake({ x: 0, y: 0, intensity: 15 });
-          vibrate([100, 50, 100, 50, 200]);
+          vibrateIfEnabled([100, 50, 100, 50, 200]);
           ship.setVelocity(0, 0);
           ship.setAccelerate(false);
           deathAnim.current = { active: true, timeLeft: 60 };
@@ -449,7 +452,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           setPodExplosionTime(performance.now());
           particleSystem.current.spawnExplosion(data.x, data.y, 40, '#00ff00');
           if (soundManager.current) soundManager.current.playOnce('explosion');
-          vibrate([80, 30, 80]);
+          vibrateIfEnabled([80, 30, 80]);
           console.log('[POD_EXPLOSION] Pod detonated (network) at', data.x.toFixed(0), data.y.toFixed(0));
         }
       } else if (data.type === 'gameover' && networkRole === 'client') {
@@ -1372,7 +1375,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       setPodExplosionTime(performance.now());
       particleSystem.current.spawnExplosion(pod.x, pod.y, 40, '#00ff00');
       if (soundManager.current) soundManager.current.playOnce('explosion');
-      vibrate([80, 30, 80]);
+      vibrateIfEnabled([80, 30, 80]);
       console.log('[POD_EXPLOSION] Pod detonated (' + cause + ') at', pod.x.toFixed(0), pod.y.toFixed(0), '| wasTowed:', podWasDockedRef.current);
       // [NETWORK] Host notifies client of pod explosion so client can mirror it
       if (networkRole === 'host' && networkManager) {
@@ -1409,7 +1412,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       particleSystem.current.spawnExplosion(ship.x, ship.y, 30, '#00ff00');
       if (soundManager.current) soundManager.current.playOnce('explosion');
       setScreenShake({ x: 0, y: 0, intensity: 15 });
-      vibrate([100, 50, 100, 50, 200]);
+      vibrateIfEnabled([100, 50, 100, 50, 200]);
       ship.setVelocity(0, 0);
       ship.setAccelerate(false);
       // Start ~1s death animation (60 frames at 60fps)
