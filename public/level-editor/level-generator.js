@@ -869,29 +869,27 @@
 
       // --- Fuel: try to place multiple fuel depots per corridor ---
       // Scan from left to right, trying positions until we hit maxFuel or run out of space.
+      // Fuel containers can be placed directly adjacent (every 2 tiles) if needed.
       if (span >= 16) {
         const fuelR = sec.r1 - 2;
         if (fuelR >= 3 && fuelR + 2 < grid.length) {
-          // Try positions from left+7 to right-8, stepping by FUEL_WIDTH + FEATURE_SPACING
-          for (let fc = sec.left + 7; fc < sec.right - 8 && fuelCount < maxFuel; fc += FUEL_WIDTH + FEATURE_SPACING) {
-            // Add random jitter to avoid grid-aligned placement
-            const jitteredFc = fc + Math.floor(rng() * FEATURE_SPACING);
-            if (jitteredFc + 1 >= sec.right - 1) break;
-            if (!isColRangeFree(sec, jitteredFc, jitteredFc + 1)) continue;
+          for (let fc = sec.left + 7; fc < sec.right - 8 && fuelCount < maxFuel; fc += FUEL_WIDTH) {
+            if (fc + 1 >= sec.right - 1) break;
+            if (!isColRangeFree(sec, fc, fc + 1)) continue;
             // Check chance (skip chance check if count was explicitly requested)
             if (rng() >= fuelChance) continue;
             let clear = true;
             for (let dy = 1; dy <= 2; dy++)
               for (let dx = 0; dx <= 1; dx++)
-                if (isWallTile(grid, fuelR - dy, jitteredFc + dx)) clear = false;
-            if (isWallTile(grid, fuelR, jitteredFc) || isWallTile(grid, fuelR, jitteredFc + 1) ||
-                isWallTile(grid, fuelR + 1, jitteredFc) || isWallTile(grid, fuelR + 1, jitteredFc + 1))
+                if (isWallTile(grid, fuelR - dy, fc + dx)) clear = false;
+            if (isWallTile(grid, fuelR, fc) || isWallTile(grid, fuelR, fc + 1) ||
+                isWallTile(grid, fuelR + 1, fc) || isWallTile(grid, fuelR + 1, fc + 1))
               clear = false;
-            if (!isWallTile(grid, fuelR + 2, jitteredFc) || !isWallTile(grid, fuelR + 2, jitteredFc + 1))
+            if (!isWallTile(grid, fuelR + 2, fc) || !isWallTile(grid, fuelR + 2, fc + 1))
               clear = false;
             if (clear) {
-              placeFuel(grid, fuelR, jitteredFc);
-              markUsedCols(sec, jitteredFc, jitteredFc + 1);
+              placeFuel(grid, fuelR, fc);
+              markUsedCols(sec, fc, fc + 1);
               fuelCount++;
             }
           }
