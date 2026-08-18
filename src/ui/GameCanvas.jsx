@@ -12,7 +12,7 @@ import { TileRenderer } from '../game/tile-renderer.js';
 import { LevelLoader } from '../levels/level-loader.js';
 import { CollisionDetection } from '../physics/collision.js';
 import { SoundManager } from '../audio/sound-manager.js';
-import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE } from '../core/constants.js';
+import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD } from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 
@@ -161,6 +161,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const rotationStartAngleRef = useRef(null); // angle when rotation started (for slow rotation near vertical and snapping)
   const rotationSlowModeRef = useRef(false); // whether slow rotation mode is active
   const wasRotatingRef = useRef(false); // previous frame rotation state (for detecting start/stop)
+  const wasAcceleratingRef = useRef(false); // previous frame thrust state (for detecting start/stop)
+  const wasTractorBeamRef = useRef(false); // previous frame tractor beam state (for detecting activation)
   const rotationSnapDisabledRef = useRef(false); // whether snapping is disabled for this rotation (started at exact 0°)
   // Track pointerId to button type mapping for multi-touch support
   const pointerButtonMap = useRef(new Map());
@@ -1614,6 +1616,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           const isRotating = shipRotateLeft || shipRotateRight;
           // Record angle when rotation STARTS (transition from not rotating to rotating)
           if (isRotating && !wasRotatingRef.current) {
+            vibrateIfEnabled(VIBRATE_ROTATE);
             rotationStartAngleRef.current = ship.angle;
             // Check if starting near vertical (within threshold) -> activate slow mode
             const angleDeg = (ship.angle * 180 / Math.PI) % 360;
@@ -1647,6 +1650,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           }
           // Check if rotation stops
           if (!isRotating && wasRotatingRef.current) {
+            if (tiltSteering) vibrateIfEnabled(VIBRATE_ROTATE_STOP);
             // Snap to vertical if current angle is close to vertical and snapping is not disabled
             if (!rotationSnapDisabledRef.current) {
               const currentAngleDeg = (ship.angle * 180 / Math.PI) % 360;
@@ -1713,7 +1717,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         // Single player: arrow keys or WASD. Two-player: player 1 uses arrow keys.
         // In network mode the client receives ship acceleration from the host's snapshot.
         if (networkRole !== 'client') {
-          if (ship.fuel > 0 && (keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current))) {
+          const isAccelerating = ship.fuel > 0 && (keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+          if (isAccelerating) {
             ship.setAccelerate(true);
             // Spawn accelerate particles
             const accelerateX = ship.x - Math.sin(ship.angle) * 15;
@@ -1722,6 +1727,13 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           } else {
             ship.setAccelerate(false);
           }
+          if (isAccelerating && !wasAcceleratingRef.current) {
+            vibrateIfEnabled(VIBRATE_THRUST);
+          }
+          if (!isAccelerating && wasAcceleratingRef.current && tiltSteering) {
+            vibrateIfEnabled(VIBRATE_THRUST_STOP);
+          }
+          wasAcceleratingRef.current = isAccelerating;
         }
       }
 
@@ -1778,6 +1790,10 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       // Tractor beam (Space key, Ctrl key, or on-screen touch button)
       // Includes shieldActive for network sync (client receives host's shield state)
       const tractorBeamActive = keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive || shieldActive;
+      if (tractorBeamActive && !wasTractorBeamRef.current) {
+        vibrateIfEnabled(VIBRATE_POD);
+      }
+      wasTractorBeamRef.current = tractorBeamActive;
 
       // Tractor beam raycast: beam shoots straight down until it hits the first obstacle.
       const beamActive = tractorBeamActive;
@@ -1856,6 +1872,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           });
           ship.p1LastShotTime = now;
           ship.fuel -= FIRE_FUEL_CONSUMPTION;
+          vibrateIfEnabled(VIBRATE_FIRE);
           if (soundManager.current) soundManager.current.playOnce('shipFire');
         }
 
@@ -1875,6 +1892,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           });
           ship.p2LastShotTime = now;
           ship.fuel -= FIRE_FUEL_CONSUMPTION;
+          vibrateIfEnabled(VIBRATE_FIRE);
           if (soundManager.current) soundManager.current.playOnce(podCannon ? 'podFire' : 'shipFire');
         }
       }

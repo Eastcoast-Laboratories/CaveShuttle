@@ -62,7 +62,14 @@ function App() {
   const [editorLevelData, setEditorLevelData] = useState(null);
   const [editorWallColor, setEditorWallColor] = useState('#ff0000');
   const [isMobile, setIsMobile] = useState(() => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const ua = navigator.userAgent;
+    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isIPadOS = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 0;
+    const hasTouch = navigator.maxTouchPoints > 0;
+    const narrowScreen = window.innerWidth < 768;
+    const mobile = hasMobileUA || isIPadOS || (hasTouch && narrowScreen);
+    console.log('[IS_MOBILE] UA:', ua, '| maxTouchPoints:', navigator.maxTouchPoints, '| innerWidth:', window.innerWidth, '| detected:', mobile);
+    return mobile;
   });
   const [showTouchButtons, setShowTouchButtons] = useState(() => {
     const stored = localStorage.getItem(storageKey('showTouchButtons'));
