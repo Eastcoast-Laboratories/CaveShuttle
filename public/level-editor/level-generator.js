@@ -413,129 +413,86 @@
 
   function addSlopesToCorridor(grid, sec, rng) {
     const span = sec.right - sec.left;
-    if (span < 20) return;
+    if (span < 10) return;
     const secHeight = sec.r1 - sec.r0;
     if (secHeight < 5) return;
 
-    // Add several slopes per corridor, but only in corridors that contain no
-    // bunker at all. This prevents decorative slopes from blocking a bunker or
-    // overlapping its slope, and keeps the floor/ceiling orientation per corridor
-    // (qr/st on the floor, uv/wx on the ceiling) so the ramps never cross.
-    const hasFloor = hasFloorBunker(grid, sec);
-    const hasCeiling = hasCeilingBunker(grid, sec);
-    if (hasFloor || hasCeiling) return;
-
-    // Determine how much room the corridor ceiling has for uv/wx ramps.
-    // The ceiling row is sec.r0 - 1; it should be solid p except for the vertical
-    // shaft that feeds into this corridor. Find the open shaft band.
+    // Check if the ceiling row above the corridor is solid at given columns.
     const ceilRow = sec.r0 - 1;
-    let firstOpen = -1;
-    let lastOpen = -1;
+    const isCeilingSolidAt = (col, count) => {
+      if (ceilRow < 0) return false;
+      for (let c = col; c < col + count; c++) {
+        if (c < 0 || c >= grid[0].length) return false;
+        if (grid[ceilRow][c] !== 'p') return false;
+      }
+      return true;
+    };
+
+    // Detect sky ceiling (first corridor): entire ceiling row is open space.
+    // In this case, ceiling slopes can still be placed — step 10 will fill
+    // the row above with 'p' to create the ceiling wall.
+    let isSkyCeiling = false;
     if (ceilRow >= 0) {
+      let allOpen = true;
       for (let cx = sec.left; cx < sec.right; cx++) {
-        if (grid[ceilRow][cx] === ' ') {
-          if (firstOpen < 0) firstOpen = cx;
-          lastOpen = cx;
+        if (grid[ceilRow][cx] !== ' ') { allOpen = false; break; }
+      }
+      isSkyCeiling = allOpen;
+    }
+
+    // Always place a short slope at each of the 4 corners of the corridor.
+    // Corner slopes are short (2-3 rows) so they don't interfere with features
+    // placed in the corridor interior.
+    const cornerLen = 2 + Math.floor(rng() * 2); // 2 or 3
+
+    // Top-left ceiling: uv descending right from the left wall
+    {
+      const len = Math.min(cornerLen, secHeight - 1);
+      if (len >= 2) {
+        const startCol = sec.left + 2 * (len - 1) + 1;
+        if (startCol + 1 < sec.right && (isCeilingSolidAt(startCol, 2) || isSkyCeiling)) {
+          carveUV(grid, sec.r0, sec.r0 + len, startCol);
         }
       }
     }
-    // If there is no open band, use a sentinel so the entire ceiling is p.
-    if (firstOpen < 0) { firstOpen = sec.right; lastOpen = sec.left - 1; }
 
-    // Each slope orientation is placed at most once per corridor, and a ceiling
-    // slope and floor slope on the SAME side must not overlap vertically (2b).
-    // sideOccupied tracks the [topRow, bottomRow] ranges already used per side.
-    const placedTypes = new Set();
-    const sideOccupied = { left: [], right: [] };
-    const overlapsSide = (side, a0, a1) =>
-      sideOccupied[side].some(([b0, b1]) => a0 - SLOPE_VERTICAL_GAP <= b1 && b0 <= a1 + SLOPE_VERTICAL_GAP);
-    const occupySide = (side, a0, a1) => sideOccupied[side].push([a0, a1]);
-    // Random solid-wall margin between a slope and the level edge (req 4).
-    const edgeMargin = () =>
-      SLOPE_EDGE_MARGIN_MIN + Math.floor(rng() * (SLOPE_EDGE_MARGIN_MAX - SLOPE_EDGE_MARGIN_MIN + 1));
-
-    const numSlopes = 2 + Math.floor(rng() * 3);
-    for (let s = 0; s < numSlopes; s++) {
-      const desiredLen = 2 + Math.floor(rng() * 4);
-      const maxFloorLen = Math.max(2, Math.min(desiredLen, secHeight - 2, Math.floor((span - 4) / 2)));
-      const maxCeilLen = Math.max(2, Math.min(desiredLen, secHeight - 1, Math.floor((span - 4) / 2)));
-
-      // Ceiling ramps: start at the corridor ceiling row (sec.r0) and ensure
-      // the p ceiling above (sec.r0 - 1) is solid across the ramp width.
-      // uv on the left, wx on the right.
-      let placed = false;
-      const tryCeiling = (type) => {
-        if (placedTypes.has(type)) return false;
-        const margin = edgeMargin();
-        if (type === 'uv') {
-          // The p ceiling above the ramp must cover columns 0..startCol+1.
-          let startCol = sec.left + Math.min(desiredLen * 2 + 2, Math.floor(span / 2));
-          startCol = Math.min(startCol, firstOpen - 2);
-          let len = Math.max(2, Math.min(desiredLen, Math.floor(startCol / 2) + 1, maxCeilLen));
-          // Keep the lowest column (startCol - 2*(len-1)) margin cols off the left edge.
-          while (len > 2 && startCol - 2 * (len - 1) < sec.left + margin) len--;
-          if (startCol < 2 || startCol + 1 >= firstOpen || len < 2) return false;
-          if (startCol + 1 >= sec.right) return false;
-          if (startCol - 2 * (len - 1) < sec.left + margin) return false;
-          if (overlapsSide('left', sec.r0, sec.r0 + len - 1)) return false;
-          carveUV(grid, sec.r0, sec.r0 + len, startCol);
-          occupySide('left', sec.r0, sec.r0 + len - 1);
-          placedTypes.add(type);
-          return true;
-        } else {
-          // The p ceiling above the ramp must cover columns startCol..right-1.
-          let startCol = sec.right - 3 - Math.min(desiredLen * 2 + 2, Math.floor(span / 2));
-          startCol = Math.max(startCol, lastOpen + 1);
-          let len = Math.max(2, Math.min(desiredLen, Math.floor((sec.right - 1 - startCol) / 2) + 1, maxCeilLen));
-          // Keep the lowest column margin cols off the right edge.
-          while (len > 2 && startCol + 2 * (len - 1) + 1 > sec.right - 1 - margin) len--;
-          if (startCol < sec.left || startCol <= lastOpen || len < 2) return false;
-          if (startCol + 2 * (len - 1) + 1 >= sec.right) return false;
-          if (startCol + 2 * (len - 1) + 1 > sec.right - 1 - margin) return false;
-          if (overlapsSide('right', sec.r0, sec.r0 + len - 1)) return false;
+    // Top-right ceiling: wx descending left from the right wall
+    {
+      const len = Math.min(cornerLen, secHeight - 1);
+      if (len >= 2) {
+        const startCol = sec.right - 3 - 2 * (len - 1);
+        if (startCol >= sec.left && (isCeilingSolidAt(startCol, 2) || isSkyCeiling)) {
           carveWX(grid, sec.r0, sec.r0 + len, startCol);
-          occupySide('right', sec.r0, sec.r0 + len - 1);
-          placedTypes.add(type);
-          return true;
         }
-      };
-
-      // Floor ramps: generated one row lower (bottom at sec.r1 - 1) so the slope
-      // sits directly on the corridor floor with solid 'pp' below, instead of
-      // leaving a thin one-row plate (req 3).
-      const tryFloor = (type) => {
-        if (placedTypes.has(type)) return false;
-        const len = Math.min(desiredLen, maxFloorLen);
-        if (len < 2) return false;
-        const margin = edgeMargin();
-        const startRow = sec.r1 - len;
-        if (startRow < sec.r0 + 1) return false;
-        const side = type === 'qr' ? 'left' : 'right';
-        if (overlapsSide(side, startRow, startRow + len - 1)) return false;
-        if (type === 'qr') {
-          const startCol = sec.left + margin;
-          if (startCol + 2 * (len - 1) + 1 >= sec.right) return false;
-          carveQR(grid, startRow, startRow + len, startCol);
-        } else {
-          const startCol = sec.right - 3 - margin;
-          if (startCol - 2 * (len - 1) < sec.left) return false;
-          carveST(grid, startRow, startRow + len, startCol);
-        }
-        occupySide(side, startRow, startRow + len - 1);
-        placedTypes.add(type);
-        return true;
-      };
-
-      // Choose orientation and side. If one fails, try the other side.
-      if (rng() < 0.5) {
-        placed = tryCeiling('uv') || tryCeiling('wx');
-        if (!placed) placed = tryFloor('qr') || tryFloor('st');
-      } else {
-        placed = tryFloor('qr') || tryFloor('st');
-        if (!placed) placed = tryCeiling('uv') || tryCeiling('wx');
       }
-      // If nothing could be placed, move on.
-      if (!placed) continue;
+    }
+
+    // Bottom-left floor: qr descending right from the left wall
+    {
+      const len = Math.min(cornerLen, secHeight - 2);
+      if (len >= 2) {
+        const startRow = sec.r1 - len;
+        if (startRow >= sec.r0 + 1) {
+          const startCol = sec.left;
+          if (startCol + 2 * (len - 1) + 1 < sec.right) {
+            carveQR(grid, startRow, startRow + len, startCol);
+          }
+        }
+      }
+    }
+
+    // Bottom-right floor: st descending left from the right wall
+    {
+      const len = Math.min(cornerLen, secHeight - 2);
+      if (len >= 2) {
+        const startRow = sec.r1 - len;
+        if (startRow >= sec.r0 + 1) {
+          const startCol = sec.right - 3;
+          if (startCol - 2 * (len - 1) >= sec.left) {
+            carveST(grid, startRow, startRow + len, startCol);
+          }
+        }
+      }
     }
   }
 
@@ -737,6 +694,31 @@
       }
     }
 
+    // Fix closed qr/st bumps: if the slope pair has p on its closed side
+    // and open space above, it's not a valid slope — flatten to pp.
+    for (let r = 0; r < height; r++) {
+      for (let c = 0; c < grid[0].length - 1; c++) {
+        // qr: r has p on right and open above
+        if (grid[r][c] === 'q' && grid[r][c + 1] === 'r') {
+          const rightCh = c + 2 < grid[0].length ? grid[r][c + 2] : ' ';
+          const aboveCh = r > 0 ? grid[r - 1][c + 1] : ' ';
+          if (rightCh === 'p' && aboveCh === ' ') {
+            grid[r][c] = 'p';
+            grid[r][c + 1] = 'p';
+          }
+        }
+        // st: s has p on left and open above
+        if (grid[r][c] === 's' && grid[r][c + 1] === 't') {
+          const leftCh = c > 0 ? grid[r][c - 1] : ' ';
+          const aboveCh = r > 0 ? grid[r - 1][c] : ' ';
+          if (leftCh === 'p' && aboveCh === ' ') {
+            grid[r][c] = 'p';
+            grid[r][c + 1] = 'p';
+          }
+        }
+      }
+    }
+
     return { width: width + EXT_WIDTH, moveColumns };
   }
 
@@ -835,15 +817,18 @@
       corridor(grid, sec.r1 - 1, sec.left, sec.right);
     }
 
-    // 8. Place features along corridors
+    // 8. Place slopes and bunkers on all corridor corners, then fuel/reactor/doors.
+    // Strategy: each corridor gets slopes at all 4 corners (top-left, top-right,
+    // bottom-left, bottom-right). For each corner, if bunker budget remains and
+    // chance allows, place a bunker (which includes its own slope). Otherwise,
+    // place a decorative slope. This ensures every corner has a slope, and as
+    // many bunkers as possible sit on those slopes.
     let fuelCount = 0;
     let bunkerCount = 0;
     let hasReactor = false;
     let hasDoor = false;
 
     // Track occupied columns per corridor row to avoid overlapping features.
-    // Each corridor gets a Set of "used" column ranges so multiple bunkers/fuel
-    // can be placed in the same corridor at different horizontal positions.
     function markUsedCols(sec, startCol, endCol) {
       if (!sec._usedCols) sec._usedCols = new Set();
       for (let c = startCol; c <= endCol; c++) sec._usedCols.add(c);
@@ -854,29 +839,193 @@
       return true;
     }
 
-    // Bunker footprint widths for spacing calculations.
-    const BUNKER_BRACKET_WIDTH = 10;  // [ ceiling bunker: cols 0..9
-    const BUNKER_BACKSLASH_WIDTH = 10; // \ ceiling bunker
-    const BUNKER_P_WIDTH = 7;          // P floor bunker: cols left..left+6
-    const BUNKER_U_WIDTH = 7;          // U floor bunker: cols right-7..right-1
-    const FUEL_WIDTH = 2;              // fuel depot: 2 cols
-    const FEATURE_SPACING = 3;         // min gap between features in same corridor
+    const BUNKER_BRACKET_WIDTH = 10;
+    const BUNKER_BACKSLASH_WIDTH = 10;
+    const BUNKER_P_WIDTH = 7;
+    const BUNKER_U_WIDTH = 7;
+    const FUEL_WIDTH = 2;
 
+    // Check if the ceiling row above the corridor is solid at given columns.
+    function isCeilingSolidAt(sec, col, count) {
+      const ceilRow = sec.r0 - 1;
+      if (ceilRow < 0) return false;
+      for (let c = col; c < col + count; c++) {
+        if (c < 0 || c >= grid[0].length) return false;
+        if (grid[ceilRow][c] !== 'p') return false;
+      }
+      return true;
+    }
+
+    // Detect sky ceiling (first corridor): entire ceiling row is open space.
+    function isSkyCeiling(sec) {
+      const ceilRow = sec.r0 - 1;
+      if (ceilRow < 0) return false;
+      for (let cx = sec.left; cx < sec.right; cx++) {
+        if (grid[ceilRow][cx] !== ' ') return false;
+      }
+      return true;
+    }
+
+    // Check if the floor row below the corridor is solid at given columns.
+    // Also checks the row below that (sec.r1 + 1) since bunker validators require
+    // a solid p floor two rows below the corridor.
+    function isFloorSolidAt(sec, col, count) {
+      const floorRow = sec.r1;
+      if (floorRow >= grid.length) return false;
+      const belowRow = sec.r1 + 1;
+      for (let c = col; c < col + count; c++) {
+        if (c < 0 || c >= grid[0].length) return false;
+        if (grid[floorRow][c] !== 'p') return false;
+        if (belowRow < grid.length && grid[belowRow][c] !== 'p') return false;
+      }
+      return true;
+    }
+
+    // Place reactor before ceiling slopes so that ceiling slope placement
+    // can detect the reactor tiles via isCeilingSolidAt and avoid those columns.
+    if (!hasReactor && corridors.length > 1) {
+      const sec = corridors[1];
+      const rc = sec.left + 5;
+      const rr = sec.r1 - 3;
+      const secHeightR = sec.r1 - sec.r0;
+      if (rr >= sec.r0 && secHeightR >= 4 && rc + 3 < sec.right - 2) {
+        placeReactor(grid, rr, rc);
+        hasReactor = true;
+      }
+    }
+
+    const cornerLen = 3; // fixed length for corner slopes
+
+    // Pass 1: ceiling slopes/bunkers for all corridors.
+    // Must run before floor slopes so ceiling p-fill doesn't close floor qr/st slopes.
+    for (const sec of corridors) {
+      const span = sec.right - sec.left;
+      if (span < 10) continue;
+      const secHeight = sec.r1 - sec.r0;
+      const skyCeil = isSkyCeiling(sec);
+
+      // Top-left ceiling: uv slope or bracket bunker
+      {
+        const len = Math.min(cornerLen, secHeight - 1);
+        let bunkerPlaced = false;
+        if (len >= 2 && sec.r0 > SKY_ROWS && secHeight >= 5 &&
+            bunkerCount < maxBunkers && rng() < bunkerChance) {
+          const startCol = sec.left;
+          if (startCol + BUNKER_BRACKET_WIDTH < sec.right &&
+              isColRangeFree(sec, startCol, startCol + BUNKER_BRACKET_WIDTH) &&
+              isCeilingSolidAt(sec, startCol, BUNKER_BRACKET_WIDTH)) {
+            placeBunkerBracketAt(grid, sec.r0, sec.r0 + 2, startCol);
+            markUsedCols(sec, startCol, startCol + BUNKER_BRACKET_WIDTH);
+            bunkerCount++;
+            bunkerPlaced = true;
+          }
+        }
+        if (!bunkerPlaced && len >= 2) {
+          const startCol = sec.left + 2 * (len - 1) + 1;
+          if (startCol + 1 < sec.right && (isCeilingSolidAt(sec, startCol, 2) || skyCeil)) {
+            carveUV(grid, sec.r0, sec.r0 + len, startCol);
+          }
+        }
+      }
+
+      // Top-right ceiling: wx slope or backslash bunker
+      {
+        const len = Math.min(cornerLen, secHeight - 1);
+        let bunkerPlaced = false;
+        if (len >= 2 && sec.r0 > SKY_ROWS && secHeight >= 5 &&
+            bunkerCount < maxBunkers && rng() < bunkerChance) {
+          const endCol = sec.right - 1;
+          const startCol = endCol - BUNKER_BACKSLASH_WIDTH + 1;
+          if (startCol >= sec.left &&
+              isColRangeFree(sec, startCol, endCol) &&
+              isCeilingSolidAt(sec, startCol, BUNKER_BACKSLASH_WIDTH)) {
+            placeBunkerBackslashAt(grid, sec.r0, sec.r0 + 2, endCol + 1);
+            markUsedCols(sec, startCol, endCol);
+            bunkerCount++;
+            bunkerPlaced = true;
+          }
+        }
+        if (!bunkerPlaced && len >= 2) {
+          const startCol = sec.right - 3 - 2 * (len - 1);
+          if (startCol >= sec.left && (isCeilingSolidAt(sec, startCol, 2) || skyCeil)) {
+            carveWX(grid, sec.r0, sec.r0 + len, startCol);
+          }
+        }
+      }
+    }
+
+    // Pass 2: floor slopes/bunkers, fuel, reactor for all corridors.
     for (const sec of corridors) {
       const span = sec.right - sec.left;
       if (span < 10) continue;
       const secHeight = sec.r1 - sec.r0;
 
-      // --- Fuel: try to place multiple fuel depots per corridor ---
-      // Scan from left to right, trying positions until we hit maxFuel or run out of space.
-      // Fuel containers can be placed directly adjacent (every 2 tiles) if needed.
+      // Bottom-left floor: qr slope or P bunker
+      {
+        const len = Math.min(cornerLen, secHeight - 2);
+        let bunkerPlaced = false;
+        if (len >= 2 && secHeight >= 4 &&
+            bunkerCount < maxBunkers && rng() < bunkerChance) {
+          const startCol = sec.left;
+          if (startCol + BUNKER_P_WIDTH < sec.right &&
+              isColRangeFree(sec, startCol, startCol + BUNKER_P_WIDTH) &&
+              isFloorSolidAt(sec, startCol, BUNKER_P_WIDTH)) {
+            placeBunkerPAt(grid, sec.r1 - 3, sec.r1, startCol);
+            markUsedCols(sec, startCol, startCol + BUNKER_P_WIDTH);
+            bunkerCount++;
+            bunkerPlaced = true;
+          }
+        }
+        if (!bunkerPlaced && len >= 2) {
+          const startRow = sec.r1 - len;
+          if (startRow >= sec.r0 + 1) {
+            const startCol = sec.left;
+            const bottomCol = startCol + 2 * (len - 1);
+            if (bottomCol + 1 < sec.right && sec.r1 < grid.length &&
+                grid[sec.r1][bottomCol] === 'p' && grid[sec.r1][bottomCol + 1] === 'p') {
+              carveQR(grid, startRow, startRow + len, startCol);
+            }
+          }
+        }
+      }
+
+      // Bottom-right floor: st slope or U bunker
+      {
+        const len = Math.min(cornerLen, secHeight - 2);
+        let bunkerPlaced = false;
+        if (len >= 2 && secHeight >= 4 &&
+            bunkerCount < maxBunkers && rng() < bunkerChance) {
+          const endCol = sec.right - 1;
+          const startCol = endCol - BUNKER_U_WIDTH + 1;
+          if (startCol >= sec.left &&
+              isColRangeFree(sec, startCol, endCol) &&
+              isFloorSolidAt(sec, startCol, BUNKER_U_WIDTH)) {
+            placeBunkerUAt(grid, sec.r1 - 2, sec.r1, endCol + 1);
+            markUsedCols(sec, startCol, endCol);
+            bunkerCount++;
+            bunkerPlaced = true;
+          }
+        }
+        if (!bunkerPlaced && len >= 2) {
+          const startRow = sec.r1 - len;
+          if (startRow >= sec.r0 + 1) {
+            const startCol = sec.right - 3;
+            const bottomCol = startCol - 2 * (len - 1);
+            if (bottomCol >= sec.left && sec.r1 < grid.length &&
+                grid[sec.r1][bottomCol] === 'p' && grid[sec.r1][bottomCol + 1] === 'p') {
+              carveST(grid, startRow, startRow + len, startCol);
+            }
+          }
+        }
+      }
+
+      // --- Fuel: try to place fuel depots in the corridor interior ---
       if (span >= 16) {
         const fuelR = sec.r1 - 2;
         if (fuelR >= 3 && fuelR + 2 < grid.length) {
           for (let fc = sec.left + 7; fc < sec.right - 8 && fuelCount < maxFuel; fc += FUEL_WIDTH) {
             if (fc + 1 >= sec.right - 1) break;
             if (!isColRangeFree(sec, fc, fc + 1)) continue;
-            // Check chance (skip chance check if count was explicitly requested)
             if (rng() >= fuelChance) continue;
             let clear = true;
             for (let dy = 1; dy <= 2; dy++)
@@ -896,111 +1045,6 @@
         }
       }
 
-      // --- Bunkers: try to place multiple bunkers per corridor ---
-      // Alternate between ceiling and floor, left and right sides, scanning across the corridor.
-      // Continue until we hit maxBunkers or run out of space in the corridor.
-      const maxAttemptsPerCorridor = Math.ceil(maxBunkers / Math.max(1, corridors.length)) + 10;
-      let attemptsInThisCorridor = 0;
-      while (bunkerCount < maxBunkers && attemptsInThisCorridor < maxAttemptsPerCorridor) {
-        attemptsInThisCorridor++;
-        if (rng() >= bunkerChance) continue;
-
-        let placed = false;
-        const mount = rng() < 0.5 ? 'ceiling' : 'floor';
-
-        if (mount === 'ceiling') {
-          // Try ceiling bunkers at different horizontal offsets.
-          // Ceiling bracket ([) on left side, backslash (\) on right side.
-          const side = rng() < 0.5 ? 'left' : 'right';
-          if (sec.r0 > SKY_ROWS && sec.r0 + 4 < sec.r1 && secHeight >= 5) {
-            const r0 = sec.r0;
-            const r1 = sec.r0 + 2;
-            if (side === 'left') {
-              // Try bracket bunker at various offsets from the left wall.
-              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_BRACKET_WIDTH - FEATURE_SPACING));
-              const startCol = sec.left + offset;
-              if (startCol + BUNKER_BRACKET_WIDTH < sec.right &&
-                  isColRangeFree(sec, startCol, startCol + BUNKER_BRACKET_WIDTH)) {
-                // Check ceiling above is solid p
-                let ceilOk = true;
-                for (let c = startCol; c <= startCol + 9; c++) {
-                  if (c >= grid[0].length || grid[r0 - 1][c] !== 'p') ceilOk = false;
-                }
-                if (ceilOk) {
-                  // Place bracket bunker at offset
-                  placeBunkerBracketAt(grid, r0, r1, startCol);
-                  markUsedCols(sec, startCol, startCol + BUNKER_BRACKET_WIDTH);
-                  bunkerCount++;
-                  placed = true;
-                }
-              }
-            } else {
-              // Try backslash bunker at various offsets from the right wall.
-              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_BACKSLASH_WIDTH - FEATURE_SPACING));
-              const endCol = sec.right - 1 - offset;
-              const startCol = endCol - BUNKER_BACKSLASH_WIDTH + 1;
-              if (startCol >= sec.left &&
-                  isColRangeFree(sec, startCol, endCol)) {
-                let ceilOk = true;
-                for (let c = startCol; c <= endCol; c++) {
-                  if (c >= grid[0].length || grid[r0 - 1][c] !== 'p') ceilOk = false;
-                }
-                if (ceilOk) {
-                  placeBunkerBackslashAt(grid, r0, r1, endCol + 1);
-                  markUsedCols(sec, startCol, endCol);
-                  bunkerCount++;
-                  placed = true;
-                }
-              }
-            }
-          }
-        }
-
-        if (!placed) {
-          // Try floor bunkers at different horizontal offsets.
-          const side = rng() < 0.5 ? 'left' : 'right';
-          const floorRow = sec.r1 + 1;
-          if (floorRow < grid.length && secHeight >= 4) {
-            if (side === 'left') {
-              // P bunker: needs 7 cols, floor must be solid p below.
-              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_P_WIDTH - FEATURE_SPACING));
-              const startCol = sec.left + offset;
-              if (startCol + BUNKER_P_WIDTH < sec.right &&
-                  isColRangeFree(sec, startCol, startCol + BUNKER_P_WIDTH)) {
-                let floorOk = true;
-                for (let c = startCol; c <= startCol + 6; c++) {
-                  if (grid[floorRow][c] !== 'p') { floorOk = false; break; }
-                }
-                if (floorOk) {
-                  placeBunkerPAt(grid, sec.r1 - 3, sec.r1, startCol);
-                  markUsedCols(sec, startCol, startCol + BUNKER_P_WIDTH);
-                  bunkerCount++;
-                  placed = true;
-                }
-              }
-            } else {
-              // U bunker: needs 7 cols from the right.
-              const offset = Math.floor(rng() * Math.max(1, span - BUNKER_U_WIDTH - FEATURE_SPACING));
-              const endCol = sec.right - 1 - offset;
-              const startCol = endCol - BUNKER_U_WIDTH + 1;
-              if (startCol >= sec.left &&
-                  isColRangeFree(sec, startCol, endCol)) {
-                let floorOk = true;
-                for (let c = startCol; c <= endCol; c++) {
-                  if (grid[floorRow][c] !== 'p') { floorOk = false; break; }
-                }
-                if (floorOk && secHeight >= 3) {
-                  placeBunkerUAt(grid, sec.r1 - 2, sec.r1, endCol + 1);
-                  markUsedCols(sec, startCol, endCol);
-                  bunkerCount++;
-                  placed = true;
-                }
-              }
-            }
-          }
-        }
-      }
-
       // Reactor: once, placed on the corridor floor wall
       if (!hasReactor && rng() < 0.4 && span > 15 && secHeight >= 4) {
         const rc = sec.left + 5 + Math.floor(rng() * (span - 14));
@@ -1010,7 +1054,6 @@
           hasReactor = true;
         }
       }
-
     }
 
     // Doors/sliders belong in the vertical shafts (the passages between caves),
@@ -1073,20 +1116,7 @@
       }
     }
 
-    // Ensure at least one reactor, placed on the corridor floor wall
-    if (!hasReactor && corridors.length > 1) {
-      const sec = corridors[1];
-      const rc = sec.left + 5;
-      const rr = sec.r1 - 3;
-      const height = sec.r1 - sec.r0;
-      if (rr >= sec.r0 && height >= 4 && rc + 3 < sec.right - 2) placeReactor(grid, rr, rc);
-    }
-
-    // 9. Add extra decorative slopes to corridors without bunkers.
-    // Run after feature placement so the safe carvers can avoid overwriting features.
-    for (const sec of corridors) {
-      addSlopesToCorridor(grid, sec, rng);
-    }
+    // 9. Slopes are already placed in step 8 (corner slopes + bunker slopes).
 
     // 10. Ensure slope continuity: qr/st need wall below, uv/wx need wall above.
     // Fill a solid p ceiling/floor across the whole width of each ramp, not just
@@ -1223,6 +1253,30 @@
       const row = grid[r];
       const split = row.length - MOVE_COLUMNS;
       grid[r] = [...row.slice(split), ...row.slice(0, split)];
+    }
+
+    // 12b. Fix closed qr/st bumps created by the column rotation.
+    // The rotation can move a 'p' column next to a slope tile that previously
+    // had open space on its closed side, creating an invalid closed bump.
+    for (let r = 0; r < grid.length; r++) {
+      for (let c = 0; c < grid[0].length - 1; c++) {
+        if (grid[r][c] === 'q' && grid[r][c + 1] === 'r') {
+          const rightCh = c + 2 < grid[0].length ? grid[r][c + 2] : ' ';
+          const aboveCh = r > 0 ? grid[r - 1][c + 1] : ' ';
+          if (rightCh === 'p' && aboveCh === ' ') {
+            grid[r][c] = 'p';
+            grid[r][c + 1] = 'p';
+          }
+        }
+        if (grid[r][c] === 's' && grid[r][c + 1] === 't') {
+          const leftCh = c > 0 ? grid[r][c - 1] : ' ';
+          const aboveCh = r > 0 ? grid[r - 1][c] : ' ';
+          if (leftCh === 'p' && aboveCh === ' ') {
+            grid[r][c] = 'p';
+            grid[r][c + 1] = 'p';
+          }
+        }
+      }
     }
 
     // 13. Build .def text

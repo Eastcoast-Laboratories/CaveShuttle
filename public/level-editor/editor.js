@@ -223,7 +223,7 @@ class LevelEditor {
         
         btn.appendChild(img);
         
-        btn.addEventListener('click', () => this.selectTile(tile.char));
+        btn.addEventListener('click', () => { this.hapticFeedback(); this.selectTile(tile.char); });
         row.appendChild(btn);
       });
       
@@ -244,7 +244,7 @@ class LevelEditor {
       btn.textContent = template.name;
       btn.dataset.template = key;
       
-      btn.addEventListener('click', () => this.insertTemplate(key));
+      btn.addEventListener('click', () => { this.hapticFeedback(); this.insertTemplate(key); });
       container.appendChild(btn);
     }
   }
@@ -339,6 +339,7 @@ class LevelEditor {
     // Tool buttons
     document.querySelectorAll('.tool-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        this.hapticFeedback();
         this.currentTool = btn.dataset.tool;
         document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -346,34 +347,34 @@ class LevelEditor {
     });
     
     // Action buttons
-    document.getElementById('undoBtn').addEventListener('click', () => this.undo());
-    document.getElementById('redoBtn').addEventListener('click', () => this.redo());
-    document.getElementById('copyBtn').addEventListener('click', () => this.copySelection());
-    document.getElementById('pasteBtn').addEventListener('click', () => this.pasteClipboard());
-    document.getElementById('fillBtn').addEventListener('click', () => this.fillSelection());
-    document.getElementById('deleteBtn').addEventListener('click', () => this.deleteSelection());
+    document.getElementById('undoBtn').addEventListener('click', () => { this.hapticFeedback(); this.undo(); });
+    document.getElementById('redoBtn').addEventListener('click', () => { this.hapticFeedback(); this.redo(); });
+    document.getElementById('copyBtn').addEventListener('click', () => { this.hapticFeedback(); this.copySelection(); });
+    document.getElementById('pasteBtn').addEventListener('click', () => { this.hapticFeedback(); this.pasteClipboard(); });
+    document.getElementById('fillBtn').addEventListener('click', () => { this.hapticFeedback(); this.fillSelection(); });
+    document.getElementById('deleteBtn').addEventListener('click', () => { this.hapticFeedback(); this.deleteSelection(); });
     
     // Move selection buttons
-    document.getElementById('moveUpBtn').addEventListener('click', () => this.moveSelection(0, -1));
-    document.getElementById('moveDownBtn').addEventListener('click', () => this.moveSelection(0, 1));
-    document.getElementById('moveLeftBtn').addEventListener('click', () => this.moveSelection(-1, 0));
-    document.getElementById('moveRightBtn').addEventListener('click', () => this.moveSelection(1, 0));
+    document.getElementById('moveUpBtn').addEventListener('click', () => { this.hapticFeedback(); this.moveSelection(0, -1); });
+    document.getElementById('moveDownBtn').addEventListener('click', () => { this.hapticFeedback(); this.moveSelection(0, 1); });
+    document.getElementById('moveLeftBtn').addEventListener('click', () => { this.hapticFeedback(); this.moveSelection(-1, 0); });
+    document.getElementById('moveRightBtn').addEventListener('click', () => { this.hapticFeedback(); this.moveSelection(1, 0); });
     
     // Zoom buttons
-    document.getElementById('zoomInBtn').addEventListener('click', () => this.zoomIn());
-    document.getElementById('zoomOutBtn').addEventListener('click', () => this.zoomOut());
+    document.getElementById('zoomInBtn').addEventListener('click', () => { this.hapticFeedback(); this.zoomIn(); });
+    document.getElementById('zoomOutBtn').addEventListener('click', () => { this.hapticFeedback(); this.zoomOut(); });
     
     // Scroll buttons
-    document.getElementById('scrollUpBtn').addEventListener('click', () => this.scrollUp());
-    document.getElementById('scrollDownBtn').addEventListener('click', () => this.scrollDown());
+    document.getElementById('scrollUpBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollUp(); });
+    document.getElementById('scrollDownBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollDown(); });
     
     // Level controls
-    document.getElementById('loadBtn').addEventListener('click', () => this.loadLevel());
-    document.getElementById('newBtn').addEventListener('click', () => this.newLevel());
-    document.getElementById('saveBtn').addEventListener('click', () => this.saveLevel());
-    document.getElementById('testBtn').addEventListener('click', () => this.testLevel());
-    document.getElementById('addToPackBtn').addEventListener('click', () => this.addToPack());
-    document.getElementById('generateBtn').addEventListener('click', () => this.generateRandom());
+    document.getElementById('loadBtn').addEventListener('click', () => { this.hapticFeedback(); this.loadLevel(); });
+    document.getElementById('newBtn').addEventListener('click', () => { this.hapticFeedback(); this.newLevel(); });
+    document.getElementById('saveBtn').addEventListener('click', () => { this.hapticFeedback(); this.saveLevel(); });
+    document.getElementById('testBtn').addEventListener('click', () => { this.hapticFeedback(); this.testLevel(); });
+    document.getElementById('addToPackBtn').addEventListener('click', () => { this.hapticFeedback(); this.addToPack(); });
+    document.getElementById('generateBtn').addEventListener('click', () => { this.hapticFeedback(); this.generateRandom(); });
     document.getElementById('levelpackSelect').addEventListener('change', () => this.refreshLevelSelect());
 
     // - When a count > 0 is entered, set chance to divided by 100
@@ -429,6 +430,7 @@ class LevelEditor {
     if (wallColorBtn && wallColorPopup) {
       wallColorBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        this.hapticFeedback();
         const isOpen = wallColorPopup.style.display === 'block';
         wallColorPopup.style.display = isOpen ? 'none' : 'block';
         wallColorBtn.setAttribute('aria-expanded', String(!isOpen));
@@ -444,6 +446,7 @@ class LevelEditor {
 
     if (wallColorCopy) {
       wallColorCopy.addEventListener('click', () => {
+        this.hapticFeedback();
         const rgbInput = document.getElementById('wallColorRgb');
         if (rgbInput && rgbInput.value) {
           if (navigator.clipboard) {
@@ -485,9 +488,9 @@ class LevelEditor {
     const copyModalBtn = document.getElementById('copyModalBtn');
     const saveModalBtn = document.getElementById('saveModalBtn');
     const saveModal = document.getElementById('saveModal');
-    if (closeModalBtn) closeModalBtn.addEventListener('click', () => this.closeSaveModal());
-    if (copyModalBtn) copyModalBtn.addEventListener('click', () => this.copySaveModalText());
-    if (saveModalBtn) saveModalBtn.addEventListener('click', () => this.downloadSaveModalText());
+    if (closeModalBtn) closeModalBtn.addEventListener('click', () => { this.hapticFeedback(); this.closeSaveModal(); });
+    if (copyModalBtn) copyModalBtn.addEventListener('click', () => { this.hapticFeedback(); this.copySaveModalText(); });
+    if (saveModalBtn) saveModalBtn.addEventListener('click', () => { this.hapticFeedback(); this.downloadSaveModalText(); });
     if (saveModal) {
       saveModal.addEventListener('click', (e) => {
         if (e.target === saveModal) this.closeSaveModal();
@@ -500,8 +503,49 @@ class LevelEditor {
       this.previewCanvas.addEventListener('click', (e) => this.handlePreviewClick(e));
     }
     
+    // Info buttons — show popover with parameter explanation
+    const infoPopover = document.getElementById('infoPopover');
+    const infoPopoverTitle = document.getElementById('infoPopoverTitle');
+    const infoPopoverBody = document.getElementById('infoPopoverBody');
+    const infoPopoverClose = document.getElementById('infoPopoverClose');
+    if (infoPopoverClose) {
+      infoPopoverClose.addEventListener('click', () => {
+        infoPopover.style.display = 'none';
+        this.hapticFeedback();
+      });
+    }
+    if (infoPopover) {
+      infoPopover.addEventListener('click', (e) => {
+        if (e.target === infoPopover) infoPopover.style.display = 'none';
+      });
+    }
+    document.querySelectorAll('.info-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const infoKey = btn.dataset.info;
+        const i18n = window.editorI18n || { t: k => k };
+        const titleEl = btn.closest('.param-label-row')?.querySelector('label');
+        const title = titleEl ? titleEl.textContent : infoKey;
+        if (infoPopoverTitle) infoPopoverTitle.textContent = title;
+        if (infoPopoverBody) infoPopoverBody.textContent = i18n.t('info_' + infoKey);
+        if (infoPopover) infoPopover.style.display = 'block';
+        this.hapticFeedback();
+      });
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+  }
+
+  hapticFeedback() {
+    try {
+      const stored = localStorage.getItem('app_vibrationEnabled');
+      if (stored === null || stored === 'true') {
+        if (navigator.vibrate) navigator.vibrate(10);
+      }
+    } catch (e) {
+      // localStorage not available — skip haptics
+    }
   }
 
   setupParentMessageListener() {

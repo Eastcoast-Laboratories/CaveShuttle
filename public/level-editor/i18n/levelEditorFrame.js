@@ -76,6 +76,17 @@
       failedToLoad: 'Level konnte nicht geladen werden: {error}',
       failedToGenerate: 'Gültiges Level konnte nicht generiert werden: {error}',
 
+      // Info button title
+      infoHelp: 'Hilfe',
+
+      // Info popover texts
+      info_emptySpace: 'Vertikaler Versatz für den leeren Raum über dem Gelände (wird als emptySpaceHeight in den Header geschrieben). Steuert die Sterndichte im Himmel. Negative Werte heben das Gelände an, positive Werte senken es ab.',
+      info_bedrock: 'Höhe der unzerstörbaren Grundgestein-Schicht am unteren Ende (wird als bedrockHeight in den Header geschrieben). Das Spiel generiert so viele Zeilen massiver Wand-Tiles unter dem Level-Grid als Boden.',
+      info_bunkers: 'Zielanzahl der zu platzierenden Bunker. Der Generator versucht, diese Anzahl über alle Korridore zu verteilen. Mehrere Bunker pro Korridor sind möglich. Wenn das Level zu klein ist, wird bestmöglich platziert.',
+      info_fuel: 'Zielanzahl der Treibstoffdepots. Gleiche Logik wie Bunker: mehrere Depots pro Korridor, bestmögliche Platzierung bei zu kleinem Level.',
+      info_bunkerChance: 'Wahrscheinlichkeit (0.0–1.0), dass ein Bunker-Platzierungsversuch erfolgreich ist. Leer = 1.0 (jeden Bunker platzieren) bei angegebener Anzahl, sonst 0.5 (zufällige Platzierung).',
+      info_fuelChance: 'Wahrscheinlichkeit (0.0–1.0), dass ein Treibstoff-Platzierungsversuch erfolgreich ist. Gleiche Standardlogik wie Bunker-Wahrscheinlichkeit (1.0 mit Anzahl, 0.55 ohne).',
+
       // Level option
       levelN: 'Level {n}',
     },
@@ -151,6 +162,17 @@
       widthTooSmall: 'Width is too small for the level generator ({width}). It will be increased to {min}.',
       failedToLoad: 'Failed to load level: {error}',
       failedToGenerate: 'Failed to generate valid level: {error}',
+
+      // Info button title
+      infoHelp: 'Help',
+
+      // Info popover texts
+      info_emptySpace: 'Vertical offset for empty space above the terrain (written to the .def header as emptySpaceHeight). Controls star field density in the sky. Negative values raise the terrain; positive values lower it.',
+      info_bedrock: 'Height of the indestructible bedrock layer at the bottom (written to the .def header as bedrockHeight). The game generates this many rows of solid wall tiles below the level grid as floor.',
+      info_bunkers: 'Target number of bunkers to place. The generator tries to place this many bunkers across all corridors. Multiple bunkers can be placed per corridor at different horizontal positions. If the level is too small, the generator gets as close as possible (best-effort).',
+      info_fuel: 'Target number of fuel depots to place. Same multi-placement logic as bunkers: multiple fuel depots per corridor, best-effort fallback.',
+      info_bunkerChance: 'Probability (0.0–1.0) that a given bunker placement attempt succeeds. If left empty while a bunker count is specified, defaults to 1.0 (try to place every bunker). If no count is specified, defaults to 0.5 (random placement).',
+      info_fuelChance: 'Probability (0.0–1.0) that a given fuel placement attempt succeeds. Same defaulting logic as Bunker Chance (1.0 with count, 0.55 without).',
 
       // Level option
       levelN: 'Level {n}',

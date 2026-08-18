@@ -611,6 +611,88 @@ body {
 }
 
 
+/* Param label row with info button */
+.param-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.param-label-row label {
+  flex: 1;
+}
+
+.info-btn {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: #0f3460;
+  border: 1px solid #0f3460;
+  color: #aaa;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.info-btn:hover {
+  background: #e94560;
+  border-color: #e94560;
+  color: #fff;
+}
+
+/* Info popover */
+.info-popover {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  width: 90vw;
+  max-width: 400px;
+  z-index: 1500;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.info-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #0f3460;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #e94560;
+}
+
+.info-popover-close {
+  background: none;
+  border: none;
+  color: #eee;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.info-popover-close:hover {
+  color: #e94560;
+}
+
+.info-popover-body {
+  padding: 12px 15px;
+  font-size: 0.85rem;
+  color: #ccc;
+  line-height: 1.5;
+}
+
 /* Preview panel */
 .preview-panel {
   margin-top: 20px;

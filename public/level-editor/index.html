@@ -89,11 +89,17 @@
             <input type="number" id="paramHeight" class="param-input" value="120" min="20" max="300">
           </div>
           <div class="param-group">
-            <label data-i18n="emptySpace">Empty Space:</label>
+            <div class="param-label-row">
+              <label data-i18n="emptySpace">Empty Space:</label>
+              <button type="button" class="info-btn" data-info="emptySpace" data-i18n-title="infoHelp">ℹ</button>
+            </div>
             <input type="number" id="paramEmptySpace" class="param-input" value="5" min="-50" max="50">
           </div>
           <div class="param-group">
-            <label data-i18n="bedrock">Bedrock:</label>
+            <div class="param-label-row">
+              <label data-i18n="bedrock">Bedrock:</label>
+              <button type="button" class="info-btn" data-info="bedrock" data-i18n-title="infoHelp">ℹ</button>
+            </div>
             <input type="number" id="paramBedrock" class="param-input" value="25" min="5" max="100">
           </div>
           <div class="param-group pod-color-group">
@@ -109,19 +115,31 @@
           <button id="generateBtn" class="btn btn-info" data-i18n="generate">Generate</button>
           
           <div class="param-group">
-            <label data-i18n="bunkers">Bunkers:</label>
+            <div class="param-label-row">
+              <label data-i18n="bunkers">Bunkers:</label>
+              <button type="button" class="info-btn" data-info="bunkers" data-i18n-title="infoHelp">ℹ</button>
+            </div>
             <input type="number" id="paramBunkers" class="param-input" value="5" min="0" max="20">
           </div>
           <div class="param-group">
-            <label data-i18n="fuel">Fuel:</label>
+            <div class="param-label-row">
+              <label data-i18n="fuel">Fuel:</label>
+              <button type="button" class="info-btn" data-info="fuel" data-i18n-title="infoHelp">ℹ</button>
+            </div>
             <input type="number" id="paramFuel" class="param-input" value="6" min="0" max="20">
           </div>
           <div class="param-group">
-            <label data-i18n="bunkerChance">Bunker Chance:</label>
+            <div class="param-label-row">
+              <label data-i18n="bunkerChance">Bunker Chance:</label>
+              <button type="button" class="info-btn" data-info="bunkerChance" data-i18n-title="infoHelp">ℹ</button>
+            </div>
             <input type="number" id="paramBunkerChance" class="param-input" value="" min="0" max="1" step="0.05">
           </div>
           <div class="param-group">
-            <label data-i18n="fuelChance">Fuel Chance:</label>
+            <div class="param-label-row">
+              <label data-i18n="fuelChance">Fuel Chance:</label>
+              <button type="button" class="info-btn" data-info="fuelChance" data-i18n-title="infoHelp">ℹ</button>
+            </div>
             <input type="number" id="paramFuelChance" class="param-input" value="" min="0" max="1" step="0.05">
           </div>
           
@@ -165,6 +183,14 @@
       </aside>
     </div>
 
+  </div>
+
+  <div id="infoPopover" class="info-popover" style="display: none;" role="dialog">
+    <div class="info-popover-header">
+      <span id="infoPopoverTitle"></span>
+      <button type="button" id="infoPopoverClose" class="info-popover-close">&times;</button>
+    </div>
+    <div id="infoPopoverBody" class="info-popover-body"></div>
   </div>
 
   <div id="saveModal" class="modal" style="display: none;">
