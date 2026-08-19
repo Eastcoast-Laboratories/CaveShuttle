@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
+import android.webkit.WebView;
 import android.util.Log;
 
 import com.getcapacitor.BridgeActivity;
@@ -16,6 +17,14 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Disable system haptic feedback on the WebView to prevent echo vibration
+        // on long-press. Android's default touch haptic fires independently of
+        // navigator.vibrate() and would produce an unwanted second pulse.
+        if (bridge != null && bridge.getWebView() != null) {
+            bridge.getWebView().setHapticFeedbackEnabled(false);
+            Log.d(TAG, "Disabled system haptic feedback on WebView");
+        }
 
         // Enable fullscreen mode - hide both status bar and navigation bar
         hideSystemBars();
