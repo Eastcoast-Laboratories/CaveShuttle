@@ -161,6 +161,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const rotationStartAngleRef = useRef(null); // angle when rotation started (for slow rotation near vertical and snapping)
   const rotationSlowModeRef = useRef(false); // whether slow rotation mode is active
   const wasRotatingRef = useRef(false); // previous frame rotation state (for detecting start/stop)
+  const wasRotationDirRef = useRef(null); // previous rotation direction: 'left' | 'right' | null (for detecting direction change)
   const wasAcceleratingRef = useRef(false); // previous frame thrust state (for detecting start/stop)
   const wasTractorBeamRef = useRef(false); // previous frame tractor beam state (for detecting activation)
   const rotationSnapDisabledRef = useRef(false); // whether snapping is disabled for this rotation (started at exact 0°)
@@ -1616,7 +1617,6 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           const isRotating = shipRotateLeft || shipRotateRight;
           // Record angle when rotation STARTS (transition from not rotating to rotating)
           if (isRotating && !wasRotatingRef.current) {
-            vibrateIfEnabled(VIBRATE_ROTATE);
             rotationStartAngleRef.current = ship.angle;
             // Check if starting near vertical (within threshold) -> activate slow mode
             const angleDeg = (ship.angle * 180 / Math.PI) % 360;
@@ -1675,6 +1675,12 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             }
           }
           wasRotatingRef.current = isRotating;
+          // Track rotation direction for haptic feedback on direction change
+          const currentDir = shipRotateLeft ? 'left' : (shipRotateRight ? 'right' : null);
+          if (currentDir && currentDir !== wasRotationDirRef.current) {
+            vibrateIfEnabled(VIBRATE_ROTATE);
+          }
+          wasRotationDirRef.current = currentDir;
           if (shipRotateLeft) {
             if (rotationSlowModeRef.current) {
               ship.angle -= ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER;
