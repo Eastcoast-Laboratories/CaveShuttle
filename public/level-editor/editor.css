@@ -353,6 +353,7 @@ body {
   min-width: 1px;
   min-height: 1px;
   flex-shrink: 0;
+  touch-action: none;
 }
 
 .canvas-info {

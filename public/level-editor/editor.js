@@ -335,6 +335,22 @@ class LevelEditor {
     this.canvas.addEventListener('mouseleave', (e) => this.handleMouseUp(e));
     this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
     this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Touch events for mobile — synthesize mouse-like events
+    this.canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      this.handleMouseDown({ clientX: t.clientX, clientY: t.clientY, button: 0, altKey: false });
+    }, { passive: false });
+    this.canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      this.handleMouseMove({ clientX: t.clientX, clientY: t.clientY });
+    }, { passive: false });
+    this.canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      this.handleMouseUp({});
+    }, { passive: false });
     
     // Tool buttons
     document.querySelectorAll('.tool-btn').forEach(btn => {
