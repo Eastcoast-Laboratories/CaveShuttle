@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.3 — August 19, 2026
+
+- Haptic feedback for all control buttons (rotation, thrust, fire, tractor beam)
+- Level editor enhanced
+- Online leaderboard
+- WLAN multiplayer
+
+
 ## 4.2 — August 14, 2026
 
 - Tapping with two fingers activates the tractor beam

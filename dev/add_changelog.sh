@@ -43,15 +43,19 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Community website online mit globaler Highscore
-- Account-Einstellungen: E-Mail und Passwort können jetzt in der Community-Website gesetzt werden
+- Haptisches Feedback bei allen Steuerungs-Buttons (Rotation, Schub, Feuer, Tractor Beam)
+- Level-Editor verbessert
+- Online-Leaderboard
+- WLAN-Spiel
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Community website online with global Highscore
-- Account Settings: email and password can now be set on the community website
+- Haptic feedback for all control buttons (rotation, thrust, fire, tractor beam)
+- Level editor enhanced
+- Online leaderboard
+- WLAN multiplayer
 EOF
 )
 

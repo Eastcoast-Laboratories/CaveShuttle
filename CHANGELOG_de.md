@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.3 — August 19, 2026
+
+- Haptisches Feedback bei allen Steuerungs-Buttons (Rotation, Schub, Feuer, Tractor Beam)
+- Level-Editor verbessert
+- Online-Leaderboard
+- WLAN-Spiel
+
+
 ## 4.2 — August 14, 2026
 
 - Zwei-Finger-Tap aktiviert den Traktorstrahl

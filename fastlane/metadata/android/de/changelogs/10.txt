@@ -1,0 +1,4 @@
+- Haptisches Feedback bei allen Steuerungs-Buttons (Rotation, Schub, Feuer, Tractor Beam)
+- Level-Editor verbessert
+- Online-Leaderboard
+- WLAN-Spiel

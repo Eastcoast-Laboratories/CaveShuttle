@@ -1,0 +1,4 @@
+- Haptic feedback for all control buttons (rotation, thrust, fire, tractor beam)
+- Level editor enhanced
+- Online leaderboard
+- WLAN multiplayer

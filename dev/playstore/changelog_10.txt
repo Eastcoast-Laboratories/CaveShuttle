@@ -1,0 +1,14 @@
+# Play Store Changelogs für Version 4.3
+
+<en-GB>
+- Haptic feedback for all control buttons (rotation, thrust, fire, tractor beam)
+- Level editor enhanced
+- Online leaderboard
+- WLAN multiplayer
+</en-GB>
+<de-DE>
+- Haptisches Feedback bei allen Steuerungs-Buttons (Rotation, Schub, Feuer, Tractor Beam)
+- Level-Editor verbessert
+- Online-Leaderboard
+- WLAN-Spiel
+</de-DE>
