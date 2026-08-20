@@ -13,6 +13,40 @@ const SESSION_ACTIVE_KEY = storageKey('sessionActive');
 const LAST_CRASH_KEY = storageKey('lastCrashContext');
 
 let initialized = false;
+const consoleLogBuffer = [];
+const MAX_LOG_LINES = 20;
+
+function formatConsoleArgs(args) {
+  return args.map(arg => {
+    if (arg instanceof Error) return `${arg.name}: ${arg.message}`;
+    if (typeof arg === 'object') {
+      try { return JSON.stringify(arg); } catch { return String(arg); }
+    }
+    return String(arg);
+  }).join(' ');
+}
+
+function captureConsoleLine(level, args) {
+  const line = `[${level}] ${formatConsoleArgs(args)}`;
+  consoleLogBuffer.push(line);
+  if (consoleLogBuffer.length > MAX_LOG_LINES) {
+    consoleLogBuffer.shift();
+  }
+}
+
+function installConsoleInterceptor() {
+  const origLog = console.log.bind(console);
+  const origError = console.error.bind(console);
+  const origWarn = console.warn.bind(console);
+
+  console.log = (...args) => { captureConsoleLine('log', args); origLog(...args); };
+  console.error = (...args) => { captureConsoleLine('error', args); origError(...args); };
+  console.warn = (...args) => { captureConsoleLine('warn', args); origWarn(...args); };
+}
+
+function getConsoleLogSnapshot() {
+  return consoleLogBuffer.length > 0 ? consoleLogBuffer.join('\n') : null;
+}
 
 function isAnalyticsEnabled() {
   try {
@@ -71,6 +105,7 @@ function buildPayload(type, message, stack, context = {}) {
     type,
     message: String(message || 'Unknown error').substring(0, 5000),
     stack: stack ? String(stack).substring(0, 10000) : null,
+    consoleLog: getConsoleLogSnapshot(),
     url: typeof window !== 'undefined' ? window.location?.href : null,
     userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
     appVersion: APP_VERSION,
@@ -82,6 +117,8 @@ function buildPayload(type, message, stack, context = {}) {
 export function initCrashReporter() {
   if (initialized) return;
   initialized = true;
+
+  installConsoleInterceptor();
 
   // Detect previous session crash (native crash detection)
   try {

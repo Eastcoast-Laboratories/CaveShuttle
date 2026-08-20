@@ -32,7 +32,7 @@ function ensureBrightPodColor(rgb, minChannel = 64) {
 
 // Throttle logging of the canvas geometry so the console does not flood.
 let lastCanvasGeomLog = 0;
-const CANVAS_GEOM_LOG_INTERVAL = 500;
+const CANVAS_GEOM_LOG_INTERVAL = 5000;
 
 // Minimum distance from a point (px, py) to a line segment (x1,y1)-(x2,y2)
 function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
@@ -1465,24 +1465,23 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
 
     // Finalize death after the explosion animation: lose a life, respawn or game over
     const finalizeDeath = () => {
-      setLives(prevLives => {
-        // In editor test mode, don't lose lives (infinite lives)
-        if (isEditorTestMode) {
-          respawnShipAndPod();
-          return prevLives;
-        }
-        const newLives = prevLives - 1;
-        if (onLivesChange) onLivesChange(newLives);
-        if (newLives <= 0) {
-          setGameState('gameover');
-          if (onGameOver) onGameOver();
-          if (networkRole === 'host' && networkManager) networkManager.sendEvent({ type: 'gameover' });
-        } else {
-          // Respawn at restart point with the pod back on its holder
-          respawnShipAndPod();
-        }
-        return newLives;
-      });
+      // In editor test mode, don't lose lives (infinite lives)
+      if (isEditorTestMode) {
+        respawnShipAndPod();
+        return;
+      }
+      const newLives = livesRef.current - 1;
+      setLives(newLives);
+      livesRef.current = newLives;
+      if (onLivesChange) onLivesChange(newLives);
+      if (newLives <= 0) {
+        setGameState('gameover');
+        if (onGameOver) onGameOver();
+        if (networkRole === 'host' && networkManager) networkManager.sendEvent({ type: 'gameover' });
+      } else {
+        // Respawn at restart point with the pod back on its holder
+        respawnShipAndPod();
+      }
     };
 
     // Draw a glowing spiral wormhole at world coordinates (wx, wy) with progress 0..1
