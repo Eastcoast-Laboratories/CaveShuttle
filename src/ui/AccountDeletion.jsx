@@ -8,7 +8,7 @@ import { getAccountDeletionTranslations } from '../i18n/accountDeletion.js';
 export default function AccountDeletion({ onBack }) {
   const { language } = useLanguage();
   const t = getAccountDeletionTranslations(language);
-  const emailHref = 'mailto:caveshuttle-support@it.z11.de?subject=' + encodeURIComponent(t.emailSubject);
+  const emailHref = 'mailto:' + t.contactEmail;
 
   return (
     <div className="modal-page">
@@ -19,60 +19,36 @@ export default function AccountDeletion({ onBack }) {
 
         <h1>{t.title}</h1>
 
+        <p>{t.intro}</p>
+
         <p>
-          {t.introBefore} <strong>community.caveshuttle.z11.de</strong> {t.introAfter}
+          <a
+            href={t.deleteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #00ff88, #00cc66)',
+              color: '#fff',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontFamily: '"Commodore 64", "Courier New", monospace',
+              fontSize: 'clamp(12px, 3vw, 18px)',
+            }}
+          >
+            {t.deleteLinkText}
+          </a>
         </p>
 
-        <h2>{t.step1Title}</h2>
-        <ol>
-          <li>
-            {t.step1Item1Before} <a href={emailHref}>caveshuttle-support@it.z11.de</a>
-            {' '}{t.step1Item1Mid} <strong>„{t.emailSubject}"</strong>.
-          </li>
-          <li>
-            {t.step1Item2Before} <strong>{t.usernameLabel}</strong> {t.step1Item2Mid} <strong>{t.emailAddrLabel}</strong>
-            {' '}{t.step1Item2After}
-          </li>
-          <li>
-            {t.step1Item3Before} <strong>14 {language === 'de' ? 'Tagen' : 'days'}</strong>{t.step1Item3After}
-          </li>
-        </ol>
-
-        <h2>{t.step2Title}</h2>
-        <p>{t.step2Intro}</p>
-        <ul>
-          {t.step2Items.map((item, i) => (
-            <li key={i}>{item}</li>
-          ))}
-        </ul>
-
-        <h2>{t.step3Title}</h2>
-        <p>{t.step3Intro}</p>
-        <ul>
-          <li>
-            <strong>{t.step3Item1Label}</strong>{t.step3Item1Text}
-          </li>
-          <li>
-            <strong>{t.step3Item2Label}</strong>{t.step3Item2Text}
-          </li>
-        </ul>
-
-        <h2>{t.step4Title}</h2>
-        <p>{t.step4Text1}</p>
-        <p>
-          {t.step4Text2Before} <strong>{t.resetLabel}</strong> {t.step4Text2After}
+        <p style={{ color: '#aaa', fontSize: '14px' }}>
+          {t.localDataHint}
         </p>
-
-        <h2>{t.step5Title}</h2>
-        <p>{t.step5Text}</p>
 
         <h2>{t.contactTitle}</h2>
         <p>
-          {t.contactName}<br />
-          {t.contactOrg}<br />
-          {t.contactStreet}<br />
-          {t.contactCity}<br />
-          {t.contactEmailLabel} <a href={emailHref}>caveshuttle-support@it.z11.de</a>
+          {t.contactEmailLabel} <a href={emailHref}>{t.contactEmail}</a>
         </p>
       </div>
     </div>
