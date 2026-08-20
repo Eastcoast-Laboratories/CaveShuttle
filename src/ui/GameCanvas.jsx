@@ -223,6 +223,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const [levelColors, setLevelColors] = useState(null);
   const particleSystem = useRef(new ParticleSystem());
   const [lives, setLives] = useState(initialLives);
+  const livesRef = useRef(lives);
+  livesRef.current = lives;
   const [bonusLifeDisplay, setBonusLifeDisplay] = useState(null); // { threshold } shown briefly
   const [currentLevel, setCurrentLevel] = useState(levelProp || 1);
   const [gameState, setGameState] = useState('playing'); // playing, wormhole, levelcomplete, gameover
@@ -1101,11 +1103,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   // Handle bonus life popup from App: increment internal lives and show brief popup
   useEffect(() => {
     if (!bonusLifePopup) return;
-    setLives(prev => {
-      const newLives = prev + 1;
-      if (onLivesChange) onLivesChange(newLives);
-      return newLives;
-    });
+    setLives(prev => prev + 1);
+    if (onLivesChange) onLivesChange(livesRef.current + 1);
     setBonusLifeDisplay({ threshold: bonusLifePopup.threshold });
     const timer = setTimeout(() => setBonusLifeDisplay(null), 2500);
     return () => clearTimeout(timer);
