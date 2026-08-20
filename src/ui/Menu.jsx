@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import Impressum from './Impressum';
 import Datenschutz from './Datenschutz';
 import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
 import './cave-theme.css';
+
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=de.z11.caveshuttle';
+const isNativeApp = typeof window !== 'undefined'
+  && typeof Capacitor !== 'undefined'
+  && Capacitor.isNativePlatform?.();
+const isWebBrowser = typeof window !== 'undefined'
+  && !isNativeApp;
+
+console.log('[MENU_PLAY_STORE] isNativeApp:', isNativeApp, '| isWebBrowser:', isWebBrowser, '| UA:', typeof window !== 'undefined' ? navigator.userAgent : 'no-window');
+
 
 function getLegalPageFromHash() {
   const hash = window.location.hash.replace(/^#/, '').replace(/^\//, '').toLowerCase();
@@ -317,6 +328,24 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
         >
           HIGHSCORES
         </button>
+
+        {isWebBrowser && (
+          <a
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              marginTop: '8px',
+            }}
+          >
+            <img
+              src="/images/get_on_playstore.png"
+              alt="Get it on Google Play"
+              style={{ height: '70px', width: 'auto' }}
+            />
+          </a>
+        )}
       </div>
     </div>
   );
