@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { getMenuTranslations } from '../i18n/menu.js';
 import './PlayerNameInput.css';
 
 export default function PlayerNameInput({ playerName, onPlayerNameChange, readOnly = false }) {
+  const { language } = useLanguage();
+  const t = getMenuTranslations(language);
   const [editName, setEditName] = useState(playerName || '');
   const [nameError, setNameError] = useState(null);
   const [showSave, setShowSave] = useState(false);
@@ -41,7 +45,7 @@ export default function PlayerNameInput({ playerName, onPlayerNameChange, readOn
         <input
           type="text"
           value={editName}
-          placeholder="your name"
+          placeholder={t.yourName}
           onChange={(e) => { setEditName(e.target.value); setNameError(null); }}
           onFocus={() => setShowSave(true)}
           onBlur={() => { if (!isDirty) setShowSave(false); }}
@@ -54,7 +58,7 @@ export default function PlayerNameInput({ playerName, onPlayerNameChange, readOn
             onClick={handleSave}
             className="player-name-save-btn"
           >
-            Save
+            {t.save}
           </button>
         )}
         {showCheckmark && (

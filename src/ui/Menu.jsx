@@ -5,6 +5,8 @@ import Datenschutz from './Datenschutz';
 import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
+import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { getMenuTranslations } from '../i18n/menu.js';
 import './cave-theme.css';
 
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=de.z11.caveshuttle';
@@ -35,6 +37,8 @@ function setLegalPageHash(page) {
 }
 
 export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode, networkRole = null }) {
+  const { language } = useLanguage();
+  const t = getMenuTranslations(language);
   const [legalPage, setLegalPage] = useState(() => getLegalPageFromHash());
 
   // Sync legal page when the URL hash changes (e.g. browser back/forward).
@@ -139,7 +143,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
               e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)';
             }}
           >
-            START GAME
+            {t.startGame}
           </button>
 
           {twoPlayer && (
@@ -167,7 +171,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
                 e.target.style.boxShadow = '0 4px 20px rgba(102, 68, 255, 0.3)'
               }}
             >
-              Multiplayer
+              {t.multiplayer}
             </button>
           )}
 
@@ -244,7 +248,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
                 zIndex: 1,
                 whiteSpace: 'nowrap',
               }}>
-                {twoPlayer ? '2 Player' : '1 Player'}
+                {twoPlayer ? t.twoPlayer : t.onePlayer}
               </div>
             </div>
           </div>
@@ -259,7 +263,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
           color: '#aaa',
           letterSpacing: '1px',
         }}>
-          Collect the Pod and escape the Caves
+          {t.tagline}
         </p>
 
         <div style={{
@@ -281,7 +285,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
               fontFamily: 'inherit',
             }}
           >
-            Imprint
+            {t.imprint}
           </button>
           <button
             onClick={() => { setLegalPage('datenschutz'); setLegalPageHash('datenschutz'); }}
@@ -295,7 +299,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
               fontFamily: 'inherit',
             }}
           >
-            Privacy
+            {t.privacy}
           </button>
           <button
             onClick={() => { setLegalPage('account-deletion'); setLegalPageHash('account-deletion'); }}
@@ -309,7 +313,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
               fontFamily: 'inherit',
             }}
           >
-            Delete account
+            {t.deleteAccount}
           </button>
         </div>
         <button
@@ -326,7 +330,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
             fontWeight: 'bold',
           }}
         >
-          HIGHSCORES
+          {t.highscores}
         </button>
 
         {isWebBrowser && (
