@@ -2243,6 +2243,15 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               }
             });
 
+            // Remove bullet if it goes too far off-screen (out of bounds)
+            // Check this BEFORE collision checks to avoid getTileAt() on out-of-bounds coords
+            const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
+            if (bulletHit) return false;
+            if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
+                bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
+              return false;
+            }
+
             // The reactor tile 'd' is a no-collision "ceiling", so bullets fly through it
             // instead of colliding. Detect hits by sampling the tile at the bullet position.
             const reactorTileHere = tileRenderer.current.getTileAt(level, bullet.x, bullet.y, 'reactor-check');
@@ -2265,15 +2274,6 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               return false;
             }
 
-            // Remove bullet if it hit a bunker or button
-            const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
-            if (bulletHit) return false;
-            
-            // Remove bullet if it goes too far off-screen (out of bounds)
-            if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
-                bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
-              return false;
-            }
             return true;
           });
         });
@@ -2338,6 +2338,15 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           if (!bullet.active) return false;
           bullet.update(deltaTime);
 
+          // Remove bullet if it goes too far off-screen (out of bounds)
+          // Check this BEFORE collision checks to avoid getTileAt() on out-of-bounds coords
+          const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
+          if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
+              bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
+            bullet.active = false;
+            return false;
+          }
+
           // Check collision with walls
           const wallCollision = collision.current.checkBulletCollision(bullet, level, 'bunker');
           if (wallCollision.collided) {
@@ -2393,14 +2402,6 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             }
             // Ship hit by bullet = destroy ship (host-authoritative in network mode)
             if (networkRole !== 'client') destroyShip();
-            return false;
-          }
-
-          // Remove bullet if it goes too far off-screen (out of bounds)
-          const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
-          if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
-              bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
-            bullet.active = false;
             return false;
           }
 
