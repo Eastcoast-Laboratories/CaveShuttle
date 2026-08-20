@@ -21,8 +21,8 @@ export const highscoreTranslations = {
     twoPlayer: '2 Spieler',
 
     // Buttons
-    back: '← Zurück',
-    play: 'Play →',
+    back: 'Zurück',
+    play: 'Play',
     close: 'Schließen',
     playAgain: 'Nochmal spielen',
     backToMenu: '← Menu',
@@ -108,7 +108,7 @@ export const highscoreTranslations = {
 
     // Buttons
     back: '← Back',
-    play: 'Play →',
+    play: 'Play',
     close: 'Close',
     playAgain: 'Play Again',
     backToMenu: 'Back to Menu',
