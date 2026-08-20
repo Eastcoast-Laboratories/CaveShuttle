@@ -12,7 +12,7 @@ import { TileRenderer } from '../game/tile-renderer.js';
 import { LevelLoader } from '../levels/level-loader.js';
 import { CollisionDetection } from '../physics/collision.js';
 import { SoundManager } from '../audio/sound-manager.js';
-import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD } from '../core/constants.js';
+import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, MULTI_SHOT_TILE, MULTI_SHOT_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD } from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 
@@ -136,7 +136,7 @@ function pointerToCanvas(canvas, clientX, clientY, w, h) {
   };
 }
 
-export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, showTouchButtons = true, joystickEnabled = true, isMobile = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, twoPlayer = false, networkRole = null, soundVolume = 1, touchButtonOpacity = 1, vibrationEnabled = true, bonusLifePopup = null, tiltSteering = false, tiltNeutralBeta = 0, tiltNeutralGamma = 0, tiltSteeringRotated = false, tiltSensorRef }) {
+export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, showTouchButtons = true, joystickEnabled = true, isMobile = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, twoPlayer = false, networkRole = null, soundVolume = 1, touchButtonOpacity = 1, vibrationEnabled = true, bonusLifePopup = null, tiltSteering = false, tiltNeutralBeta = 0, tiltNeutralGamma = 0, tiltSteeringRotated = false, tiltSensorRef, multiShotEnabled = false, onMultiShotChange }) {
   const canvasRef = useRef(null);
   const soundManager = useRef(null);
   const { manager: networkManager } = useNetwork();
@@ -250,6 +250,9 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const vibrationEnabledRef = useRef(vibrationEnabled);
   useEffect(() => { vibrationEnabledRef.current = vibrationEnabled; }, [vibrationEnabled]);
   const vibrateIfEnabled = (pattern) => { if (vibrationEnabledRef.current) vibrate(pattern); };
+  const multiShotEnabledRef = useRef(multiShotEnabled);
+  useEffect(() => { multiShotEnabledRef.current = multiShotEnabled; }, [multiShotEnabled]);
+  const multiShotAuraEndTimeRef = useRef(0);
   const meltdownActiveRef = useRef(false);
   const meltdownStartTimeRef = useRef(0);
   const meltdownExplosionTimeRef = useRef(0);
@@ -1442,6 +1445,24 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       console.log('[GOD_MODE] Power-up collected at tile', tileX, tileY, '| ends in', GOD_MODE_DURATION_MS, 'ms');
     };
 
+    // Activate multi-shot by removing the § tile and enabling 6-way firing
+    const activateMultiShot = (tileX, tileY) => {
+      if (!level || !level.layout) return;
+      if (tileY < 0 || tileY >= level.layout.length) return;
+      const row = level.layout[tileY];
+      if (tileX < 0 || tileX >= row.length) return;
+      if (row[tileX] !== MULTI_SHOT_TILE) return;
+      level.layout[tileY] = row.substring(0, tileX) + ' ' + row.substring(tileX + 1);
+      multiShotEnabledRef.current = true;
+      multiShotAuraEndTimeRef.current = performance.now() + 20000;
+      if (onMultiShotChange) onMultiShotChange(true);
+      const tileSize = tileRenderer.current.getScaledTileSize();
+      const px = tileX * tileSize + tileSize / 2;
+      const py = tileY * tileSize + tileSize / 2;
+      particleSystem.current.spawnExplosion(px, py, 25, '#ff8035');
+      console.log('[MULTI_SHOT] Power-up collected at tile', tileX, tileY);
+    };
+
     // Accumulate reactor damage from a bullet hit; trigger the meltdown once charged.
     const registerReactorHit = (point) => {
       const now = performance.now();
@@ -1866,14 +1887,36 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         // Player 1 (ship) fires independently
         if (playerOneCanFire && now - (ship.p1LastShotTime || 0) > SHOOT_COOLDOWN_MS) {
           const firingAngle = ship.angle;
-          spawnedBullets.push({
-            x: ship.x + Math.sin(firingAngle) * 20,
-            y: ship.y - Math.cos(firingAngle) * 20,
-            vx: Math.sin(firingAngle) * bulletSpeed,
-            vy: -Math.cos(firingAngle) * bulletSpeed,
-            owner: 'ship',
-            time: now
-          });
+          if (multiShotEnabledRef.current) {
+            // 6-way star shot: forward, backward, and 4 bullets at ±60° and ±120° from forward
+            const angles = [
+              firingAngle,           // forward
+              firingAngle + Math.PI, // backward
+              firingAngle + Math.PI / 3,   // +60°
+              firingAngle - Math.PI / 3,   // -60°
+              firingAngle + 2 * Math.PI / 3, // +120°
+              firingAngle - 2 * Math.PI / 3, // -120°
+            ];
+            for (const angle of angles) {
+              spawnedBullets.push({
+                x: ship.x + Math.sin(angle) * 20,
+                y: ship.y - Math.cos(angle) * 20,
+                vx: Math.sin(angle) * bulletSpeed,
+                vy: -Math.cos(angle) * bulletSpeed,
+                owner: 'ship',
+                time: now
+              });
+            }
+          } else {
+            spawnedBullets.push({
+              x: ship.x + Math.sin(firingAngle) * 20,
+              y: ship.y - Math.cos(firingAngle) * 20,
+              vx: Math.sin(firingAngle) * bulletSpeed,
+              vy: -Math.cos(firingAngle) * bulletSpeed,
+              owner: 'ship',
+              time: now
+            });
+          }
           ship.p1LastShotTime = now;
           ship.fuel -= FIRE_FUEL_CONSUMPTION;
           vibrateIfEnabled(VIBRATE_FIRE);
@@ -2270,6 +2313,11 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
                   const tileX = Math.floor(wallCollision.point.x / tileSize);
                   const tileY = Math.floor(wallCollision.point.y / tileSize);
                   activateGodMode(tileX, tileY);
+                } else if (wallCollision.tile === MULTI_SHOT_TILE) {
+                  const tileSize = tileRenderer.current.getScaledTileSize();
+                  const tileX = Math.floor(wallCollision.point.x / tileSize);
+                  const tileY = Math.floor(wallCollision.point.y / tileSize);
+                  activateMultiShot(tileX, tileY);
                 } else if (REACTOR_TILES.includes(wallCollision.tile)) {
                   registerReactorHit(wallCollision.point);
                 }
@@ -2773,6 +2821,19 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           ctx.arc(0, 0, SHIELD_RADIUS + 4 + pulse, 0, Math.PI * 2);
           ctx.strokeStyle = GOD_MODE_COLOR;
           ctx.lineWidth = 3;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Draw multi-shot aura around the ship (orange pulsing ring, 20s after pickup)
+        if (multiShotEnabledRef.current && multiShotAuraEndTimeRef.current > performance.now() && !isWormhole) {
+          ctx.save();
+          ctx.translate(ship.x - camera.x, ship.y - camera.y);
+          const pulse = Math.sin(performance.now() / 200) * 3;
+          ctx.beginPath();
+          ctx.arc(0, 0, SHIELD_RADIUS + 2 + pulse, 0, Math.PI * 2);
+          ctx.strokeStyle = MULTI_SHOT_COLOR;
+          ctx.lineWidth = 2;
           ctx.stroke();
           ctx.restore();
         }

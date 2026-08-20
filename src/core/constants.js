@@ -128,6 +128,10 @@ export const GOD_MODE_TILE = 'ý'; // Tile that grants god mode when shot
 export const GOD_MODE_DURATION_MS = 600000; // Duration of god mode in milliseconds
 export const GOD_MODE_COLOR = 'rgba(0, 255, 174, 0.55)'; // Golden aura around the ship in god mode
 
+// Multi-shot power-up (6-way star shot)
+export const MULTI_SHOT_TILE = '§'; // Tile that grants 6-way shot when shot
+export const MULTI_SHOT_COLOR = 'rgba(255, 128, 53, 0.55)'; // Orange aura around the ship with multi-shot
+
 // Level editor
 export const ENABLE_LEVEL_EDITOR = true; // Enable/disable level editor button
 

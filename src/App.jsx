@@ -129,6 +129,7 @@ function App() {
     const stored = localStorage.getItem(storageKey('onlineSyncEnabled'));
     return stored === null ? true : stored === 'true';
   });
+  const [multiShotEnabled, setMultiShotEnabled] = useState(false);
   const tiltSensorRef = useRef({ beta: 0, gamma: 0, alpha: 0 });
 
   // One-time migration of legacy completedLevels to classic pack
@@ -367,6 +368,7 @@ function App() {
     setLevel(1);
     setFuel(100);
     setGravityMultiplier(1.0);
+    setMultiShotEnabled(false);
     setGameSession(prev => prev + 1); // Force full GameCanvas reset
     runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: 1, mode });
     levelRecordIdsRef.current = [];
@@ -390,6 +392,7 @@ function App() {
     setLives(INITIAL_LIVES);
     setFuel(100);
     setGravityMultiplier(1.0);
+    setMultiShotEnabled(false);
     setGameSession(prev => prev + 1); // Force full GameCanvas reset
     runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: levelNum, mode: twoPlayer ? 'two' : 'single' });
     levelRecordIdsRef.current = [];
@@ -539,6 +542,7 @@ function App() {
     if (level >= levelCount) {
       setLevel(1);
       setGravityMultiplier(prev => prev + 0.4); // Increase gravity by 40% each time all levels in the pack are completed
+      setMultiShotEnabled(false);
       if (runContextRef.current) {
         runContextRef.current = { ...runContextRef.current, pass: (runContextRef.current.pass || 1) + 1 };
       }
@@ -1139,6 +1143,8 @@ function App() {
                 tiltSteeringRotated={tiltSteeringRotated}
                 tiltSensorRef={tiltSensorRef}
                 bonusLifePopup={bonusLifePopup}
+                multiShotEnabled={multiShotEnabled}
+                onMultiShotChange={setMultiShotEnabled}
               />
 
               {/* Game over overlay - centered over canvas */}

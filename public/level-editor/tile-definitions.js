@@ -229,7 +229,7 @@ const TILE_DEFINITIONS = [
   { char: '¤', color: '#888888', name: 'Tile ¤', category: TILE_CATEGORIES.OTHER },
   { char: '¥', color: '#888888', name: 'Tile ¥', category: TILE_CATEGORIES.OTHER },
   { char: '¦', color: '#888888', name: 'Tile ¦', category: TILE_CATEGORIES.OTHER },
-  { char: '§', color: '#888888', name: 'Tile §', category: TILE_CATEGORIES.OTHER },
+  { char: '§', color: '#ff8035', name: 'Multi-Shot Power-up (6-way star shot)', category: TILE_CATEGORIES.POWERUP },
   { char: '¨', color: '#888888', name: 'Tile ¨', category: TILE_CATEGORIES.OTHER },
   { char: '©', color: '#888888', name: 'Tile ©', category: TILE_CATEGORIES.OTHER },
   { char: 'ª', color: '#888888', name: 'Tile ª', category: TILE_CATEGORIES.OTHER },
