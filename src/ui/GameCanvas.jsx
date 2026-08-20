@@ -2242,7 +2242,6 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             });
 
             // Remove bullet if it goes too far off-screen (out of bounds)
-            // Check this BEFORE collision checks to avoid getTileAt() on out-of-bounds coords
             const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
             if (bulletHit) return false;
             if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
@@ -2250,27 +2249,34 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               return false;
             }
 
-            // The reactor tile 'd' is a no-collision "ceiling", so bullets fly through it
-            // instead of colliding. Detect hits by sampling the tile at the bullet position.
-            const reactorTileHere = tileRenderer.current.getTileAt(level, bullet.x, bullet.y, 'reactor-check');
-            if (REACTOR_TILES.includes(reactorTileHere)) {
-              registerReactorHit({ x: bullet.x, y: bullet.y });
-              return false;
-            }
+            // Skip tile-based collision checks when bullet is outside level bounds
+            // to avoid getTileAt() errors on negative coordinates
+            if (bullet.x >= 0 && bullet.x < level.width * 16 &&
+                bullet.y >= 0 && bullet.y < level.height * 16) {
 
-            // Check collision with walls
-            const wallCollision = collision.current.checkBulletCollision(bullet, level, 'player');
-            if (wallCollision.collided) {
-              if (wallCollision.tile === GOD_MODE_TILE) {
-                const tileSize = tileRenderer.current.getScaledTileSize();
-                const tileX = Math.floor(wallCollision.point.x / tileSize);
-                const tileY = Math.floor(wallCollision.point.y / tileSize);
-                activateGodMode(tileX, tileY);
-              } else if (REACTOR_TILES.includes(wallCollision.tile)) {
-                registerReactorHit(wallCollision.point);
+              // The reactor tile 'd' is a no-collision "ceiling", so bullets fly through it
+              // instead of colliding. Detect hits by sampling the tile at the bullet position.
+              const reactorTileHere = tileRenderer.current.getTileAt(level, bullet.x, bullet.y, 'reactor-check');
+              if (REACTOR_TILES.includes(reactorTileHere)) {
+                registerReactorHit({ x: bullet.x, y: bullet.y });
+                return false;
               }
-              return false;
-            }
+
+              // Check collision with walls
+              const wallCollision = collision.current.checkBulletCollision(bullet, level, 'player');
+              if (wallCollision.collided) {
+                if (wallCollision.tile === GOD_MODE_TILE) {
+                  const tileSize = tileRenderer.current.getScaledTileSize();
+                  const tileX = Math.floor(wallCollision.point.x / tileSize);
+                  const tileY = Math.floor(wallCollision.point.y / tileSize);
+                  activateGodMode(tileX, tileY);
+                } else if (REACTOR_TILES.includes(wallCollision.tile)) {
+                  registerReactorHit(wallCollision.point);
+                }
+                return false;
+              }
+
+            } // end in-bounds guard
 
             return true;
           });
@@ -2337,7 +2343,6 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           bullet.update(deltaTime);
 
           // Remove bullet if it goes too far off-screen (out of bounds)
-          // Check this BEFORE collision checks to avoid getTileAt() on out-of-bounds coords
           const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
           if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
               bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
@@ -2345,12 +2350,19 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             return false;
           }
 
+          // Skip tile-based collision checks when bullet is outside level bounds
+          // to avoid getTileAt() errors on negative coordinates
+          if (bullet.x >= 0 && bullet.x < level.width * 16 &&
+              bullet.y >= 0 && bullet.y < level.height * 16) {
+
           // Check collision with walls
           const wallCollision = collision.current.checkBulletCollision(bullet, level, 'bunker');
           if (wallCollision.collided) {
             bullet.active = false;
             return false;
           }
+
+          } // end in-bounds guard
 
           // Check collision with pod
           if (pod && pod.active) {
