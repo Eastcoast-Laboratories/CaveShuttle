@@ -5,6 +5,8 @@
 import { storageKey } from '../core/storage-keys.js';
 import { HighScoreManager } from './high-score-manager.js';
 import { Capacitor } from '@capacitor/core';
+import { Device } from '@capacitor/device';
+import { APP_VERSION } from '../version.js';
 
 const AUTH_STATUS_KEY = storageKey('authSyncStatus');
 const AUTH_TOKEN_KEY = storageKey('authToken');
@@ -42,6 +44,38 @@ export class AutoAccountManager {
   constructor() {
     this._retryTimer = null;
     this._onlineListenerBound = false;
+    this._cachedDeviceInfo = null;
+  }
+
+  async collectDeviceInfo() {
+    if (this._cachedDeviceInfo) return this._cachedDeviceInfo;
+
+    const info = {
+      app_version: APP_VERSION,
+      android_version: null,
+      system_language: navigator.language || null,
+      app_language: null,
+    };
+
+    try {
+      const stored = localStorage.getItem('caveShuttle_language');
+      if (stored) info.app_language = stored;
+    } catch {}
+
+    if (isCapacitorNative) {
+      try {
+        const deviceInfo = await Device.getInfo();
+        info.android_version = deviceInfo.osVersion || null;
+        if (deviceInfo.languageTag) {
+          info.system_language = deviceInfo.languageTag;
+        }
+      } catch (e) {
+        console.log('[AUTO_ACCOUNT] Device.getInfo failed:', e.message);
+      }
+    }
+
+    this._cachedDeviceInfo = info;
+    return info;
   }
 
   getAuthStatus() {
@@ -90,6 +124,7 @@ export class AutoAccountManager {
     }
 
     try {
+      const deviceInfo = await this.collectDeviceInfo();
       const response = await fetch(`${COMMUNITY_API_URL}/auto-register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -98,6 +133,7 @@ export class AutoAccountManager {
           password: profile.password,
           name: profile.name,
           install_source: isCapacitorNative ? 'android-app' : 'web',
+          device_info: deviceInfo,
         }),
       });
 
@@ -253,13 +289,14 @@ export class AutoAccountManager {
     }
 
     try {
+      const deviceInfo = await this.collectDeviceInfo();
       const response = await fetch(`${COMMUNITY_API_URL}/scores/sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ scores }),
+        body: JSON.stringify({ scores, device_info: deviceInfo }),
       });
 
       if (!response.ok) {
