@@ -13,7 +13,7 @@ export const hamburgerMenuTranslations = {
     levelPacks: 'Level-Packs',
     dataTransfer: 'Datenübertragung',
     account: 'Konto',
-    errorAnalysis: 'Fehleranalyse',
+    privacyOnline: 'Privatsphäre',
 
     // Toggle labels
     touchButtons: 'Touch-Buttons',
@@ -22,6 +22,7 @@ export const hamburgerMenuTranslations = {
     rotateSteering90: 'Steuerung 90° drehen',
     enabled: 'Aktiviert',
     sendCrashReports: 'Absturzberichte senden',
+    onlineSync: 'Highscores online syncen',
 
     // Button labels
     on: 'AN',
@@ -45,6 +46,7 @@ export const hamburgerMenuTranslations = {
     tiltHint: 'Nach links/rechts neigen zum Drehen, zurück neigen zum Beschleunigen. Tippe überall zum Schießen.',
     vibrationHint: 'Stelle sicher, dass Vibration auch in den Geräteeinstellungen aktiviert ist.',
     analyticsHint: 'Wenn aktiviert, werden anonyme Fehler- und Absturzdaten gesendet, um das Spiel zu verbessern. Es werden keine persönlichen Daten gesammelt.',
+    onlineSyncHint: 'Highscores werden mit dem Community-Server synchronisiert. Aus = rein offline.',
     notConnected: 'Noch nicht mit dem Community-Server verbunden. Verbindet sich automatisch, wenn online.',
     connectedAs: 'Verbunden als:',
 
@@ -97,7 +99,7 @@ export const hamburgerMenuTranslations = {
     levelPacks: 'LEVEL PACKS',
     dataTransfer: 'DATA TRANSFER',
     account: 'ACCOUNT',
-    errorAnalysis: 'ERROR ANALYSIS',
+    privacyOnline: 'Privacy & Online',
 
     // Toggle labels
     touchButtons: 'Touch Buttons',
@@ -106,6 +108,7 @@ export const hamburgerMenuTranslations = {
     rotateSteering90: 'Rotate Steering 90°',
     enabled: 'Enabled',
     sendCrashReports: 'Send crash reports',
+    onlineSync: 'Sync highscores online',
 
     // Button labels
     on: 'ON',
@@ -129,6 +132,7 @@ export const hamburgerMenuTranslations = {
     tiltHint: 'Tilt left/right to rotate, tilt back to thrust. Tap anywhere to fire.',
     vibrationHint: 'Make sure vibration is also enabled in your device settings.',
     analyticsHint: 'When enabled, anonymous error and crash data is sent to help improve the game. No personal data is collected.',
+    onlineSyncHint: 'Highscores sync with the community server. Off = offline only.',
     notConnected: 'Not connected to community server yet. Will connect automatically when online.',
     connectedAs: 'Connected as:',
 

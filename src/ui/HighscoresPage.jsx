@@ -8,7 +8,7 @@ import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { getHighscoreTranslations } from '../i18n/highscores.js';
 
 // Standalone highscores page linked from the main menu.
-export default function HighscoresPage({ onBack, onPlay, installedPacks = [], currentPackId, twoPlayer = false }) {
+export default function HighscoresPage({ onBack, onPlay, installedPacks = [], currentPackId, twoPlayer = false, onlineSyncEnabled = true }) {
   const { language } = useLanguage();
   const t = getHighscoreTranslations(language);
   const [activeTab, setActiveTab] = useState('runs');
@@ -25,6 +25,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
   const [onlineLeaderboard, setOnlineLeaderboard] = useState([]);
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [showOnline, setShowOnline] = useState(false);
+  const effectiveShowOnline = showOnline && onlineSyncEnabled;
   const playerName = profile.name;
 
   const getDisplayName = (entry) => entry.player2Name ? `${entry.name} & ${entry.player2Name}` : entry.name;
@@ -96,7 +97,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
   }, [installedPacks, selectedPackId, selectedMode]);
 
   useEffect(() => {
-    if (!showOnline) return;
+    if (!effectiveShowOnline) return;
     const mode = selectedMode === 'all' ? 'single' : selectedMode;
     setOnlineLoading(true);
     autoAccountManager.fetchLeaderboard({
@@ -111,7 +112,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
         setOnlineLeaderboard([]);
       }
     });
-  }, [showOnline, packVersion, selectedMode, activeTab]);
+  }, [effectiveShowOnline, packVersion, selectedMode, activeTab]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -176,10 +177,12 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
             >{t.levels}</button>
           </div>
           <span className="nbsp">&nbsp;</span>
-          <button
-            className={`tab-button ${showOnline ? 'active' : ''}`}
-            onClick={() => setShowOnline(!showOnline)}
-          >{showOnline ? t.onlineTab : t.localTab}</button>
+          {onlineSyncEnabled && (
+            <button
+              className={`tab-button ${showOnline ? 'active' : ''}`}
+              onClick={() => setShowOnline(!showOnline)}
+            >{showOnline ? t.onlineTab : t.localTab}</button>
+          )}
           <span className="nbsp">&nbsp;</span>
           <div className="filter-group">
             <select
@@ -206,7 +209,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
           <span className="nbsp">&nbsp;&nbsp;</span>
         </div>
 
-        {showOnline ? (
+        {effectiveShowOnline ? (
           <div>
             {onlineLoading ? (
               <p className="empty-message">Loading online leaderboard...</p>

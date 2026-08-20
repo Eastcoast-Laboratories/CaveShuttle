@@ -43,7 +43,7 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, networkRole = null }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, onlineSyncEnabled, onToggleOnlineSync, networkRole = null }) {
   const { language } = useLanguage();
   const t = hamburgerMenuTranslations[language] || hamburgerMenuTranslations.en;
   const menuRef = useRef(null);
@@ -58,10 +58,10 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [dataTransferMsg, setDataTransferMsg] = useState(null);
   const [showVibrationHint, setShowVibrationHint] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  const [showErrorAnalysis, setShowErrorAnalysis] = useState(false);
+  const [showPrivacyOnline, setShowPrivacyOnline] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) { setShowControls(false); setShowErrorAnalysis(false); }
+    if (!isOpen) { setShowControls(false); setShowPrivacyOnline(false); }
   }, [isOpen]);
 
   const handleToggleVibration = () => {
@@ -662,12 +662,23 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         className="hamburger-section-title"
         style={{ cursor: 'pointer', userSelect: 'none' }}
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => setShowErrorAnalysis(!showErrorAnalysis)}
+        onClick={() => setShowPrivacyOnline(!showPrivacyOnline)}
       >
-        {showErrorAnalysis ? '▼' : '▶'} {t.errorAnalysis}
+        {showPrivacyOnline ? '▼' : '▶'} {t.privacyOnline}
       </h3>
-      {showErrorAnalysis && (
+      {showPrivacyOnline && (
         <div className="hamburger-settings-group">
+          <div className="hamburger-toggle-row">
+            <span className="toggle-label">{t.onlineSync}</span>
+            <button
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => onToggleOnlineSync && onToggleOnlineSync()}
+              className={`hamburger-toggle-btn ${onlineSyncEnabled ? 'on' : 'off'}`}
+            >
+              {onlineSyncEnabled ? t.on : t.off}
+            </button>
+          </div>
+          <p className="hamburger-hint">{t.onlineSyncHint}</p>
           <div className="hamburger-toggle-row">
             <span className="toggle-label">{t.sendCrashReports}</span>
             <button

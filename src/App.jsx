@@ -125,6 +125,10 @@ function App() {
     const stored = localStorage.getItem(storageKey('analyticsEnabled'));
     return stored === null ? true : stored === 'true';
   });
+  const [onlineSyncEnabled, setOnlineSyncEnabled] = useState(() => {
+    const stored = localStorage.getItem(storageKey('onlineSyncEnabled'));
+    return stored === null ? true : stored === 'true';
+  });
   const tiltSensorRef = useRef({ beta: 0, gamma: 0, alpha: 0 });
 
   // One-time migration of legacy completedLevels to classic pack
@@ -134,9 +138,10 @@ function App() {
 
   // Auto-register/login with backend using profile.uid
   useEffect(() => {
+    if (!onlineSyncEnabled) return;
     autoAccountManager.startOnlineListener();
     autoAccountManager.tryAutoRegister();
-  }, []);
+  }, [onlineSyncEnabled]);
 
   // Load meta for the current pack (built-in packs fetch meta.json lazily)
   useEffect(() => {
@@ -181,6 +186,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem(storageKey('analyticsEnabled'), analyticsEnabled.toString());
   }, [analyticsEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey('onlineSyncEnabled'), onlineSyncEnabled.toString());
+  }, [onlineSyncEnabled]);
 
   useEffect(() => {
     localStorage.setItem(storageKey('soundVolume'), soundVolume.toString());
@@ -485,7 +494,7 @@ function App() {
     setNewHighscore(hs);
 
     // Sync scores to backend
-    autoAccountManager.syncScoresToBackend();
+    if (onlineSyncEnabled) autoAccountManager.syncScoresToBackend();
 
     // Auto-sync new highscore records to peer in network mode
     if (networkRole && networkManager) {
@@ -615,7 +624,7 @@ function App() {
     }
 
     // Sync scores to backend
-    autoAccountManager.syncScoresToBackend();
+    if (onlineSyncEnabled) autoAccountManager.syncScoresToBackend();
 
     setGameState('gameover');
   };
@@ -629,7 +638,7 @@ function App() {
         runId: runContextRef.current?.runId,
         name: result.profile.name,
       });
-      autoAccountManager.syncScoresToBackend();
+      if (onlineSyncEnabled) autoAccountManager.syncScoresToBackend();
     }
     return result;
   };
@@ -643,7 +652,7 @@ function App() {
         runId: runContextRef.current?.runId,
         player2Name: result.profile.player2Name,
       });
-      autoAccountManager.syncScoresToBackend();
+      if (onlineSyncEnabled) autoAccountManager.syncScoresToBackend();
     }
     return result;
   };
@@ -926,6 +935,8 @@ function App() {
     onToggleTiltRotation: () => setTiltSteeringRotated(!tiltSteeringRotated),
     analyticsEnabled,
     onToggleAnalytics: () => setAnalyticsEnabled(!analyticsEnabled),
+    onlineSyncEnabled,
+    onToggleOnlineSync: () => setOnlineSyncEnabled(!onlineSyncEnabled),
   };
 
   return (
@@ -1013,6 +1024,7 @@ function App() {
           installedPacks={installedPacks}
           currentPackId={currentPackId}
           twoPlayer={twoPlayer}
+          onlineSyncEnabled={onlineSyncEnabled}
         />
       )}
 
