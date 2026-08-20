@@ -689,7 +689,19 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               {analyticsEnabled ? t.on : t.off}
             </button>
           </div>
-          <p className="hamburger-hint">{t.analyticsHint}</p>
+          <p className="hamburger-hint">
+            {t.analyticsHintBefore}
+            <span
+              style={{ color: 'inherit', cursor: 'default', userSelect: 'none', WebkitTapHighlightColor: 'transparent' }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('[CRASH_TRIGGER] Simulating crash for testing');
+                throw new Error('[TEST_CRASH] Simulated crash from hidden trigger button');
+              }}
+            >{t.analyticsHintCrashWord}</span>
+            {t.analyticsHintAfter}
+          </p>
         </div>
       )}
 
