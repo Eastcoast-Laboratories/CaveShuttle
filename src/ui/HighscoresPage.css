@@ -105,6 +105,7 @@ button.tab-button:nth-child(2) {
   border-radius: 0 8px 8px 0 !important;
   border-left: 0 solid #6ee66ec5 !important;
   width: 100px;
+  margin-right:8px;
 }
 
 .highscores-table {

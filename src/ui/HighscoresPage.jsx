@@ -179,7 +179,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [], cu
           <button
             className={`tab-button ${showOnline ? 'active' : ''}`}
             onClick={() => setShowOnline(!showOnline)}
-          >{showOnline ? '🌐 Online' : '🏠 Local'}</button>
+          >{showOnline ? t.onlineTab : t.localTab}</button>
           <span className="nbsp">&nbsp;</span>
           <div className="filter-group">
             <select

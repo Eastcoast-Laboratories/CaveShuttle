@@ -12,6 +12,8 @@ export const highscoreTranslations = {
     // Tabs
     runs: 'Missionen',
     levels: 'Level',
+    onlineTab: '🌐 Global',
+    localTab: '🏠 Lokal',
 
     // Filter options
     allPlayers: '1 und 2 Spieler',
@@ -96,6 +98,8 @@ export const highscoreTranslations = {
     // Tabs
     runs: 'Campaigns',
     levels: 'Levels',
+    onlineTab: '🌐 Global',
+    localTab: '🏠 Local',
 
     // Filter options
     allPlayers: '1 and 2 Player',
