@@ -135,6 +135,7 @@ function App() {
   // On mobile, at least one control method (touch buttons, joystick, tilt) must stay on.
   // When turning off the last active one, auto-enable a fallback.
   const ensureOneControlActive = (nextButtons, nextJoystick, nextTilt, turningOff) => {
+    console.log('[ENSURE_ONE_CONTROL_ACTIVE]', nextButtons, nextJoystick, nextTilt, turningOff);
     if (!isMobile) return;
     if (!nextButtons && !nextJoystick && !nextTilt) {
       if (turningOff === 'buttons') setJoystickEnabled(true);
@@ -925,6 +926,7 @@ function App() {
     showTouchButtons,
     onToggleTouchButtons: () => {
       const next = !showTouchButtons;
+      console.log('[TOGGLE_HANDLER] touchButtons:', showTouchButtons, '->', next, '| isMobile:', isMobile);
       if (next && touchButtonOpacity === 0) {
         setTouchButtonOpacity(0.1);
       }
@@ -934,6 +936,7 @@ function App() {
     joystickEnabled,
     onToggleJoystick: () => {
       const next = !joystickEnabled;
+      console.log('[TOGGLE_HANDLER] joystick:', joystickEnabled, '->', next, '| isMobile:', isMobile);
       setJoystickEnabled(next);
       if (next) setTiltSteering(false);
       ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
@@ -957,6 +960,7 @@ function App() {
     tiltSteering,
     onToggleTiltSteering: () => {
       const next = !tiltSteering;
+      console.log('[TOGGLE_HANDLER] tilt:', tiltSteering, '->', next, '| isMobile:', isMobile);
       setTiltSteering(next);
       if (next) setJoystickEnabled(false);
       ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
