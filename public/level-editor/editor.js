@@ -141,6 +141,15 @@ class LevelEditor {
 
     this.render();
     this.updateParameterInputs();
+    // Hide move controls initially (default tool is paint, not select)
+    const moveControls = document.querySelector('.move-controls');
+    if (moveControls) {
+      moveControls.style.display = 'none';
+    }
+    const initHeading = document.getElementById('moveZoomHeading');
+    if (initHeading && window.editorI18n) {
+      initHeading.textContent = window.editorI18n.t('zoomOnly');
+    }
   }
   
   initializeGrid() {
@@ -238,11 +247,16 @@ class LevelEditor {
     const container = document.getElementById('templateButtons');
     container.innerHTML = '';
     
+    const templateShortcuts = { 'fuel_building': 'F' };
+    
     for (const [key, template] of Object.entries(this.templates)) {
       const btn = document.createElement('button');
       btn.className = 'template-btn';
       btn.textContent = template.name;
       btn.dataset.template = key;
+      if (templateShortcuts[key]) {
+        btn.title = `${template.name} (${templateShortcuts[key]})`;
+      }
       
       btn.addEventListener('click', () => { this.hapticFeedback(); this.insertTemplate(key); });
       container.appendChild(btn);
@@ -356,9 +370,7 @@ class LevelEditor {
     document.querySelectorAll('.tool-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         this.hapticFeedback();
-        this.currentTool = btn.dataset.tool;
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        this.setTool(btn.dataset.tool);
       });
     });
     
@@ -383,6 +395,8 @@ class LevelEditor {
     // Scroll buttons
     document.getElementById('scrollUpBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollUp(); });
     document.getElementById('scrollDownBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollDown(); });
+    document.getElementById('scrollLeftBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollLeft(); });
+    document.getElementById('scrollRightBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollRight(); });
     
     // Level controls
     document.getElementById('loadBtn').addEventListener('click', () => { this.hapticFeedback(); this.loadLevel(); });
@@ -852,6 +866,19 @@ class LevelEditor {
     document.querySelectorAll('.tool-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tool === tool);
     });
+    // Show/hide move controls based on whether select tool is active
+    const moveControls = document.querySelector('.move-controls');
+    if (moveControls) {
+      moveControls.style.display = (tool === 'select') ? '' : 'none';
+    }
+    // Update heading text
+    const heading = document.getElementById('moveZoomHeading');
+    if (heading) {
+      const i18n = window.editorI18n;
+      if (i18n) {
+        heading.textContent = i18n.t(tool === 'select' ? 'moveZoom' : 'zoomOnly');
+      }
+    }
   }
   
   getGridPosition(e) {
@@ -1727,6 +1754,18 @@ class LevelEditor {
     this.render();
   }
   
+  scrollLeft() {
+    // Scroll left by 100 pixels
+    this.panOffset.x += 100;
+    this.render();
+  }
+  
+  scrollRight() {
+    // Scroll right by 100 pixels
+    this.panOffset.x -= 100;
+    this.render();
+  }
+  
   renderPreview() {
     const { width, height } = this.levelData.header;
     
@@ -1862,6 +1901,30 @@ class LevelEditor {
     this.updateParameterInputs();
   }
   
+  clampPanOffset() {
+    const { width, height } = this.levelData.header;
+    const levelPixelWidth = width * this.tileSize * this.zoom;
+    const levelPixelHeight = height * this.tileSize * this.zoom;
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+
+    if (levelPixelWidth <= canvasWidth) {
+      // Level fits within canvas — center horizontally
+      this.panOffset.x = (canvasWidth - levelPixelWidth) / 2;
+    } else {
+      // Level is wider than canvas — clamp to edges
+      this.panOffset.x = Math.max(canvasWidth - levelPixelWidth, Math.min(0, this.panOffset.x));
+    }
+
+    if (levelPixelHeight <= canvasHeight) {
+      // Level fits within canvas — center vertically
+      this.panOffset.y = (canvasHeight - levelPixelHeight) / 2;
+    } else {
+      // Level is taller than canvas — clamp to edges
+      this.panOffset.y = Math.max(canvasHeight - levelPixelHeight, Math.min(0, this.panOffset.y));
+    }
+  }
+
   render() {
     const { width, height } = this.levelData.header;
     
@@ -1874,6 +1937,9 @@ class LevelEditor {
     // The zoom is applied via transform, not canvas dimensions
     this.canvas.width = width * this.tileSize;
     this.canvas.height = height * this.tileSize;
+    
+    // Clamp pan offset so level content stays within canvas bounds
+    this.clampPanOffset();
     
     console.log('[LEVEL_EDITOR_RENDER] Canvas dimensions set to:', this.canvas.width, 'x', this.canvas.height);
     console.log('[LEVEL_EDITOR_RENDER] Grid matches header?', this.levelData.grid.length === height && this.levelData.grid[0]?.length === width);

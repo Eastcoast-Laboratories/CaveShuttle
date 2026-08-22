@@ -17,6 +17,7 @@
       // Section headings
       actions: 'Aktionen',
       moveZoom: 'Bewegen & Zoom',
+      zoomOnly: 'Zoom',
       levelControls: 'Level-Steuerung',
       levelParameters: 'Level-Parameter',
       levelPreview: 'Level-Vorschau',
@@ -32,6 +33,18 @@
       fillSelection: 'Auswahl füllen (G)',
       delete: 'Löschen (Entf)',
 
+      // Move & Zoom titles
+      moveUp: 'Auswahl nach oben (↑)',
+      moveDown: 'Auswahl nach unten (↓)',
+      moveLeft: 'Auswahl nach links (←)',
+      moveRight: 'Auswahl nach rechts (→)',
+      zoomIn: 'Zoom rein',
+      zoomOut: 'Zoom raus',
+      scrollUp: 'Level nach oben scrollen',
+      scrollDown: 'Level nach unten scrollen',
+      scrollLeft: 'Level nach links scrollen',
+      scrollRight: 'Level nach rechts scrollen',
+
       // Level controls
       default: 'Standard',
       classic: 'Klassisch',
@@ -45,6 +58,7 @@
       generate: 'Generieren',
       save: 'Speichern',
       test: 'Testen',
+      testTitle: 'Testen (Alt+T)',
       addToPack: 'Zum Pack hinzufügen',
 
       // Parameter labels
@@ -104,6 +118,7 @@
       // Section headings
       actions: 'Actions',
       moveZoom: 'Move & Zoom',
+      zoomOnly: 'Zoom',
       levelControls: 'Level Controls',
       levelParameters: 'Level Parameters',
       levelPreview: 'Level Preview',
@@ -119,6 +134,18 @@
       fillSelection: 'Fill Selection (G)',
       delete: 'Delete (Del)',
 
+      // Move & Zoom titles
+      moveUp: 'Move Selection Up (↑)',
+      moveDown: 'Move Selection Down (↓)',
+      moveLeft: 'Move Selection Left (←)',
+      moveRight: 'Move Selection Right (→)',
+      zoomIn: 'Zoom In',
+      zoomOut: 'Zoom Out',
+      scrollUp: 'Scroll Level Up',
+      scrollDown: 'Scroll Level Down',
+      scrollLeft: 'Scroll Level Left',
+      scrollRight: 'Scroll Level Right',
+
       // Level controls
       default: 'Default',
       classic: 'Classic',
@@ -132,6 +159,7 @@
       generate: 'Generate',
       save: 'Save',
       test: 'Test',
+      testTitle: 'Test (Alt+T)',
       addToPack: 'Add to Pack',
 
       // Parameter labels

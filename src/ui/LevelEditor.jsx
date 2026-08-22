@@ -304,7 +304,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       </div>
       <iframe
         ref={iframeRef}
-        src={`/level-editor/index.html?lang=${language}`}
+        src={`/level-editor/index.html?lang=${language}&v=4`}
         className="level-editor-iframe"
         title={t.levelEditorTitle}
       />

@@ -33,20 +33,20 @@
           <button id="deleteBtn" class="action-btn" data-i18n-title="delete">🗑️</button>
         </div>
 
-        <h3 data-i18n="moveZoom">Move & Zoom</h3>
+        <h3 id="moveZoomHeading" data-i18n="moveZoom">Move & Zoom</h3>
         <div class="move-zoom-controls">
           <div class="move-controls">
-            <button id="moveUpBtn" class="move-btn">↑</button>
+            <button id="moveUpBtn" class="move-btn" data-i18n-title="moveUp">↑</button>
             <div class="move-row">
-              <button id="moveLeftBtn" class="move-btn">←</button>
-              <button id="moveRightBtn" class="move-btn">→</button>
+              <button id="moveLeftBtn" class="move-btn" data-i18n-title="moveLeft">←</button>
+              <button id="moveRightBtn" class="move-btn" data-i18n-title="moveRight">→</button>
             </div>
-            <button id="moveDownBtn" class="move-btn">↓</button>
+            <button id="moveDownBtn" class="move-btn" data-i18n-title="moveDown">↓</button>
           </div>
           <div class="zoom-controls">
-            <button id="zoomOutBtn" class="zoom-btn">−</button>
+            <button id="zoomOutBtn" class="zoom-btn" data-i18n-title="zoomOut">−</button>
             <span id="zoomLevel">100%</span>
-            <button id="zoomInBtn" class="zoom-btn">+</button>
+            <button id="zoomInBtn" class="zoom-btn" data-i18n-title="zoomIn">+</button>
           </div>
         </div>
 
@@ -74,7 +74,7 @@
           <button id="loadBtn" class="btn btn-primary" data-i18n="load">Load</button>
           <button id="newBtn" class="btn btn-secondary" data-i18n="new">New</button>
           <button id="saveBtn" class="btn btn-success" data-i18n="save">Save</button>
-          <button id="testBtn" class="btn btn-warning" data-i18n="test">Test</button>
+          <button id="testBtn" class="btn btn-warning" data-i18n="test" data-i18n-title="testTitle">Test</button>
           <button id="addToPackBtn" class="btn btn-success" data-i18n="addToPack">Add to Pack</button>
         </div>
 
@@ -160,8 +160,12 @@
       <aside class="sidebar right-sidebar">
         <div class="top-bar">
           <div class="scroll-controls">
-            <button id="scrollUpBtn" class="scroll-btn">↑</button>
-            <button id="scrollDownBtn" class="scroll-btn">↓</button>
+            <button id="scrollUpBtn" class="scroll-btn" data-i18n-title="scrollUp">↑</button>
+            <div class="scroll-row">
+              <button id="scrollLeftBtn" class="scroll-btn" data-i18n-title="scrollLeft">←</button>
+              <button id="scrollRightBtn" class="scroll-btn" data-i18n-title="scrollRight">→</button>
+            </div>
+            <button id="scrollDownBtn" class="scroll-btn" data-i18n-title="scrollDown">↓</button>
           </div>
           <div id="currentTile" class="current-tile">
             <div class="tile-preview"></div>

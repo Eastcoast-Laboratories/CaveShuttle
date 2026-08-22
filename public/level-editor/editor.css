@@ -312,8 +312,14 @@ body {
 /* Scroll controls */
 .scroll-controls {
   display: flex;
-  flex-direction: row;
-  gap: 6px;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.scroll-row {
+  display: flex;
+  gap: 3px;
 }
 
 .scroll-btn {
