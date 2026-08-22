@@ -4,20 +4,20 @@
 -25         ; height of empty space
 25          ; height of bedrock
  255  120    0 ; background/tractor (wall color)
- 164  255  255 ; gun/reactor/stand
+ 164    0    0 ; gun/reactor/stand
    0    0  255 ; pod/blip
-   0    0  255 ; text
- 164  164    0 ; shield
-
-                                                                                                stppppqr
-                                                                                              stppppppppppqr
-                                    *                                                       stppppppppppppppppqrPQR
-                                                                                          stppppppppppppppppppppqrS
-                   def                                                       stpno      stppppppppppppppppppppppppppppppqr
-          stppppqr ghi                                         `a `a `a    stpppppppppppppppppppppppppppppppppppppppppppppqr
-        stppppppppqjkl                                         bc bc bc  stpppppppppppppppppppppppppppppppppppppppppppppppppqr
-      stpppppppppppppppppppqr                          stpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr
-    stpppppppppppppppppppppppqr                   UVWstpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr
+   0  164  164 ; text
+ 164   84   84 ; shield
+                                                                                                                                                                                      
+                                                                                                stppppqr                                                                              
+                                                                                              stppppppppppqr                                                                          
+                                    *                                                       stppppppppppppppppqrPQR                                                                   
+                                                                                          stppppppppppppppppppppqrS                                                                   
+                   def                                                       stpno      stppppppppppppppppppppppppppppppqr                                                            
+          stppppqr ghi                                         `a `a `a    stpppppppppppppppppppppppppppppppppppppppppppppqr                                                          
+        stppppppppqjkl                                         bc bc bc  stpppppppppppppppppppppppppppppppppppppppppppppppppqr                                                        
+      stpppppppppppppppppppqr                          stpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                                                      
+    stpppppppppppppppppppppppqr                   UVWstpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                                                    
   stpppppppppppppppppppppppppppqr       m0        Tstpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                                                  
 stpppppppppppppppppppppppppppppppqr     12       sppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                                              
 pppppppppppppppppppppppppppppppppppqr   34     stpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                                      stpp
@@ -25,3 +25,19 @@ pppppppppppppppppppppppppppppppppppppqr pp   stppppppppppppppppppppppppppppppppp
 ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                              stpppppp
 ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr                      stpppppppppppp
 ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppqr    stppqr      stpppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
