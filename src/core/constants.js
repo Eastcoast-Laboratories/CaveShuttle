@@ -14,7 +14,7 @@ export const SHIELD_DURATION = 300; // frames
 export const FUEL_MAX = 100;
 export const FUEL_CONSUMPTION = 0.1;
 export const POD_FUEL_CONSUMPTION = 0.05;
-export const FIRE_FUEL_CONSUMPTION = 0.05; // Fuel consumed per shot fired
+export const FIRE_FUEL_CONSUMPTION = 0.2; // Fuel consumed per shot fired
 export const BULLET_SPEED = 8; // Speed of fired bullets
 
 // Fuel depots
@@ -104,8 +104,11 @@ export const BUNKER_INDICATOR_OFFSETS = {
   '\\': { x: 8, y: 19 }    // Down-left-facing bunker
 };
 
+export const SHIP_COLLISION_RADIUS = 8; // Collision radius for the ship in unscaled screen-space pixels. To make collision tighter or wider relative to the visual ship, adjust this value.
+
 // Shield
 export const SHIELD_RADIUS = 25; // Radius of the shield circle around the ship
+export const POD_COLLISION_RADIUS = 6; // Collision radius for the pod in unscaled screen-space pixels. To make collision tighter or wider relative to the visual pod, adjust this value.
 export const SHIELD_COLOR = 'rgba(0, 255, 255, 0.5)'; // Color of the shield
 export const SHIELD_FUEL_CONSUMPTION = 0.3; // Fuel consumed per frame when shield is active
 
@@ -137,7 +140,7 @@ export const ENABLE_LEVEL_EDITOR = true; // Enable/disable level editor button
 
 // Game settings
 export const INITIAL_LIVES = 3; // Starting number of lives
-export const FUEL_EMPTY_DESTROY_DELAY_MS = 7000; // Delay before ship explodes after fuel runs out
+export const FUEL_EMPTY_DESTROY_DELAY_MS = 11000; // Delay before ship explodes after fuel runs out
 
 // Reactor meltdown
 export const REACTOR_TILES = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']; // Shootable reactor core tiles

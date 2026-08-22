@@ -141,6 +141,20 @@ export class TileRenderer {
     return canvas;
   }
 
+  /**
+   * Returns the rendered tile size in pixels (tileSize * scale).
+   * The base tile is 8x8 pixels (this.tileSize = 8). The scale factor
+   * (this.scale, typically 2) multiplies this to get the on-screen size,
+   * so a tile occupies 16x16 screen pixels at scale 2.
+   *
+   * Collision detection uses configurable radii defined in constants.js:
+   * SHIP_COLLISION_RADIUS for the ship and
+   * POD_COLLISION_RADIUS for the pod. These are in unscaled
+   * screen-space pixels, so a radius of 8 covers roughly half a tile at
+   * scale 2 (16px tiles).
+   *
+   * @returns {number} Scaled tile size in pixels (tileSize * scale)
+   */
   getScaledTileSize() {
     return this.tileSize * this.scale;
   }

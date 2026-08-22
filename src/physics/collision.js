@@ -1,4 +1,6 @@
 // Collision detection system
+import { SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS } from '../core/constants.js';
+
 export class CollisionDetection {
   constructor(levelRenderer) {
     this.levelRenderer = levelRenderer;
@@ -7,7 +9,7 @@ export class CollisionDetection {
   checkShipCollision(ship, level) {
     if (!level || !level.layout) return { collided: false };
 
-    const shipRadius = 8;
+    const shipRadius = SHIP_COLLISION_RADIUS;
     
     // Check ship center
     const centerTile = this.levelRenderer.getTileAt(level, ship.x, ship.y, 'ship-center');
@@ -46,7 +48,7 @@ export class CollisionDetection {
     if (!collision.collided) return;
 
     const scaledSize = this.levelRenderer.getScaledTileSize();
-    const radius = 8; // ship and pod collision radius
+    const radius = SHIP_COLLISION_RADIUS; // ship and pod collision radius
 
     // The wall tile that was hit
     const tileX = Math.floor(collision.point.x / scaledSize);
@@ -122,7 +124,7 @@ export class CollisionDetection {
   checkPodCollision(pod, level) {
     if (!level || !level.layout) return { collided: false };
 
-    const podRadius = 8;
+    const podRadius = POD_COLLISION_RADIUS;
     
     // Check pod center
     const centerTile = this.levelRenderer.getTileAt(level, pod.x, pod.y, 'pod-center');
