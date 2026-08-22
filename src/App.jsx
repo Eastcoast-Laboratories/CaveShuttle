@@ -132,6 +132,16 @@ function App() {
   const [multiShotEnabled, setMultiShotEnabled] = useState(false);
   const tiltSensorRef = useRef({ beta: 0, gamma: 0, alpha: 0 });
 
+  // On mobile, at least one control method (touch buttons, joystick, tilt) must stay on.
+  // When turning off the last active one, auto-enable a fallback.
+  const ensureOneControlActive = (nextButtons, nextJoystick, nextTilt, turningOff) => {
+    if (!isMobile) return;
+    if (!nextButtons && !nextJoystick && !nextTilt) {
+      if (turningOff === 'buttons') setJoystickEnabled(true);
+      else setShowTouchButtons(true);
+    }
+  };
+
   // One-time migration of legacy completedLevels to classic pack
   useEffect(() => {
     migrateLegacyProgress();
@@ -914,15 +924,19 @@ function App() {
     appVersion: APP_VERSION,
     showTouchButtons,
     onToggleTouchButtons: () => {
-      if (!showTouchButtons && touchButtonOpacity === 0) {
+      const next = !showTouchButtons;
+      if (next && touchButtonOpacity === 0) {
         setTouchButtonOpacity(0.1);
       }
-      setShowTouchButtons(!showTouchButtons);
+      setShowTouchButtons(next);
+      ensureOneControlActive(next, joystickEnabled, tiltSteering, 'buttons');
     },
     joystickEnabled,
     onToggleJoystick: () => {
-      setJoystickEnabled(!joystickEnabled);
-      if (!joystickEnabled) setTiltSteering(false);
+      const next = !joystickEnabled;
+      setJoystickEnabled(next);
+      if (next) setTiltSteering(false);
+      ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
     },
     installedPacks,
     currentPackId,
@@ -942,8 +956,10 @@ function App() {
     onToggleVibration: () => setVibrationEnabled(!vibrationEnabled),
     tiltSteering,
     onToggleTiltSteering: () => {
-      setTiltSteering(!tiltSteering);
-      if (!tiltSteering) setJoystickEnabled(false);
+      const next = !tiltSteering;
+      setTiltSteering(next);
+      if (next) setJoystickEnabled(false);
+      ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
     },
     tiltSensorRef,
     onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
@@ -1183,13 +1199,17 @@ function App() {
                   onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
                   tiltSteering={tiltSteering}
                   onToggleTiltSteering={() => {
-                    setTiltSteering(!tiltSteering);
-                    if (!tiltSteering) setJoystickEnabled(false);
+                    const next = !tiltSteering;
+                    setTiltSteering(next);
+                    if (next) setJoystickEnabled(false);
+                    ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
                   }}
                   joystickEnabled={joystickEnabled}
                   onToggleJoystick={() => {
-                    setJoystickEnabled(!joystickEnabled);
-                    if (!joystickEnabled) setTiltSteering(false);
+                    const next = !joystickEnabled;
+                    setJoystickEnabled(next);
+                    if (next) setTiltSteering(false);
+                    ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
                   }}
                   tiltSensorRef={tiltSensorRef}
                   onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
