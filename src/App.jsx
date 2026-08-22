@@ -520,7 +520,11 @@ function App() {
     setNewHighscore(hs);
 
     // Sync scores to backend
-    if (onlineSyncEnabled) autoAccountManager.syncScoresToBackend();
+    if (onlineSyncEnabled) {
+      autoAccountManager.syncScoresToBackend();
+    } else {
+      console.log('[ONLINE_SYNC] Skipped score sync on level complete: onlineSyncEnabled is off');
+    }
 
     // Auto-sync new highscore records to peer in network mode
     if (networkRole && networkManager) {
@@ -651,7 +655,11 @@ function App() {
     }
 
     // Sync scores to backend
-    if (onlineSyncEnabled) autoAccountManager.syncScoresToBackend();
+    if (onlineSyncEnabled) {
+      autoAccountManager.syncScoresToBackend();
+    } else {
+      console.log('[ONLINE_SYNC] Skipped score sync on game over: onlineSyncEnabled is off');
+    }
 
     setGameState('gameover');
   };
@@ -999,6 +1007,7 @@ function App() {
             twoPlayer={twoPlayer}
             onTogglePlayerMode={() => setTwoPlayer(!twoPlayer)}
             networkRole={networkRole}
+            onlineSyncEnabled={onlineSyncEnabled}
           />
         </div>
       )}

@@ -36,7 +36,7 @@ function setLegalPageHash(page) {
   window.location.hash = `#/${page}`;
 }
 
-export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode, networkRole = null }) {
+export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode, networkRole = null, onlineSyncEnabled = true }) {
   const { language } = useLanguage();
   const t = getMenuTranslations(language);
   const [legalPage, setLegalPage] = useState(() => getLegalPageFromHash());
@@ -77,7 +77,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
     return <AccountDeletion onBack={() => { setLegalPage(null); setLegalPageHash(null); }} />;
   }
   if (legalPage === 'highscores') {
-    return <HighscoresPage onBack={() => { setLegalPage(null); setLegalPageHash(null); }} onPlay={onStart} installedPacks={installedPacks || []} currentPackId={currentPackId} twoPlayer={twoPlayer} />;
+    return <HighscoresPage onBack={() => { setLegalPage(null); setLegalPageHash(null); }} onPlay={onStart} installedPacks={installedPacks || []} currentPackId={currentPackId} twoPlayer={twoPlayer} onlineSyncEnabled={onlineSyncEnabled} />;
   }
 
   return (
