@@ -12,7 +12,7 @@ import { TileRenderer } from '../game/tile-renderer.js';
 import { LevelLoader } from '../levels/level-loader.js';
 import { CollisionDetection } from '../physics/collision.js';
 import { SoundManager } from '../audio/sound-manager.js';
-import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, MULTI_SHOT_TILE, MULTI_SHOT_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD } from '../core/constants.js';
+import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, MULTI_SHOT_TILE, MULTI_SHOT_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD, SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS } from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 
@@ -1441,7 +1441,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       const tileSize = tileRenderer.current.getScaledTileSize();
       const px = tileX * tileSize + tileSize / 2;
       const py = tileY * tileSize + tileSize / 2;
-      particleSystem.current.spawnExplosion(px, py, 25, '#ffd700');
+      particleSystem.current.spawnPowerupBurst(px, py, '#ffd700');
       console.log('[GOD_MODE] Power-up collected at tile', tileX, tileY, '| ends in', GOD_MODE_DURATION_MS, 'ms');
     };
 
@@ -1459,7 +1459,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       const tileSize = tileRenderer.current.getScaledTileSize();
       const px = tileX * tileSize + tileSize / 2;
       const py = tileY * tileSize + tileSize / 2;
-      particleSystem.current.spawnExplosion(px, py, 25, '#ff8035');
+      particleSystem.current.spawnPowerupBurst(px, py, '#ff8035');
       console.log('[MULTI_SHOT] Power-up collected at tile', tileX, tileY);
     };
 
@@ -2073,19 +2073,45 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         }
       }
 
-      // Check for power-up tile pickup (ship touches the tile)
+      // Check for power-up tile pickup (ship or pod touches the tile)
       if (level && tilesetLoaded && gameState === 'playing' && !isDying) {
         const scaledSize = tileRenderer.current.getScaledTileSize();
-        const shipTileX = Math.floor(ship.x / scaledSize);
-        const shipTileY = Math.floor(ship.y / scaledSize);
-        if (shipTileY >= 0 && shipTileY < level.layout.length) {
-          const row = level.layout[shipTileY];
-          if (shipTileX >= 0 && shipTileX < row.length) {
-            const tileHere = row[shipTileX];
-            if (tileHere === GOD_MODE_TILE) {
-              activateGodMode(shipTileX, shipTileY);
-            } else if (tileHere === MULTI_SHOT_TILE) {
-              activateMultiShot(shipTileX, shipTileY);
+        // Check ship center and perimeter points for powerup contact
+        const checkPoints = [{ x: ship.x, y: ship.y }];
+        const numPoints = 8;
+        for (let i = 0; i < numPoints; i++) {
+          const angle = (i / numPoints) * Math.PI * 2;
+          checkPoints.push({
+            x: ship.x + Math.cos(angle) * SHIP_COLLISION_RADIUS,
+            y: ship.y + Math.sin(angle) * SHIP_COLLISION_RADIUS
+          });
+        }
+        // Also check pod perimeter points if pod is active
+        const pod = podRef.current;
+        if (pod && pod.active) {
+          checkPoints.push({ x: pod.x, y: pod.y });
+          for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2;
+            checkPoints.push({
+              x: pod.x + Math.cos(angle) * POD_COLLISION_RADIUS,
+              y: pod.y + Math.sin(angle) * POD_COLLISION_RADIUS
+            });
+          }
+        }
+        for (const pt of checkPoints) {
+          const tileX = Math.floor(pt.x / scaledSize);
+          const tileY = Math.floor(pt.y / scaledSize);
+          if (tileY >= 0 && tileY < level.layout.length) {
+            const row = level.layout[tileY];
+            if (tileX >= 0 && tileX < row.length) {
+              const tileHere = row[tileX];
+              if (tileHere === GOD_MODE_TILE) {
+                activateGodMode(tileX, tileY);
+                break;
+              } else if (tileHere === MULTI_SHOT_TILE) {
+                activateMultiShot(tileX, tileY);
+                break;
+              }
             }
           }
         }
