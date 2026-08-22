@@ -803,6 +803,7 @@ class LevelEditor {
       } else {
         e.preventDefault();
         this.panOffset.y += 50;
+        this.clampScrollY();
         this.render();
       }
     } else if (e.key === 'ArrowDown') {
@@ -812,6 +813,7 @@ class LevelEditor {
       } else {
         e.preventDefault();
         this.panOffset.y -= 50;
+        this.clampScrollY();
         this.render();
       }
     } else if (e.key === 'ArrowLeft') {
@@ -821,6 +823,7 @@ class LevelEditor {
       } else {
         e.preventDefault();
         this.panOffset.x += 50;
+        this.clampScrollX();
         this.render();
       }
     } else if (e.key === 'ArrowRight') {
@@ -830,6 +833,7 @@ class LevelEditor {
       } else {
         e.preventDefault();
         this.panOffset.x -= 50;
+        this.clampScrollX();
         this.render();
       }
     }
