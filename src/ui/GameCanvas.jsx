@@ -1847,6 +1847,10 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               if (transfer > 0) {
                 depot.fuel -= transfer;
                 ship.fuel += transfer;
+                if (fuelEmptyTimeRef.current) {
+                  fuelEmptyTimeRef.current = null;
+                  console.log('[FUEL_DEPOT] Fuel empty timer cancelled after refueling');
+                }
                 isRefueling = true;
                 console.log('[FUEL_DEPOT] Refueled', transfer.toFixed(2), 'depot fuel left:', depot.fuel.toFixed(2));
               }
@@ -1897,7 +1901,16 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               firingAngle + 2 * Math.PI / 3, // +120°
               firingAngle - 2 * Math.PI / 3, // -120°
             ];
-            for (const angle of angles) {
+            // When pod is towed, only fire the 3 bullets pointing away from the pod
+            let fireAngles = angles;
+            if (pod && pod.towed) {
+              const podAngle = Math.atan2(pod.x - ship.x, -(pod.y - ship.y));
+              fireAngles = angles.filter(a => {
+                const diff = Math.atan2(Math.sin(a - podAngle), Math.cos(a - podAngle));
+                return Math.abs(diff) > Math.PI / 2;
+              });
+            }
+            for (const angle of fireAngles) {
               spawnedBullets.push({
                 x: ship.x + Math.sin(angle) * 20,
                 y: ship.y - Math.cos(angle) * 20,
@@ -2057,6 +2070,24 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         // Consume fuel when shield is active
         if (shieldActive) {
           ship.fuel -= SHIELD_FUEL_CONSUMPTION * deltaTime;
+        }
+      }
+
+      // Check for power-up tile pickup (ship touches the tile)
+      if (level && tilesetLoaded && gameState === 'playing' && !isDying) {
+        const scaledSize = tileRenderer.current.getScaledTileSize();
+        const shipTileX = Math.floor(ship.x / scaledSize);
+        const shipTileY = Math.floor(ship.y / scaledSize);
+        if (shipTileY >= 0 && shipTileY < level.layout.length) {
+          const row = level.layout[shipTileY];
+          if (shipTileX >= 0 && shipTileX < row.length) {
+            const tileHere = row[shipTileX];
+            if (tileHere === GOD_MODE_TILE) {
+              activateGodMode(shipTileX, shipTileY);
+            } else if (tileHere === MULTI_SHOT_TILE) {
+              activateMultiShot(shipTileX, shipTileY);
+            }
+          }
         }
       }
 
@@ -2308,17 +2339,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               // Check collision with walls
               const wallCollision = collision.current.checkBulletCollision(bullet, level, 'player');
               if (wallCollision.collided) {
-                if (wallCollision.tile === GOD_MODE_TILE) {
-                  const tileSize = tileRenderer.current.getScaledTileSize();
-                  const tileX = Math.floor(wallCollision.point.x / tileSize);
-                  const tileY = Math.floor(wallCollision.point.y / tileSize);
-                  activateGodMode(tileX, tileY);
-                } else if (wallCollision.tile === MULTI_SHOT_TILE) {
-                  const tileSize = tileRenderer.current.getScaledTileSize();
-                  const tileX = Math.floor(wallCollision.point.x / tileSize);
-                  const tileY = Math.floor(wallCollision.point.y / tileSize);
-                  activateMultiShot(tileX, tileY);
-                } else if (REACTOR_TILES.includes(wallCollision.tile)) {
+                if (REACTOR_TILES.includes(wallCollision.tile)) {
                   registerReactorHit(wallCollision.point);
                 }
                 return false;

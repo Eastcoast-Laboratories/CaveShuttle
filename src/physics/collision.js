@@ -164,7 +164,7 @@ export class CollisionDetection {
 
     // Tiles that are solid for ship/pod but should not block bunker- nor player-bullets
     // - Bunker variants (the functional bunker markers handle bullets themselves)
-    const bulletPassThroughTiles = ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', '[', 'X', 'Y', 'Z', '\\', ']', '^', '_', 'L', 'M', 'N', 'O', 'v', 'w', 'q', 'r', 's', 'u', 'x'];
+    const bulletPassThroughTiles = ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', '[', 'X', 'Y', 'Z', '\\', ']', '^', '_', 'L', 'M', 'N', 'O', 'v', 'w', 'q', 'r', 's', 'u', 'x', 'ý', '§'];
 
     // Check bullet center
     const centerTile = this.levelRenderer.getTileAt(level, bullet.x, bullet.y, 'bullet-center:' + owner);

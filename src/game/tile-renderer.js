@@ -1,7 +1,7 @@
 // Tile renderer using original blks tileset
 // Renders level tiles pixel-perfect using the original 8x8 pixel tileset and color palette
 
-import { SKY_FULL_STAR_DENSITY } from "../core/constants";
+import { SKY_FULL_STAR_DENSITY, GOD_MODE_TILE, MULTI_SHOT_TILE } from "../core/constants";
 
 // Tiles that are visually wall-like but have mostly empty space — no collision.
 // These are the smaller components of larger wall structures (e.g. right half of a slope).
@@ -207,6 +207,8 @@ export class TileRenderer {
     if (HIDDEN_PASSAGE_TILES.has(tile)) return false;
     // Small wall components with mostly empty space — no collision
     if (NO_COLLISION_TILES.has(tile)) return false;
+    // Power-up tiles: not walls — ship picks them up by touching
+    if (tile === GOD_MODE_TILE || tile === MULTI_SHOT_TILE) return false;
     // Steep slope tiles are solid
     if (tile === '$' || tile === '%' || tile === '(' || tile === ')') return true;
     const code = tile.charCodeAt(0);
