@@ -5,6 +5,7 @@ const ZOOM_SPEED = 1.05; // Multiplier per scroll step (closer to 1 = smaller st
 const ZOOM_MIN = 0.2; // Minimum zoom level in percent (lower = can zoom out more to see entire level) 0.2=20%
 const ZOOM_MAX = 4; // Maximum zoom level
 const UNDO_STACK_SIZE = 10000; // Maximum number of undo states to keep
+const SCROLL_MARGIN_TILES = 2; // Extra tiles of scroll margin allowed beyond the level edges
 
 class LevelEditor {
   constructor() {
@@ -1766,26 +1767,29 @@ class LevelEditor {
     this.render();
   }
 
-  // Clamp panOffset.x so the level cannot be scrolled past its left/right edge.
+  // Clamp panOffset.x so the level cannot be scrolled past its left/right edge
+  // (plus a small margin of extra tiles for breathing room).
   // panOffset.x = 0 shows the level's left edge; panOffset.x = viewportW - levelW shows the right edge.
-  // If the level is narrower than the viewport, only panOffset.x = 0 (left-aligned) is valid.
   clampScrollX() {
     const { width } = this.levelData.header;
     const levelW = width * this.tileSize * this.zoom;
-    const viewportW = this.canvas.parentElement.clientWidth;
-    const minX = Math.min(0, viewportW - levelW);
-    const maxX = 0;
+    const margin = SCROLL_MARGIN_TILES * this.tileSize * this.zoom;
+    const viewportW = this.canvas.width;
+    const minX = Math.min(margin, viewportW - levelW - margin);
+    const maxX = margin;
     this.panOffset.x = Math.max(minX, Math.min(maxX, this.panOffset.x));
     console.log('[SCROLL] clampScrollX: panOffset.x =', this.panOffset.x, '| viewport:', viewportW, '| level:', levelW, '| range: [', minX, ',', maxX, ']');
   }
 
-  // Clamp panOffset.y so the level cannot be scrolled past its top/bottom edge.
+  // Clamp panOffset.y so the level cannot be scrolled past its top/bottom edge
+  // (plus a small margin of extra tiles for breathing room).
   clampScrollY() {
     const { height } = this.levelData.header;
     const levelH = height * this.tileSize * this.zoom;
-    const viewportH = this.canvas.parentElement.clientHeight;
-    const minY = Math.min(0, viewportH - levelH);
-    const maxY = 0;
+    const margin = SCROLL_MARGIN_TILES * this.tileSize * this.zoom;
+    const viewportH = this.canvas.height;
+    const minY = Math.min(margin, viewportH - levelH - margin);
+    const maxY = margin;
     this.panOffset.y = Math.max(minY, Math.min(maxY, this.panOffset.y));
     console.log('[SCROLL] clampScrollY: panOffset.y =', this.panOffset.y, '| viewport:', viewportH, '| level:', levelH, '| range: [', minY, ',', maxY, ']');
   }

@@ -345,7 +345,7 @@ body {
 .canvas-container {
   flex: 1;
   background: #0f0f1a;
-  overflow: auto;
+  overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
