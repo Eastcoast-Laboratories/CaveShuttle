@@ -150,9 +150,9 @@ export const REACTOR_HIT_TIMEOUT_MS = 400; // Max gap between hits to keep meltd
 export const SCORE_REACTOR_ESCAPE = 2000; // Bonus for escaping with the pod during meltdown
 
 // Haptic feedback vibration patterns (duration in ms)
-export const VIBRATE_ROTATE = 10;       // Rotation start
-export const VIBRATE_ROTATE_STOP = 8;   // Rotation stop (tilt only)
-export const VIBRATE_THRUST = 15;       // Thrust/accelerate start
-export const VIBRATE_THRUST_STOP = 8;   // Thrust stop (tilt only)
+export const VIBRATE_ROTATE = 20;       // Rotation start
+export const VIBRATE_ROTATE_STOP = 20;   // Rotation stop (tilt only)
+export const VIBRATE_THRUST = 50;       // Thrust/accelerate start
+export const VIBRATE_THRUST_STOP = 50;   // Thrust stop (tilt only)
 export const VIBRATE_FIRE = 10;         // Each shot fired
-export const VIBRATE_POD = 20;          // Tractor beam / pod activation
+export const VIBRATE_POD = 80;          // Tractor beam / pod activation
