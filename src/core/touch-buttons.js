@@ -110,9 +110,9 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
     );
   }
 
-  // Special / POD (tractor beam) button - always visible.
-  // Large layout in tilt mode and joystick-only mode; small layout with touch buttons.
-  if (includePod) {
+  // Special / POD (tractor beam) button.
+  // Visible when touch buttons are shown, forced visible, or tilt steering is active.
+  if (includePod && (tiltSteeringMode || forceVisible || showTouchButtons)) {
     if (tiltSteeringMode || (!showTouchButtons && !forceVisible)) {
       // In tilt steering mode: POD button fills full height at the far right edge
       const podX = w - specialWidth * 1.7 - buttonMargin;
