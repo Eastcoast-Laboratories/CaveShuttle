@@ -96,6 +96,20 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
     }
   }, [language]);
 
+  // Alt+T: trigger test level from parent (browser intercepts Alt+T inside iframe)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.altKey && (e.key === 't' || e.key === 'T')) {
+        e.preventDefault();
+        if (iframeRef.current && iframeRef.current.contentWindow) {
+          iframeRef.current.contentWindow.postMessage({ type: 'TRIGGER_TEST' }, '*');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Send available level packs (built-in + imported) to the iframe editor.
   // Imported packs include their level content so the iframe can load them without fetch.
   useEffect(() => {

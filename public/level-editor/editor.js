@@ -575,6 +575,8 @@ class LevelEditor {
           localStorage.setItem('editorLevelName', levelName);
         }
         this.loadLevelFromString(event.data.levelData);
+      } else if (event.data && event.data.type === 'TRIGGER_TEST') {
+        this.testLevel();
       }
     });
   }
@@ -2472,7 +2474,10 @@ class LevelEditor {
       { key: 'editorTool', value: this.currentTool },
       { key: 'editorTile', value: this.currentTile },
       { key: 'editorUndoStack', value: undoStackJson },
-      { key: 'editorRedoStack', value: redoStackJson }
+      { key: 'editorRedoStack', value: redoStackJson },
+      { key: 'editorZoom', value: String(this.zoom) },
+      { key: 'editorPanX', value: String(this.panOffset.x) },
+      { key: 'editorPanY', value: String(this.panOffset.y) }
     ];
 
     for (const item of items) {
@@ -2558,7 +2563,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (savedRedoStack) {
       window.levelEditor.redoStack = JSON.parse(savedRedoStack);
     }
-    
+
+    // Restore zoom and pan position
+    const savedZoom = localStorage.getItem('editorZoom');
+    const savedPanX = localStorage.getItem('editorPanX');
+    const savedPanY = localStorage.getItem('editorPanY');
+    console.log('[EDITOR_RESTORE] savedZoom:', savedZoom, 'savedPanX:', savedPanX, 'savedPanY:', savedPanY);
+    if (savedZoom) {
+      window.levelEditor.zoom = parseFloat(savedZoom);
+      window.levelEditor.updateZoomDisplay();
+    }
+    if (savedPanX !== null && savedPanY !== null) {
+      window.levelEditor.panOffset.x = parseFloat(savedPanX);
+      window.levelEditor.panOffset.y = parseFloat(savedPanY);
+    }
+    console.log('[EDITOR_RESTORE] Restored zoom:', window.levelEditor.zoom, 'pan:', window.levelEditor.panOffset.x, window.levelEditor.panOffset.y);
+    window.levelEditor.render();
+
     // Don't clear localStorage - keep it for page reloads
     // It will be overwritten when user clicks Test again
   }

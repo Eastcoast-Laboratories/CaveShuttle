@@ -218,6 +218,18 @@ function App() {
     }
   }, [gameState]);
 
+  // ESC key in editor test mode returns to editor
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isEditorTestMode && (gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete')) {
+        e.preventDefault();
+        setGameState('editor');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditorTestMode, gameState]);
+
   const [gravityMultiplier, setGravityMultiplier] = useState(1.0);
   const [gameSession, setGameSession] = useState(0); // Increments on each new game to force GameCanvas remount
 
