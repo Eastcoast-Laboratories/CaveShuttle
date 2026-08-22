@@ -1743,27 +1743,51 @@ class LevelEditor {
   }
   
   scrollUp() {
-    // Scroll up by 100 pixels
     this.panOffset.y += 100;
+    this.clampScrollY();
     this.render();
   }
   
   scrollDown() {
-    // Scroll down by 100 pixels
     this.panOffset.y -= 100;
+    this.clampScrollY();
     this.render();
   }
   
   scrollLeft() {
-    // Scroll left by 100 pixels
     this.panOffset.x += 100;
+    this.clampScrollX();
     this.render();
   }
   
   scrollRight() {
-    // Scroll right by 100 pixels
     this.panOffset.x -= 100;
+    this.clampScrollX();
     this.render();
+  }
+
+  // Clamp panOffset.x so the level cannot be scrolled past its left/right edge.
+  // panOffset.x = 0 shows the level's left edge; panOffset.x = viewportW - levelW shows the right edge.
+  // If the level is narrower than the viewport, only panOffset.x = 0 (left-aligned) is valid.
+  clampScrollX() {
+    const { width } = this.levelData.header;
+    const levelW = width * this.tileSize * this.zoom;
+    const viewportW = this.canvas.parentElement.clientWidth;
+    const minX = Math.min(0, viewportW - levelW);
+    const maxX = 0;
+    this.panOffset.x = Math.max(minX, Math.min(maxX, this.panOffset.x));
+    console.log('[SCROLL] clampScrollX: panOffset.x =', this.panOffset.x, '| viewport:', viewportW, '| level:', levelW, '| range: [', minX, ',', maxX, ']');
+  }
+
+  // Clamp panOffset.y so the level cannot be scrolled past its top/bottom edge.
+  clampScrollY() {
+    const { height } = this.levelData.header;
+    const levelH = height * this.tileSize * this.zoom;
+    const viewportH = this.canvas.parentElement.clientHeight;
+    const minY = Math.min(0, viewportH - levelH);
+    const maxY = 0;
+    this.panOffset.y = Math.max(minY, Math.min(maxY, this.panOffset.y));
+    console.log('[SCROLL] clampScrollY: panOffset.y =', this.panOffset.y, '| viewport:', viewportH, '| level:', levelH, '| range: [', minY, ',', maxY, ']');
   }
   
   renderPreview() {
@@ -1901,48 +1925,17 @@ class LevelEditor {
     this.updateParameterInputs();
   }
   
-  clampPanOffset() {
-    const { width, height } = this.levelData.header;
-    const levelPixelWidth = width * this.tileSize * this.zoom;
-    const levelPixelHeight = height * this.tileSize * this.zoom;
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
-
-    if (levelPixelWidth <= canvasWidth) {
-      // Level fits within canvas — center horizontally
-      this.panOffset.x = (canvasWidth - levelPixelWidth) / 2;
-    } else {
-      // Level is wider than canvas — clamp to edges
-      this.panOffset.x = Math.max(canvasWidth - levelPixelWidth, Math.min(0, this.panOffset.x));
-    }
-
-    if (levelPixelHeight <= canvasHeight) {
-      // Level fits within canvas — center vertically
-      this.panOffset.y = (canvasHeight - levelPixelHeight) / 2;
-    } else {
-      // Level is taller than canvas — clamp to edges
-      this.panOffset.y = Math.max(canvasHeight - levelPixelHeight, Math.min(0, this.panOffset.y));
-    }
-  }
-
   render() {
     const { width, height } = this.levelData.header;
     
-    console.log('[LEVEL_EDITOR_RENDER] Rendering - header width:', width, 'height:', height);
-    console.log('[LEVEL_EDITOR_RENDER] Grid dimensions:', this.levelData.grid.length, 'x', this.levelData.grid[0]?.length);
-    console.log('[LEVEL_EDITOR_RENDER] Tile size:', this.tileSize, 'Zoom:', this.zoom);
-    console.log('[LEVEL_EDITOR_RENDER] Canvas element before:', this.canvas.width, 'x', this.canvas.height);
+    // Canvas backing store size must match the viewport (container), not the
+    // unscaled level size. Zoom/pan are applied via ctx.transform when drawing;
+    // the canvas itself is the "camera window" into the level.
+    const container = this.canvas.parentElement;
+    this.canvas.width = container.clientWidth;
+    this.canvas.height = container.clientHeight;
     
-    // Set canvas size to actual grid size (not scaled by zoom)
-    // The zoom is applied via transform, not canvas dimensions
-    this.canvas.width = width * this.tileSize;
-    this.canvas.height = height * this.tileSize;
-    
-    // Clamp pan offset so level content stays within canvas bounds
-    this.clampPanOffset();
-    
-    console.log('[LEVEL_EDITOR_RENDER] Canvas dimensions set to:', this.canvas.width, 'x', this.canvas.height);
-    console.log('[LEVEL_EDITOR_RENDER] Grid matches header?', this.levelData.grid.length === height && this.levelData.grid[0]?.length === width);
+    console.log('[LEVEL_EDITOR_RENDER] Canvas (viewport) size:', this.canvas.width, 'x', this.canvas.height, '| level:', width, 'x', height, '| zoom:', this.zoom, '| panOffset:', this.panOffset.x, this.panOffset.y);
     
     // Clear canvas
     this.ctx.fillStyle = '#1a1a2e';
