@@ -1942,14 +1942,36 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           const turretCannon = !podCannon;
           const firingBody = podCannon ? pod : ship;
           const firingAngle = turretCannon ? ship.angle + turretAngleRef.current : (podCannon ? pod.angle : ship.angle);
-          spawnedBullets.push({
-            x: firingBody.x + Math.sin(firingAngle) * 20,
-            y: firingBody.y - Math.cos(firingAngle) * 20,
-            vx: Math.sin(firingAngle) * bulletSpeed,
-            vy: -Math.cos(firingAngle) * bulletSpeed,
-            owner: turretCannon ? 'turret' : 'pod',
-            time: now
-          });
+          const p2Owner = turretCannon ? 'turret' : 'pod';
+          if (multiShotEnabledRef.current) {
+            const angles = [
+              firingAngle,
+              firingAngle + Math.PI,
+              firingAngle + Math.PI / 3,
+              firingAngle - Math.PI / 3,
+              firingAngle + 2 * Math.PI / 3,
+              firingAngle - 2 * Math.PI / 3,
+            ];
+            for (const angle of angles) {
+              spawnedBullets.push({
+                x: firingBody.x + Math.sin(angle) * 20,
+                y: firingBody.y - Math.cos(angle) * 20,
+                vx: Math.sin(angle) * bulletSpeed,
+                vy: -Math.cos(angle) * bulletSpeed,
+                owner: p2Owner,
+                time: now
+              });
+            }
+          } else {
+            spawnedBullets.push({
+              x: firingBody.x + Math.sin(firingAngle) * 20,
+              y: firingBody.y - Math.cos(firingAngle) * 20,
+              vx: Math.sin(firingAngle) * bulletSpeed,
+              vy: -Math.cos(firingAngle) * bulletSpeed,
+              owner: p2Owner,
+              time: now
+            });
+          }
           ship.p2LastShotTime = now;
           ship.fuel -= FIRE_FUEL_CONSUMPTION;
           vibrateIfEnabled(VIBRATE_FIRE);
@@ -2835,12 +2857,28 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         if (twoPlayer && (!pod || !pod.towed)) {
           ctx.save();
           ctx.rotate(turretAngleRef.current);
-          ctx.fillStyle = '#bbbbbb';
-          ctx.fillRect(-2, -18, 4, 16);
-          ctx.fillStyle = '#666';
-          ctx.beginPath();
-          ctx.arc(0, 0, 4, 0, Math.PI * 2);
-          ctx.fill();
+          if (multiShotEnabledRef.current) {
+            // 6-way cannon: draw 6 short barrels in a star pattern
+            ctx.fillStyle = '#bbbbbb';
+            for (let i = 0; i < 6; i++) {
+              const a = (i / 6) * Math.PI * 2;
+              ctx.save();
+              ctx.rotate(a);
+              ctx.fillRect(-1.5, -16, 3, 12);
+              ctx.restore();
+            }
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.arc(0, 0, 5, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = '#bbbbbb';
+            ctx.fillRect(-2, -18, 4, 16);
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.arc(0, 0, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
           ctx.restore();
         }
 
@@ -3034,10 +3072,25 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         if (twoPlayer && pod.towed) {
           ctx.save();
           ctx.rotate(pod.angle);
-          ctx.fillStyle = '#bbbbbb';
-          ctx.fillRect(-2, -13, 4, 8);
-          ctx.fillStyle = '#555';
-          ctx.fillRect(-4, 6, 8, 3);
+          if (multiShotEnabledRef.current) {
+            ctx.fillStyle = '#bbbbbb';
+            for (let i = 0; i < 6; i++) {
+              const a = (i / 6) * Math.PI * 2;
+              ctx.save();
+              ctx.rotate(a);
+              ctx.fillRect(-1.5, -12, 3, 8);
+              ctx.restore();
+            }
+            ctx.fillStyle = '#555';
+            ctx.beginPath();
+            ctx.arc(0, 0, 4, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = '#bbbbbb';
+            ctx.fillRect(-2, -13, 4, 8);
+            ctx.fillStyle = '#555';
+            ctx.fillRect(-4, 6, 8, 3);
+          }
           ctx.restore();
         }
 
