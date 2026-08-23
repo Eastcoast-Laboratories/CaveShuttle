@@ -43,7 +43,7 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, onlineSyncEnabled, onToggleOnlineSync, networkRole = null }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, onlineSyncEnabled, onToggleOnlineSync, networkRole = null, isMobile = false }) {
   const { language } = useLanguage();
   const t = hamburgerMenuTranslations[language] || hamburgerMenuTranslations.en;
   const menuRef = useRef(null);
@@ -262,7 +262,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   };
 
   return (
-    <div ref={menuRef} className="hamburger-menu">
+    <div ref={menuRef} className={`hamburger-menu${isMobile ? ' mobile' : ''}`}>
       <button
         onClick={scrollToBottom}
         className="hamburger-scroll-btn"
@@ -376,40 +376,44 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
             )}
           </div>
 
-          <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>{t.keyboard}</h3>
-          {!twoPlayer ? (
-            <div className="hamburger-controls-list single-player">
-              <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> - {t.accelerate}</div>
-              <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> - {t.rotateLeft}</div>
-              <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotateRight}</div>
-              <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel></div>
-              <div className="indent-row" ><span className="nbsp">&nbsp;</span>{t.tractorBeamShield}</div>
-              <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
-            </div>
-          ) : (
+          {!isMobile && (
             <>
-              <div className="hamburger-controls-list">
-                <div className="player-label">{t.player1Ship}</div>
-                <div><KeyLabel>↑</KeyLabel> - {t.accelerate}</div>
-                <div><KeyLabel>←</KeyLabel> / <KeyLabel>→</KeyLabel> - {t.rotate}</div>
-                <div><KeyLabel>Space</KeyLabel> - {t.tractorBeamShield}</div>
-                {podDocked && <div><KeyLabel>Ctrl</KeyLabel> - {t.shootWithPod}</div>}
-              </div>
-              <div className="hamburger-controls-list">
-                <div className="player-label">{t.player2Pod.replace('{role}', podDocked ? t.pod : t.turret)}</div>
-                {!podDocked ? (
-                  <>
-                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotateTurret}</div>
-                    <div><KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
-                  </>
-                ) : (
-                  <>
-                    <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotatePod}</div>
-                    <div><KeyLabel>W</KeyLabel> - {t.thrust}</div>
-                    <div><KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
-                  </>
-                )}
-              </div>
+              <h3 className="hamburger-section-title" style={{ marginTop: '16px' }}>{t.keyboard}</h3>
+              {!twoPlayer ? (
+                <div className="hamburger-controls-list single-player">
+                  <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> - {t.accelerate}</div>
+                  <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> - {t.rotateLeft}</div>
+                  <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotateRight}</div>
+                  <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel></div>
+                  <div className="indent-row" ><span className="nbsp">&nbsp;</span>{t.tractorBeamShield}</div>
+                  <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
+                </div>
+              ) : (
+                <>
+                  <div className="hamburger-controls-list">
+                    <div className="player-label">{t.player1Ship}</div>
+                    <div><KeyLabel>↑</KeyLabel> - {t.accelerate}</div>
+                    <div><KeyLabel>←</KeyLabel> / <KeyLabel>→</KeyLabel> - {t.rotate}</div>
+                    <div><KeyLabel>Space</KeyLabel> - {t.tractorBeamShield}</div>
+                    {podDocked && <div><KeyLabel>Ctrl</KeyLabel> - {t.shootWithPod}</div>}
+                  </div>
+                  <div className="hamburger-controls-list">
+                    <div className="player-label">{t.player2Pod.replace('{role}', podDocked ? t.pod : t.turret)}</div>
+                    {!podDocked ? (
+                      <>
+                        <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotateTurret}</div>
+                        <div><KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div><KeyLabel>A</KeyLabel> / <KeyLabel>D</KeyLabel> - {t.rotatePod}</div>
+                        <div><KeyLabel>W</KeyLabel> - {t.thrust}</div>
+                        <div><KeyLabel>Shift</KeyLabel> - {t.shoot}</div>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
             </>
           )}
         </>

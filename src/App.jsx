@@ -981,6 +981,7 @@ function App() {
     onToggleAnalytics: () => setAnalyticsEnabled(!analyticsEnabled),
     onlineSyncEnabled,
     onToggleOnlineSync: () => setOnlineSyncEnabled(!onlineSyncEnabled),
+    isMobile,
   };
 
   return (

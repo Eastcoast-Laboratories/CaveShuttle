@@ -15,6 +15,11 @@
   scrollbar-width: auto;
 }
 
+/* On mobile devices, fill full height to the bottom */
+.hamburger-menu.mobile {
+  max-height: calc(100vh - 45px);
+}
+
 .hamburger-menu{
   div, span{
     font-family: arial;
