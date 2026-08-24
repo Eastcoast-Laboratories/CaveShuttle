@@ -45,6 +45,7 @@ export class AutoAccountManager {
     this._retryTimer = null;
     this._onlineListenerBound = false;
     this._cachedDeviceInfo = null;
+    this._registerPromise = null;
   }
 
   async collectDeviceInfo() {
@@ -103,6 +104,20 @@ export class AutoAccountManager {
   }
 
   async tryAutoRegister() {
+    if (this._registerPromise) {
+      console.log('[AUTO_ACCOUNT] Registration already in progress, waiting');
+      return this._registerPromise;
+    }
+
+    this._registerPromise = this._tryAutoRegisterInternal();
+    try {
+      return await this._registerPromise;
+    } finally {
+      this._registerPromise = null;
+    }
+  }
+
+  async _tryAutoRegisterInternal() {
     if (this.isRegistered()) {
       const authUser = this.getAuthUser();
       console.log('[AUTO_ACCOUNT] Already registered, skipping, user:', authUser);
