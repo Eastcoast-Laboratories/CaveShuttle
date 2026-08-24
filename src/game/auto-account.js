@@ -330,7 +330,7 @@ export class AutoAccountManager {
       const deviceInfo = await this.collectDeviceInfo();
       const url = `${COMMUNITY_API_URL}/settings/sync`;
       const body = JSON.stringify({ settings, online_sync_enabled: onlineSyncEnabled, device_info: deviceInfo });
-      console.log('[AUTO_ACCOUNT] Settings sync POST →', url, '\n  body:', body, '\n  curl:', `curl -X POST ${url} -H "Content-Type: application/json" -H "Authorization: Bearer ${token}" -d '${body}'`);
+      console.log('[AUTO_ACCOUNT] Settings sync POST →', url, '\n  body:', body);
       const response = await fetch(url, {
         method: 'POST',
         headers: {
