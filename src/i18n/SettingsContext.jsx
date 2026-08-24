@@ -155,13 +155,20 @@ export function SettingsProvider({ children }) {
 
   // Sync settings to backend whenever onlineSyncEnabled is on and a setting changes
   const settingsSyncRef = useRef(false);
+  const settingsSyncTimerRef = useRef(null);
   useEffect(() => {
     if (!onlineSyncEnabled) return;
     if (!settingsSyncRef.current) {
       settingsSyncRef.current = true;
       return;
     }
-    autoAccountManager.syncSettingsToBackend(collectSettings(), true);
+    if (settingsSyncTimerRef.current) {
+      clearTimeout(settingsSyncTimerRef.current);
+    }
+    settingsSyncTimerRef.current = setTimeout(() => {
+      settingsSyncTimerRef.current = null;
+      autoAccountManager.syncSettingsToBackend(collectSettings(), true);
+    }, 500);
   }, [collectSettings, onlineSyncEnabled]);
 
   const value = useMemo(() => ({
