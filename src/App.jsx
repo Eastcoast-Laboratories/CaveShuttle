@@ -304,6 +304,38 @@ function App() {
     localStorage.setItem(storageKey('playerMode'), twoPlayer ? 'two' : 'single');
   }, [twoPlayer]);
 
+  // Collect all user settings into a single object for syncing to the server
+  const collectSettings = () => ({
+    language,
+    showTouchButtons,
+    joystickEnabled,
+    soundVolume,
+    touchButtonOpacity,
+    vibrationEnabled,
+    tiltSteering,
+    tiltSteeringRotated,
+    tiltNeutralBeta,
+    tiltNeutralGamma,
+    analyticsEnabled,
+    twoPlayer,
+    playerName,
+    player2Name,
+    currentPackId,
+  });
+
+  // Sync settings to backend whenever onlineSyncEnabled is on and a setting changes
+  const settingsSyncRef = useRef(false);
+  useEffect(() => {
+    if (!onlineSyncEnabled) return;
+    // Skip the initial mount sync; only sync on actual setting changes
+    if (!settingsSyncRef.current) {
+      settingsSyncRef.current = true;
+      return;
+    }
+    autoAccountManager.syncSettingsToBackend(collectSettings(), true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, showTouchButtons, joystickEnabled, soundVolume, touchButtonOpacity, vibrationEnabled, tiltSteering, tiltSteeringRotated, tiltNeutralBeta, tiltNeutralGamma, analyticsEnabled, twoPlayer, playerName, player2Name, currentPackId, onlineSyncEnabled]);
+
   const [podDocked, setPodDocked] = useState(false);
   const { manager: networkManager, state: networkState } = useNetwork();
   const [multiplayerView, setMultiplayerView] = useState(null);
@@ -980,7 +1012,14 @@ function App() {
     analyticsEnabled,
     onToggleAnalytics: () => setAnalyticsEnabled(!analyticsEnabled),
     onlineSyncEnabled,
-    onToggleOnlineSync: () => setOnlineSyncEnabled(!onlineSyncEnabled),
+    onToggleOnlineSync: () => {
+      if (onlineSyncEnabled) {
+        // Final sync: send settings with online_sync_enabled=false before turning off
+        autoAccountManager.syncSettingsToBackend(collectSettings(), false);
+        console.log('[ONLINE_SYNC] Sending final settings sync before disabling online sync');
+      }
+      setOnlineSyncEnabled(!onlineSyncEnabled);
+    },
     isMobile,
   };
 

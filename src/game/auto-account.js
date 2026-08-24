@@ -1,4 +1,4 @@
-// Auto-account manager: handles automatic registration/login with the
+// Auto-account manager: handles automatic registration/login/settings-sync with the
 // Cave Shuttle backend using profile.uid + a locally generated password.
 // Works offline: queues the registration and retries when online.
 
@@ -310,6 +310,47 @@ export class AutoAccountManager {
       return { success: true, ...result };
     } catch (error) {
       console.error('[AUTO_ACCOUNT] Network error during score sync:', error);
+      return { success: false, reason: 'network_error', error };
+    }
+  }
+
+  async syncSettingsToBackend(settings, onlineSyncEnabled) {
+    if (!this.isRegistered()) {
+      console.log('[AUTO_ACCOUNT] Not registered, attempting auto-register before settings sync');
+      const regResult = await this.tryAutoRegister();
+      if (!regResult.success) {
+        console.log('[AUTO_ACCOUNT] Auto-register failed, skipping settings sync');
+        return { success: false, reason: 'not_registered' };
+      }
+    }
+
+    const token = this.getToken();
+
+    try {
+      const deviceInfo = await this.collectDeviceInfo();
+      const response = await fetch(`${COMMUNITY_API_URL}/settings/sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          settings,
+          online_sync_enabled: onlineSyncEnabled,
+          device_info: deviceInfo,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[AUTO_ACCOUNT] Settings sync failed:', response.status, errorData);
+        return { success: false, reason: 'server_error', status: response.status, error: errorData };
+      }
+
+      console.log('[AUTO_ACCOUNT] Settings sync successful, online_sync_enabled:', onlineSyncEnabled);
+      return { success: true };
+    } catch (error) {
+      console.error('[AUTO_ACCOUNT] Network error during settings sync:', error);
       return { success: false, reason: 'network_error', error };
     }
   }
