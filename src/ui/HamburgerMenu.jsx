@@ -663,7 +663,18 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
                   const baseUrl = isLocalDev
                     ? 'http://localhost:8001'
                     : 'https://community.caveshuttle.z11.de';
-                  window.open(`${baseUrl}/auto-login?token=${encodeURIComponent(token)}&redirect=/settings`, '_blank');
+                  const form = document.createElement('form');
+                  form.method = 'POST';
+                  form.action = `${baseUrl}/auto-login?redirect=/settings`;
+                  form.target = '_blank';
+                  const csrfInput = document.createElement('input');
+                  csrfInput.type = 'hidden';
+                  csrfInput.name = 'token';
+                  csrfInput.value = token;
+                  form.appendChild(csrfInput);
+                  document.body.appendChild(form);
+                  form.submit();
+                  document.body.removeChild(form);
                 }}
                 className="hamburger-btn-green"
               >

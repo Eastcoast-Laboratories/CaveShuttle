@@ -178,7 +178,7 @@ export class AutoAccountManager {
     }
   }
 
-  async setPassword(newPassword, email) {
+  async setPassword(newPassword, email, currentPassword) {
     const token = this.getToken();
     if (!token) {
       return { success: false, error: 'Not authenticated' };
@@ -186,6 +186,7 @@ export class AutoAccountManager {
 
     const body = { new_password: newPassword };
     if (email) body.email = email;
+    if (currentPassword) body.current_password = currentPassword;
 
     try {
       const response = await fetch(`${COMMUNITY_API_URL}/account/set-password`, {
