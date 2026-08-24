@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PlayerNameInput from './PlayerNameInput.jsx';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useSettings } from '../i18n/SettingsContext.jsx';
 import { getHighscoreTranslations } from '../i18n/highscores.js';
 import './EndOverlay.css';
 
@@ -8,9 +9,10 @@ const ROW_DURATION = 500; // ms each row counts up
 const ROW_DELAY = 300; // ms between rows
 const TOTAL_FLASH_DURATION = 600; // ms the total flashes
 
-export default function EndOverlay({ title, breakdown, total, totalLabel, buttons, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, newHighscore, twoPlayer, levelNumber, networkRole, hsName, hsPlayer2Name, onShowHighscores }) {
+export default function EndOverlay({ title, breakdown, total, totalLabel, buttons, onPlayerNameChange, onPlayer2NameChange, newHighscore, levelNumber, networkRole, hsName, hsPlayer2Name, onShowHighscores }) {
   const { language } = useLanguage();
   const t = getHighscoreTranslations(language);
+  const { twoPlayer, playerName, player2Name } = useSettings();
   const [visibleRow, setVisibleRow] = useState(-1);
   const [displayedValues, setDisplayedValues] = useState(() => breakdown.map(() => 0));
   const [showTotal, setShowTotal] = useState(false);

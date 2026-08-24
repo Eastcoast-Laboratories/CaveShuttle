@@ -21,11 +21,33 @@ import { storageKey } from './core/storage-keys.js';
 import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './core/progress-storage.js';
 import { getAllPacks, ensurePackMetaLoaded, BUILTIN_PACKS, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
 import { useLanguage } from './i18n/LanguageContext.jsx';
+import { useSettings } from './i18n/SettingsContext.jsx';
 import { getHighscoreTranslations } from './i18n/highscores.js';
 
 function App() {
   const { language, setLanguage } = useLanguage();
   const t = getHighscoreTranslations(language);
+  const {
+    isMobile, setIsMobile,
+    showTouchButtons, setShowTouchButtons,
+    joystickEnabled, setJoystickEnabled,
+    soundVolume, setSoundVolume,
+    touchButtonOpacity, setTouchButtonOpacity,
+    vibrationEnabled, setVibrationEnabled,
+    tiltSteering, setTiltSteering,
+    tiltNeutralBeta, setTiltNeutralBeta,
+    tiltNeutralGamma, setTiltNeutralGamma,
+    tiltSteeringRotated, setTiltSteeringRotated,
+    analyticsEnabled, setAnalyticsEnabled,
+    onlineSyncEnabled, setOnlineSyncEnabled,
+    twoPlayer, setTwoPlayer,
+    playerName, setPlayerName,
+    player2Name, setPlayer2Name,
+    currentPackId, setCurrentPackId,
+    tiltSensorRef,
+    ensureOneControlActive,
+    collectSettings,
+  } = useSettings();
   const [gameState, setGameState] = useState('menu'); // Start with menu screen
   const previousGameStateRef = useRef(null);
   const [score, setScore] = useState(0);
@@ -41,8 +63,6 @@ function App() {
     time: 1,
     scoringVersion: ''
   });
-  const [playerName, setPlayerName] = useState(() => HighScoreManager.getPlayerProfile().name);
-  const [player2Name, setPlayer2Name] = useState(() => HighScoreManager.getPlayerProfile().player2Name);
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [level, setLevel] = useState(() => {
     try {
@@ -54,106 +74,24 @@ function App() {
     }
   });
   const [fuel, setFuel] = useState(100);
-  const [currentPackId, setCurrentPackId] = useState('default');
   const [installedPacks, setInstalledPacks] = useState(() => getAllPacks());
   const [completedLevels, setCompletedLevels] = useState(() => getPackProgress('default'));
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isEditorTestMode, setIsEditorTestMode] = useState(false);
   const [editorLevelData, setEditorLevelData] = useState(null);
   const [editorWallColor, setEditorWallColor] = useState('#ff0000');
-  const [isMobile, setIsMobile] = useState(() => {
-    const ua = navigator.userAgent;
-    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-    const isIPadOS = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 0;
-    const hasTouch = navigator.maxTouchPoints > 0;
-    const narrowScreen = window.innerWidth < 768;
-    const mobile = hasMobileUA || isIPadOS || (hasTouch && narrowScreen);
-    console.log('[IS_MOBILE] UA:', ua, '| maxTouchPoints:', navigator.maxTouchPoints, '| innerWidth:', window.innerWidth, '| detected:', mobile);
-    return mobile;
-  });
-  const [showTouchButtons, setShowTouchButtons] = useState(() => {
-    const stored = localStorage.getItem(storageKey('showTouchButtons'));
-    if (stored !== null) {
-      return JSON.parse(stored);
-    }
-    // Default: on for mobile, off for laptop
-    return isMobile;
-  });
-  const [joystickEnabled, setJoystickEnabled] = useState(() => {
-    const stored = localStorage.getItem(storageKey('joystickEnabled'));
-    return stored === null ? true : stored === 'true';
-  });
-  const [soundVolume, setSoundVolume] = useState(() => {
-    const stored = localStorage.getItem(storageKey('soundVolume'));
-    if (stored !== null) {
-      const parsed = parseFloat(stored);
-      return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0.7;
-    }
-    return 0.2; // default: 20% volume (max is 70%)
-  });
-  const [touchButtonOpacity, setTouchButtonOpacity] = useState(() => {
-    const stored = localStorage.getItem(storageKey('touchButtonOpacity'));
-    if (stored !== null) {
-      const parsed = parseFloat(stored);
-      return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 1;
-    }
-    return 0.5; // default: 50% opacity
-  });
-  const [vibrationEnabled, setVibrationEnabled] = useState(() => {
-    const stored = localStorage.getItem(storageKey('vibrationEnabled'));
-    return stored === null ? true : stored === 'true';
-  });
-  const [tiltSteering, setTiltSteering] = useState(() => {
-    const stored = localStorage.getItem(storageKey('tiltSteering'));
-    return stored === 'true';
-  });
-  const [tiltNeutralBeta, setTiltNeutralBeta] = useState(() => {
-    const stored = localStorage.getItem(storageKey('tiltNeutralBeta'));
-    const parsed = stored !== null ? parseFloat(stored) : NaN;
-    return Number.isFinite(parsed) ? parsed : 0;
-  });
-  const [tiltNeutralGamma, setTiltNeutralGamma] = useState(() => {
-    const stored = localStorage.getItem(storageKey('tiltNeutralGamma'));
-    const parsed = stored !== null ? parseFloat(stored) : NaN;
-    return Number.isFinite(parsed) ? parsed : 0;
-  });
-  const [tiltSteeringRotated, setTiltSteeringRotated] = useState(() => {
-    const stored = localStorage.getItem(storageKey('tiltSteeringRotated'));
-    return stored === 'true';
-  });
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(() => {
-    const stored = localStorage.getItem(storageKey('analyticsEnabled'));
-    return stored === null ? true : stored === 'true';
-  });
-  const [onlineSyncEnabled, setOnlineSyncEnabled] = useState(() => {
-    const stored = localStorage.getItem(storageKey('onlineSyncEnabled'));
-    return stored === null ? true : stored === 'true';
-  });
   const [multiShotEnabled, setMultiShotEnabled] = useState(false);
-  const tiltSensorRef = useRef({ beta: 0, gamma: 0, alpha: 0 });
 
-  // On mobile, at least one control method (touch buttons, joystick, tilt) must stay on.
-  // When turning off the last active one, auto-enable a fallback.
-  const ensureOneControlActive = (nextButtons, nextJoystick, nextTilt, turningOff) => {
-    console.log('[ENSURE_ONE_CONTROL_ACTIVE]', nextButtons, nextJoystick, nextTilt, turningOff);
-    if (!isMobile) return;
-    if (!nextButtons && !nextJoystick && !nextTilt) {
-      if (turningOff === 'buttons') setJoystickEnabled(true);
-      else setShowTouchButtons(true);
-    }
-  };
+  // Initialize player names from HighScoreManager (needs to run after context is ready)
+  useEffect(() => {
+    setPlayerName(HighScoreManager.getPlayerProfile().name);
+    setPlayer2Name(HighScoreManager.getPlayerProfile().player2Name);
+  }, []);
 
   // One-time migration of legacy completedLevels to classic pack
   useEffect(() => {
     migrateLegacyProgress();
   }, []);
-
-  // Auto-register/login with backend using profile.uid
-  useEffect(() => {
-    if (!onlineSyncEnabled) return;
-    autoAccountManager.startOnlineListener();
-    autoAccountManager.tryAutoRegister();
-  }, [onlineSyncEnabled]);
 
   // Load meta for the current pack (built-in packs fetch meta.json lazily)
   useEffect(() => {
@@ -166,50 +104,6 @@ function App() {
       ));
     }).catch(err => console.error('[APP] Failed to load pack meta:', err));
   }, [currentPackId]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('showTouchButtons'), JSON.stringify(showTouchButtons));
-  }, [showTouchButtons]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('joystickEnabled'), joystickEnabled.toString());
-  }, [joystickEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('vibrationEnabled'), vibrationEnabled.toString());
-  }, [vibrationEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('tiltSteering'), tiltSteering.toString());
-  }, [tiltSteering]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('tiltNeutralBeta'), tiltNeutralBeta.toString());
-  }, [tiltNeutralBeta]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('tiltNeutralGamma'), tiltNeutralGamma.toString());
-  }, [tiltNeutralGamma]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('tiltSteeringRotated'), tiltSteeringRotated.toString());
-  }, [tiltSteeringRotated]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('analyticsEnabled'), analyticsEnabled.toString());
-  }, [analyticsEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('onlineSyncEnabled'), onlineSyncEnabled.toString());
-  }, [onlineSyncEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('soundVolume'), soundVolume.toString());
-  }, [soundVolume]);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey('touchButtonOpacity'), touchButtonOpacity.toString());
-  }, [touchButtonOpacity]);
 
   const [tutorialDismissed, setTutorialDismissed] = useState(() => {
     const stored = localStorage.getItem(storageKey('tutorialDismissed'));
@@ -291,50 +185,6 @@ function App() {
   const currentLevelAttemptIdRef = useRef(null);
   const gameOverSavedRef = useRef(false);
   const [newHighscore, setNewHighscore] = useState(null); // { level: boolean, run: boolean }
-  const [twoPlayer, setTwoPlayer] = useState(() => {
-    try {
-      return localStorage.getItem(storageKey('playerMode')) === 'two';
-    } catch {
-      return false;
-    }
-  });
-
-  // Persist selected player mode across reloads.
-  useEffect(() => {
-    localStorage.setItem(storageKey('playerMode'), twoPlayer ? 'two' : 'single');
-  }, [twoPlayer]);
-
-  // Collect all user settings into a single object for syncing to the server
-  const collectSettings = () => ({
-    language,
-    showTouchButtons,
-    joystickEnabled,
-    soundVolume,
-    touchButtonOpacity,
-    vibrationEnabled,
-    tiltSteering,
-    tiltSteeringRotated,
-    tiltNeutralBeta,
-    tiltNeutralGamma,
-    analyticsEnabled,
-    twoPlayer,
-    playerName,
-    player2Name,
-    currentPackId,
-  });
-
-  // Sync settings to backend whenever onlineSyncEnabled is on and a setting changes
-  const settingsSyncRef = useRef(false);
-  useEffect(() => {
-    if (!onlineSyncEnabled) return;
-    // Skip the initial mount sync; only sync on actual setting changes
-    if (!settingsSyncRef.current) {
-      settingsSyncRef.current = true;
-      return;
-    }
-    autoAccountManager.syncSettingsToBackend(collectSettings(), true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language, showTouchButtons, joystickEnabled, soundVolume, touchButtonOpacity, vibrationEnabled, tiltSteering, tiltSteeringRotated, tiltNeutralBeta, tiltNeutralGamma, analyticsEnabled, twoPlayer, playerName, player2Name, currentPackId, onlineSyncEnabled]);
 
   const [podDocked, setPodDocked] = useState(false);
   const { manager: networkManager, state: networkState } = useNetwork();
@@ -958,69 +808,42 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState]);
 
-  // Shared hamburger menu settings (DRY): used by both the in-game hamburger
-  // and the unified TopRightMenu. Excludes close-sensitive handlers, which are
-  // wired individually per usage.
+  // Shared hamburger menu props: only App-level handlers and data that are NOT
+  // available from useSettings() context. Settings values come from context.
   const hamburgerSettingsProps = {
     appVersion: APP_VERSION,
-    showTouchButtons,
-    onToggleTouchButtons: () => {
-      const next = !showTouchButtons;
-      console.log('[TOGGLE_HANDLER] touchButtons:', showTouchButtons, '->', next, '| isMobile:', isMobile);
-      if (next && touchButtonOpacity === 0) {
-        setTouchButtonOpacity(0.1);
-      }
-      setShowTouchButtons(next);
-      ensureOneControlActive(next, joystickEnabled, tiltSteering, 'buttons');
-    },
-    joystickEnabled,
-    onToggleJoystick: () => {
-      const next = !joystickEnabled;
-      console.log('[TOGGLE_HANDLER] joystick:', joystickEnabled, '->', next, '| isMobile:', isMobile);
-      setJoystickEnabled(next);
-      if (next) setTiltSteering(false);
-      ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
-    },
     installedPacks,
-    currentPackId,
     onSwitchPack: handleSwitchPack,
     onPackImported: handlePackImported,
     onPackDeleted: handlePackDeleted,
-    twoPlayer,
-    playerName,
     onPlayerNameChange: handlePlayerNameChange,
-    player2Name,
     onPlayer2NameChange: handlePlayer2NameChange,
-    soundVolume,
-    onSoundVolumeChange: setSoundVolume,
-    touchButtonOpacity,
-    onTouchButtonOpacityChange: setTouchButtonOpacity,
-    vibrationEnabled,
-    onToggleVibration: () => setVibrationEnabled(!vibrationEnabled),
-    tiltSteering,
-    onToggleTiltSteering: () => {
-      const next = !tiltSteering;
-      console.log('[TOGGLE_HANDLER] tilt:', tiltSteering, '->', next, '| isMobile:', isMobile);
-      setTiltSteering(next);
-      if (next) setJoystickEnabled(false);
-      ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
-    },
-    tiltSensorRef,
-    onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
-    tiltSteeringRotated,
-    onToggleTiltRotation: () => setTiltSteeringRotated(!tiltSteeringRotated),
-    analyticsEnabled,
-    onToggleAnalytics: () => setAnalyticsEnabled(!analyticsEnabled),
-    onlineSyncEnabled,
     onToggleOnlineSync: () => {
       if (onlineSyncEnabled) {
-        // Final sync: send settings with online_sync_enabled=false before turning off
         autoAccountManager.syncSettingsToBackend(collectSettings(), false);
         console.log('[ONLINE_SYNC] Sending final settings sync before disabling online sync');
       }
       setOnlineSyncEnabled(!onlineSyncEnabled);
     },
-    isMobile,
+    onToggleTouchButtons: () => {
+      const next = !showTouchButtons;
+      if (next && touchButtonOpacity === 0) setTouchButtonOpacity(0.1);
+      setShowTouchButtons(next);
+      ensureOneControlActive(next, joystickEnabled, tiltSteering, 'buttons');
+    },
+    onToggleJoystick: () => {
+      const next = !joystickEnabled;
+      setJoystickEnabled(next);
+      if (next) setTiltSteering(false);
+      ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
+    },
+    onToggleTiltSteering: () => {
+      const next = !tiltSteering;
+      setTiltSteering(next);
+      if (next) setJoystickEnabled(false);
+      ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
+    },
+    onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
   };
 
   return (
@@ -1043,11 +866,8 @@ function App() {
             onMultiplayer={() => setMultiplayerView('menu')}
             onOpenLevelEditor={() => setGameState('editor')}
             installedPacks={installedPacks}
-            currentPackId={currentPackId}
-            twoPlayer={twoPlayer}
             onTogglePlayerMode={() => setTwoPlayer(!twoPlayer)}
             networkRole={networkRole}
-            onlineSyncEnabled={onlineSyncEnabled}
           />
         </div>
       )}
@@ -1107,9 +927,6 @@ function App() {
             }
           }}
           installedPacks={installedPacks}
-          currentPackId={currentPackId}
-          twoPlayer={twoPlayer}
-          onlineSyncEnabled={onlineSyncEnabled}
         />
       )}
 
@@ -1205,24 +1022,12 @@ function App() {
                 packBaseUrl={getCurrentPackBaseUrl()}
                 gravityMultiplier={gravityMultiplier}
                 frozen={gameState === 'gameover' || gameState === 'levelcomplete' || showTutorial || showMobileMenu}
-                showTouchButtons={showTouchButtons}
-                joystickEnabled={joystickEnabled}
-                isMobile={isMobile}
                 isEditorTestMode={isEditorTestMode}
                 editorLevelData={editorLevelData}
                 editorWallColor={editorWallColor}
                 initialLives={lives}
-                twoPlayer={twoPlayer}
                 networkRole={networkRole}
                 onPodDockedChange={setPodDocked}
-                soundVolume={soundVolume}
-                touchButtonOpacity={touchButtonOpacity}
-                vibrationEnabled={vibrationEnabled}
-                tiltSteering={tiltSteering}
-                tiltNeutralBeta={tiltNeutralBeta}
-                tiltNeutralGamma={tiltNeutralGamma}
-                tiltSteeringRotated={tiltSteeringRotated}
-                tiltSensorRef={tiltSensorRef}
                 bonusLifePopup={bonusLifePopup}
                 multiShotEnabled={multiShotEnabled}
                 onMultiShotChange={setMultiShotEnabled}
@@ -1236,38 +1041,13 @@ function App() {
                   total={score}
                   totalLabel={t.scoreLabel}
                   newHighscore={newHighscore}
-                  twoPlayer={twoPlayer}
                   networkRole={networkRole}
                   hsName={hsName}
                   hsPlayer2Name={hsFinalPlayer2Name}
                   onShowHighscores={handleShowHighscores}
-                  playerName={playerName}
                   onPlayerNameChange={handlePlayerNameChange}
-                  player2Name={player2Name}
                   onPlayer2NameChange={handlePlayer2NameChange}
                   podDocked={podDocked}
-                  soundVolume={soundVolume}
-                  onSoundVolumeChange={setSoundVolume}
-                  vibrationEnabled={vibrationEnabled}
-                  onToggleVibration={() => setVibrationEnabled(!vibrationEnabled)}
-                  tiltSteering={tiltSteering}
-                  onToggleTiltSteering={() => {
-                    const next = !tiltSteering;
-                    setTiltSteering(next);
-                    if (next) setJoystickEnabled(false);
-                    ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
-                  }}
-                  joystickEnabled={joystickEnabled}
-                  onToggleJoystick={() => {
-                    const next = !joystickEnabled;
-                    setJoystickEnabled(next);
-                    if (next) setTiltSteering(false);
-                    ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
-                  }}
-                  tiltSensorRef={tiltSensorRef}
-                  onCalibrateTilt={() => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); }}
-                  tiltSteeringRotated={tiltSteeringRotated}
-                  onToggleTiltRotation={() => setTiltSteeringRotated(!tiltSteeringRotated)}
                   onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
                   buttons={
                     <>
@@ -1290,15 +1070,12 @@ function App() {
                   total={levelScore}
                   totalLabel={t.scoreLabel}
                   newHighscore={newHighscore}
-                  twoPlayer={twoPlayer}
                   networkRole={networkRole}
                   hsName={hsName}
                   hsPlayer2Name={hsFinalPlayer2Name}
                   onShowHighscores={handleShowHighscores}
                   levelNumber={level}
-                  playerName={playerName}
                   onPlayerNameChange={handlePlayerNameChange}
-                  player2Name={player2Name}
                   onPlayer2NameChange={handlePlayer2NameChange}
                   buttons={
                     <button onClick={handleNextLevel} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
@@ -1329,7 +1106,6 @@ function App() {
 
       {showTutorial && (
         <TutorialOverlay
-          isMobile={isMobile}
           onDismiss={() => {
             setShowTutorial(false);
             setTutorialDismissed(true);

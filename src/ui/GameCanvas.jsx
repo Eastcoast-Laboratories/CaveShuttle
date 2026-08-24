@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNetwork } from '../network/NetworkContext.jsx';
+import { useSettings } from '../i18n/SettingsContext.jsx';
 import { Ship } from '../game/ship.js';
 import { Pod } from '../game/pod.js';
 import { Bunker } from '../game/bunker.js';
@@ -136,7 +137,13 @@ function pointerToCanvas(canvas, clientX, clientY, w, h) {
   };
 }
 
-export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, showTouchButtons = true, joystickEnabled = true, isMobile = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, twoPlayer = false, networkRole = null, soundVolume = 1, touchButtonOpacity = 1, vibrationEnabled = true, bonusLifePopup = null, tiltSteering = false, tiltNeutralBeta = 0, tiltNeutralGamma = 0, tiltSteeringRotated = false, tiltSensorRef, multiShotEnabled = false, onMultiShotChange }) {
+export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange }) {
+  const {
+    showTouchButtons, joystickEnabled, isMobile,
+    twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
+    tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated,
+    tiltSensorRef,
+  } = useSettings();
   const canvasRef = useRef(null);
   const soundManager = useRef(null);
   const { manager: networkManager } = useNetwork();

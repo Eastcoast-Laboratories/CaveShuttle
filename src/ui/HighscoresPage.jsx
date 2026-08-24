@@ -5,12 +5,14 @@ import './HighscoresPage.css';
 import { HighScoreManager } from '../game/high-score-manager.js';
 import { autoAccountManager } from '../game/auto-account.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useSettings } from '../i18n/SettingsContext.jsx';
 import { getHighscoreTranslations } from '../i18n/highscores.js';
 
 // Standalone highscores page linked from the main menu.
-export default function HighscoresPage({ onBack, onPlay, installedPacks = [], currentPackId, twoPlayer = false, onlineSyncEnabled = true }) {
+export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) {
   const { language } = useLanguage();
   const t = getHighscoreTranslations(language);
+  const { currentPackId, twoPlayer, onlineSyncEnabled } = useSettings();
   const [activeTab, setActiveTab] = useState('runs');
   const [selectedPackId, setSelectedPackId] = useState(currentPackId || (installedPacks[0]?.id || 'default'));
   const [selectedMode, setSelectedMode] = useState(twoPlayer ? 'two' : 'single');

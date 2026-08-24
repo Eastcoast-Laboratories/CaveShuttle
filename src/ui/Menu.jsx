@@ -6,6 +6,7 @@ import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useSettings } from '../i18n/SettingsContext.jsx';
 import { getMenuTranslations } from '../i18n/menu.js';
 import './cave-theme.css';
 
@@ -36,9 +37,10 @@ function setLegalPageHash(page) {
   window.location.hash = `#/${page}`;
 }
 
-export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, currentPackId, twoPlayer = false, onTogglePlayerMode, networkRole = null, onlineSyncEnabled = true }) {
+export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, installedPacks, onTogglePlayerMode, networkRole = null }) {
   const { language } = useLanguage();
   const t = getMenuTranslations(language);
+  const { twoPlayer } = useSettings();
   const [legalPage, setLegalPage] = useState(() => getLegalPageFromHash());
 
   // Sync legal page when the URL hash changes (e.g. browser back/forward).
@@ -77,7 +79,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
     return <AccountDeletion onBack={() => { setLegalPage(null); setLegalPageHash(null); }} />;
   }
   if (legalPage === 'highscores') {
-    return <HighscoresPage onBack={() => { setLegalPage(null); setLegalPageHash(null); }} onPlay={onStart} installedPacks={installedPacks || []} currentPackId={currentPackId} twoPlayer={twoPlayer} onlineSyncEnabled={onlineSyncEnabled} />;
+    return <HighscoresPage onBack={() => { setLegalPage(null); setLegalPageHash(null); }} onPlay={onStart} installedPacks={installedPacks || []} />;
   }
 
   return (

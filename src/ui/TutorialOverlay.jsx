@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { getTouchButtonRects, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { tutorialTranslations } from '../i18n/tutorial.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useSettings } from '../i18n/SettingsContext.jsx';
 import KeyLabel from './KeyLabel.jsx';
 import './TutorialOverlay.css';
 
@@ -67,8 +68,9 @@ function TouchButtonPreview({ buttonTypes, podIcon, crosshairIcon, label }) {
   );
 }
 
-export default function TutorialOverlay({ isMobile, onDismiss }) {
+export default function TutorialOverlay({ onDismiss }) {
   const { language } = useLanguage();
+  const { isMobile } = useSettings();
   const [podIcon, setPodIcon] = useState(null);
   const [crosshairIcon, setCrosshairIcon] = useState(null);
 

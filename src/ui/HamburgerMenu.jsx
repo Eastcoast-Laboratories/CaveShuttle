@@ -10,6 +10,7 @@ import './cave-theme.css';
 import './HamburgerMenu.css';
 import PlayerNameInput from './PlayerNameInput.jsx';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useSettings } from '../i18n/SettingsContext.jsx';
 import { hamburgerMenuTranslations } from '../i18n/hamburgerMenu.js';
 
 // Logarithmic volume mapping: slider position 0-100 → audio volume 0-0.7
@@ -43,9 +44,21 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, showTouchButtons, onToggleTouchButtons, joystickEnabled, onToggleJoystick, installedPacks, currentPackId, onSwitchPack, onPackImported, onPackDeleted, twoPlayer, podDocked, soundVolume, onSoundVolumeChange, touchButtonOpacity, onTouchButtonOpacityChange, onShowTutorial, playerName, onPlayerNameChange, player2Name, onPlayer2NameChange, vibrationEnabled, onToggleVibration, tiltSteering, onToggleTiltSteering, tiltSensorRef, onCalibrateTilt, tiltSteeringRotated, onToggleTiltRotation, analyticsEnabled, onToggleAnalytics, onlineSyncEnabled, onToggleOnlineSync, networkRole = null, isMobile = false }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, installedPacks, onSwitchPack, onPackImported, onPackDeleted, podDocked, onShowTutorial, onPlayerNameChange, onPlayer2NameChange, onToggleOnlineSync, onToggleTouchButtons, onToggleJoystick, onToggleTiltSteering, onCalibrateTilt, networkRole = null }) {
   const { language } = useLanguage();
   const t = hamburgerMenuTranslations[language] || hamburgerMenuTranslations.en;
+  const {
+    isMobile,
+    showTouchButtons, joystickEnabled,
+    soundVolume, setSoundVolume,
+    touchButtonOpacity, setTouchButtonOpacity,
+    vibrationEnabled, setVibrationEnabled,
+    tiltSteering, tiltSteeringRotated, setTiltSteeringRotated,
+    analyticsEnabled, setAnalyticsEnabled,
+    onlineSyncEnabled,
+    twoPlayer, playerName, player2Name, currentPackId,
+    tiltSensorRef,
+  } = useSettings();
   const menuRef = useRef(null);
   const [importError, setImportError] = useState(null);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -67,7 +80,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const handleToggleVibration = () => {
     const wasEnabled = vibrationEnabled;
     console.log('[TOGGLE] Vibration: ', wasEnabled ? 'ON -> OFF' : 'OFF -> ON');
-    if (onToggleVibration) onToggleVibration();
+    setVibrationEnabled(!vibrationEnabled);
     if (!wasEnabled) {
       setShowVibrationHint(true);
       setTimeout(() => setShowVibrationHint(false), 5000);
@@ -86,12 +99,12 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
 
   const handleToggleTiltRotation = () => {
     console.log('[TOGGLE] Tilt Rotation 90°:', tiltSteeringRotated ? 'ON -> OFF' : 'OFF -> ON');
-    if (onToggleTiltRotation) onToggleTiltRotation();
+    setTiltSteeringRotated(!tiltSteeringRotated);
   };
 
   const handleToggleAnalytics = () => {
     console.log('[TOGGLE] Analytics:', analyticsEnabled ? 'ON -> OFF' : 'OFF -> ON');
-    if (onToggleAnalytics) onToggleAnalytics();
+    setAnalyticsEnabled(!analyticsEnabled);
   };
 
   const handleResetHighscores = () => {
@@ -315,7 +328,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
             <SettingsSlider
               label={t.transparency}
               value={Math.round((0.5 - touchButtonOpacity) / 0.5 * 100)}
-              onChange={(e) => onTouchButtonOpacityChange && onTouchButtonOpacityChange(0.5 * (1 - parseInt(e.target.value, 10) / 100))}
+              onChange={(e) => setTouchButtonOpacity && setTouchButtonOpacity(0.5 * (1 - parseInt(e.target.value, 10) / 100))}
               disabled={!showTouchButtons}
             />
           </div>
@@ -425,7 +438,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         <SettingsSlider
           label={t.soundVolume}
           value={volumeToSlider(soundVolume)}
-          onChange={(e) => onSoundVolumeChange && onSoundVolumeChange(sliderToVolume(parseInt(e.target.value, 10)))}
+          onChange={(e) => setSoundVolume && setSoundVolume(sliderToVolume(parseInt(e.target.value, 10)))}
         />
       </div>
 
