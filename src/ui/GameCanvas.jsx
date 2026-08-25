@@ -1844,7 +1844,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           if (p2Left) p2Bitmask |= REPLAY_P2_INPUT_BITS.ROTATE_LEFT;
           if (p2Right) p2Bitmask |= REPLAY_P2_INPUT_BITS.ROTATE_RIGHT;
           if (p2Thrust) p2Bitmask |= REPLAY_P2_INPUT_BITS.THRUST;
-          if (p2Fire || playerTwoFire) p2Bitmask |= REPLAY_P2_INPUT_BITS.FIRE;
+          if (p2Fire) p2Bitmask |= REPLAY_P2_INPUT_BITS.FIRE;
         }
 
         replayLoggerRef.current.record(inputBitmask, p2Bitmask);
