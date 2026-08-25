@@ -343,6 +343,7 @@ function App() {
     const levelCompleteBonus = levelPoints + fuelPoints + timeBonus;
     const levelTotalScore = levelScore + levelCompleteBonus;
     const breakdownFull = { ...levelScoreBreakdown, fuel: fuelPoints, level: levelPoints, timeBonus, time: timeSeconds, scoringVersion: SCORING_VERSION };
+    const replayLog = networkData?.replayLog || null;
     setScore(prev => prev + levelCompleteBonus);
     scoreRef.current += levelCompleteBonus;
     setLevelScore(levelTotalScore);
@@ -364,6 +365,7 @@ function App() {
       scoringVersion: SCORING_VERSION,
       name: hsName,
       player2Name: hsFinalPlayer2Name,
+      replayLog,
     });
     const levelAttemptId = recordResult.saved ? recordResult.record.attemptId : null;
     if (levelAttemptId) {

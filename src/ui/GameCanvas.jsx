@@ -16,6 +16,7 @@ import { SoundManager } from '../audio/sound-manager.js';
 import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, MULTI_SHOT_TILE, MULTI_SHOT_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD, SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS } from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
+import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
 
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
@@ -243,6 +244,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   const levelCompleteTriggered = useRef(false);
   const pendingLevelCompleteData = useRef(null);
   const activeLevelTimeRef = useRef(0); // active play time for the current level in ms
+  const replayLoggerRef = useRef(new ReplayLogger());
   const shipDestroyed = useRef(false);
   const deathAnim = useRef({ active: false, timeLeft: 0 });
   // God mode state: the ship bounces off walls, bunkers, fuel depots and reactors
@@ -1014,6 +1016,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           // Reset level complete guard for the new level
           levelCompleteTriggered.current = false;
           shipDestroyed.current = false;
+          replayLoggerRef.current.start();
           deathAnim.current = { active: false, timeLeft: 0 };
           wormholeRef.current = { active: false, progress: 0, x: 0, y: 0, startTime: 0, started: false, shipStart: null, podOffset: null };
           podConnectScoreGivenRef.current = false;
@@ -1827,6 +1830,26 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       }
       wasTractorBeamRef.current = tractorBeamActive;
 
+      // Record input state to replay logger (for server-side score validation)
+      if (replayLoggerRef.current.isActive() && !isDying) {
+        let inputBitmask = 0;
+        if (keys['ArrowLeft'] || rotateLeftActive || (tiltSteering && tiltRotateLeftRef.current)) inputBitmask |= REPLAY_INPUT_BITS.ROTATE_LEFT;
+        if (keys['ArrowRight'] || rotateRightActive || (tiltSteering && tiltRotateRightRef.current)) inputBitmask |= REPLAY_INPUT_BITS.ROTATE_RIGHT;
+        if (keys['ArrowUp'] || accelerateActive || (tiltSteering && tiltThrustRef.current)) inputBitmask |= REPLAY_INPUT_BITS.THRUST;
+        if (fireActive || keys['x'] || keys['X'] || keys['Shift'] || multiTouchFireRef.current) inputBitmask |= REPLAY_INPUT_BITS.FIRE;
+        if (tractorBeamActive) inputBitmask |= REPLAY_INPUT_BITS.TRACTOR_BEAM;
+
+        let p2Bitmask = 0;
+        if (twoPlayer) {
+          if (p2Left) p2Bitmask |= REPLAY_P2_INPUT_BITS.ROTATE_LEFT;
+          if (p2Right) p2Bitmask |= REPLAY_P2_INPUT_BITS.ROTATE_RIGHT;
+          if (p2Thrust) p2Bitmask |= REPLAY_P2_INPUT_BITS.THRUST;
+          if (p2Fire || playerTwoFire) p2Bitmask |= REPLAY_P2_INPUT_BITS.FIRE;
+        }
+
+        replayLoggerRef.current.record(inputBitmask, p2Bitmask);
+      }
+
       // Tractor beam raycast: beam shoots straight down until it hits the first obstacle.
       const beamActive = tractorBeamActive;
       // Disabled while the pod is being towed (docked):
@@ -2599,6 +2622,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             // Flying into sky with pod = start wormhole level-complete animation
             if (!levelCompleteTriggered.current && !wormholeRef.current.active) {
               levelCompleteTriggered.current = true;
+              replayLoggerRef.current.stop();
               wormholeRef.current = {
                 active: true,
                 progress: 0,
@@ -2696,12 +2720,13 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             soundManager.current.playOnce('wormholeComplete');
           }
           if (onLevelComplete) {
+            const replayLog = replayLoggerRef.current.getLog();
             const nd = pendingLevelCompleteData.current;
             if (nd) {
-              onLevelComplete(nd.level, nd.time, nd.width, nd.height, { breakdown: nd.breakdown, totalScore: nd.totalScore, newHighscore: nd.newHighscore, levelNumber: nd.levelNumber });
+              onLevelComplete(nd.level, nd.time, nd.width, nd.height, { breakdown: nd.breakdown, totalScore: nd.totalScore, newHighscore: nd.newHighscore, levelNumber: nd.levelNumber, replayLog });
               pendingLevelCompleteData.current = null;
             } else {
-              onLevelComplete(currentLevel, activeLevelTimeRef.current, level.width, level.height);
+              onLevelComplete(currentLevel, activeLevelTimeRef.current, level.width, level.height, { replayLog });
             }
           }
         }

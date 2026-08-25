@@ -208,6 +208,10 @@ export class HighScoreManager {
     if (!isString(record.scoringVersion)) return 'scoringVersion is required';
     if (!isString(record.name)) return 'name is required';
     if (record.player2Name !== undefined && !isString(record.player2Name)) return 'player2Name must be a string if present';
+    if (record.replayLog !== undefined && record.replayLog !== null) {
+      if (!isPlainObject(record.replayLog)) return 'replayLog must be an object or null';
+      if (!Array.isArray(record.replayLog.entries)) return 'replayLog.entries must be an array';
+    }
     return null;
   }
 

@@ -278,6 +278,7 @@ export class AutoAccountManager {
         scoreBreakdown: lr.scoreBreakdown || null,
         levelTimeMs: lr.activeMs ? Math.round(lr.activeMs) : null,
         recordedAt: new Date(lr.recordedAt).toISOString(),
+        replayLog: lr.replayLog || null,
       });
     }
     for (const rr of data.runRecords) {
