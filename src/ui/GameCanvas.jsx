@@ -180,7 +180,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
   // Track the pointerId that is currently controlling the joystick
   const joystickPointerId = useRef(null);
   // Shield state
-  const [shieldActive, setShieldActive] = useState(false);
+  const [shieldAndBeamActive, setShieldAndBeamActive] = useState(false);
   // Virtual joystick control (touch/mouse anywhere on screen)
   const [joystickActive, setJoystickActive] = useState(false);
   const joystickStartRef = useRef({ x: 0, y: 0 }); // Ref for synchronous position updates (vertical anchor)
@@ -389,7 +389,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       setKeys(prev => ({ ...prev, [e.key]: true }));
       // Activate shield when Space or Ctrl is pressed
       if (e.key === ' ' || e.key === 'Space' || (!twoPlayer && (e.key === 'Control' || e.key === 'ControlLeft' || e.key === 'ControlRight'))) {
-        setShieldActive(true);
+        setShieldAndBeamActive(true);
       }
       // Prevent space from scrolling the page
       if (e.key === ' ' || e.key === 'Space') {
@@ -405,7 +405,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       setKeys(prev => ({ ...prev, [e.key]: false }));
       // Deactivate shield when Space or Ctrl is released
       if (e.key === ' ' || e.key === 'Space' || (!twoPlayer && (e.key === 'Control' || e.key === 'ControlLeft' || e.key === 'ControlRight'))) {
-        setShieldActive(false);
+        setShieldAndBeamActive(false);
       }
       // Prevent space from scrolling the page
       if (e.key === ' ' || e.key === 'Space') {
@@ -536,7 +536,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         pointerButtonMap.current.set(e.pointerId, btn.type);
         buttonPointerIds.current.add(e.pointerId);
         switch (btn.type) {
-          case 'pod': setTouchActive(true); setShieldActive(true); break;
+          case 'pod': setTouchActive(true); setShieldAndBeamActive(true); break;
           case 'accelerate': setAccelerateActive(true); break;
           case 'fire': setFireActive(true); break;
           case 'rotateLeft': setRotateLeftActive(true); break;
@@ -559,7 +559,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             fireTapRef.current = true;
             pointerButtonMap.current.set(e.pointerId, 'fire');
           } else {
-            setShieldActive(true);
+            setShieldAndBeamActive(true);
             pointerButtonMap.current.set(e.pointerId, 'shield');
           }
           buttonPointerIds.current.add(e.pointerId);
@@ -637,8 +637,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           if (newButton.type !== currentButtonType) {
             // Deactivate old button
             switch (currentButtonType) {
-              case 'pod': setTouchActive(false); setShieldActive(false); break;
-              case 'shield': setShieldActive(false); break;
+              case 'pod': setTouchActive(false); setShieldAndBeamActive(false); break;
+              case 'shield': setShieldAndBeamActive(false); break;
               case 'accelerate': setAccelerateActive(false); break;
               case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
               case 'rotateLeft': setRotateLeftActive(false); break;
@@ -651,7 +651,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             // Activate new button
             pointerButtonMap.current.set(e.pointerId, newButton.type);
             switch (newButton.type) {
-              case 'pod': setTouchActive(true); setShieldActive(true); break;
+              case 'pod': setTouchActive(true); setShieldAndBeamActive(true); break;
               case 'accelerate': setAccelerateActive(true); break;
               case 'fire': setFireActive(true); break;
               case 'rotateLeft': setRotateLeftActive(true); break;
@@ -691,8 +691,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           pointerButtonMap.current.delete(e.pointerId);
           buttonPointerIds.current.delete(e.pointerId);
           switch (buttonType) {
-            case 'pod': setTouchActive(false); setShieldActive(false); break;
-            case 'shield': setShieldActive(false); break;
+            case 'pod': setTouchActive(false); setShieldAndBeamActive(false); break;
+            case 'shield': setShieldAndBeamActive(false); break;
             case 'accelerate': setAccelerateActive(false); break;
             case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
             case 'rotateLeft': setRotateLeftActive(false); break;
@@ -1823,8 +1823,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       }
 
       // Tractor beam (Space key, Ctrl key, or on-screen touch button)
-      // Includes shieldActive for network sync (client receives host's shield state)
-      const tractorBeamActive = keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive || shieldActive;
+      // Includes shieldAndBeamActive for network sync (client receives host's shield state)
+      const tractorBeamActive = keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive || shieldAndBeamActive;
       if (tractorBeamActive && !wasTractorBeamRef.current) {
         vibrateIfEnabled(VIBRATE_POD);
       }
@@ -2056,8 +2056,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           ship.setAccelerate(!!s.ship.accelerate);
           ship.fuel = typeof s.ship.fuel === 'number' ? s.ship.fuel : ship.fuel;
           // [NETWORK] Sync shield/tractor beam state from host
-          if (typeof s.shieldActive === 'boolean') {
-            setShieldActive(s.shieldActive);
+          if (typeof s.shieldAndBeamActive === 'boolean') {
+            setShieldAndBeamActive(s.shieldAndBeamActive);
           }
         }
         if (s.pod && pod) {
@@ -2101,7 +2101,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           sm.setLoop('shipThrust', shipThrusting);
           sm.setLoop('podThrust', podThrusting);
         }
-        sm.setLoop('podWobble', !soundInactive && (shieldActive || touchActive));
+        sm.setLoop('podWobble', !soundInactive && (shieldAndBeamActive || touchActive));
         sm.setLoop('fuelDrain', !soundInactive && isRefueling);
       }
 
@@ -2119,8 +2119,8 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
       if (!isDying) {
         ship.update(deltaTime, GRAVITY, gravityMultiplier);
 
-        // Consume fuel when shield is active
-        if (shieldActive) {
+        // Consume fuel when shield is active (but not while refueling at a fuel depot)
+        if (shieldAndBeamActive && !isRefueling) {
           ship.fuel -= SHIELD_FUEL_CONSUMPTION * deltaTime;
         }
       }
@@ -2327,7 +2327,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               const pdy = bullet.y - pod.y;
               if (Math.sqrt(pdx * pdx + pdy * pdy) < 12) {
                 // Active shield/tractor beam also protects the attached pod
-                if (shieldActive && pod.towed) {
+                if (shieldAndBeamActive && pod.towed) {
                   console.log('[POD_SHIELD] Own bullet hit pod but was blocked by shield');
                   return false; // Remove bullet without detonating pod
                 }
@@ -2518,7 +2518,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
             const distance = Math.sqrt(pdx * pdx + pdy * pdy);
             if (distance < 12) {
               // Active shield/tractor beam protects the attached pod from bunker fire
-              if (shieldActive && pod.towed) {
+              if (shieldAndBeamActive && pod.towed) {
                 console.log('[POD_SHIELD] Bunker bullet hit pod but was blocked by shield');
                 bullet.active = false;
                 return false;
@@ -2536,7 +2536,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           }
 
           // Check collision with tow tether (pod string) — bunker bullet hits the cable
-          if (pod && pod.active && pod.towed && !shieldActive && !godModeActiveRef.current) {
+          if (pod && pod.active && pod.towed && !shieldAndBeamActive && !godModeActiveRef.current) {
             const tetherDist = pointToSegmentDistance(bullet.x, bullet.y, ship.x, ship.y, pod.x, pod.y);
             if (tetherDist < 3) {
               console.log('[TETHER_HIT] Bunker bullet hit pod string at', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) });
@@ -2552,7 +2552,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 15) {
             // Ship hit by bullet - check if shield is active or god mode is active
-            if (shieldActive || godModeActiveRef.current) {
+            if (shieldAndBeamActive || godModeActiveRef.current) {
               // Shield/god mode blocks the bullet
               bullet.active = false;
               return false;
@@ -2759,7 +2759,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
               onHolder: pod.onHolder
             } : null,
             turretAngle: turretAngleRef.current,
-            shieldActive: shieldActive || touchActive,
+            shieldAndBeamActive: shieldAndBeamActive || touchActive,
             enemyMines: enemyMines.filter(m => m.active).map(m => ({
               x: m.x,
               y: m.y,
@@ -2917,7 +2917,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         ctx.restore();
 
         // Draw shield circle around ship (when pod button is pressed)
-        if (shieldActive && !isWormhole) {
+        if (shieldAndBeamActive && !isWormhole) {
           ctx.save();
           ctx.translate(ship.x - camera.x, ship.y - camera.y);
           ctx.beginPath();
@@ -3144,7 +3144,7 @@ export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, o
         }
 
         // Draw a small shield circle around the attached pod when the shield/tractor beam is active
-        if (shieldActive && pod.towed && !isWormhole) {
+        if (shieldAndBeamActive && pod.towed && !isWormhole) {
           ctx.save();
           ctx.translate(pod.x - camera.x, pod.y - camera.y);
           ctx.beginPath();

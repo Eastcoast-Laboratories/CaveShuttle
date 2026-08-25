@@ -53,9 +53,9 @@ Search and download suitable sound assets from free online sources, load them in
      - Ship fire: when a player bullet is created.
      - Pod fire: when a pod bullet is created in 2-player docked mode.
      - Bunker fire: when a bunker fires.
-     - POD wobble: while `shieldActive`/`touchActive`.
+     - POD wobble: while `shieldAndBeamActive`/`touchActive`.
      - Explosion: on ship/bunker destruction.
-     - Fuel drain: while `shieldActive && fuel > 0`.
+     - Fuel drain: while `shieldAndBeamActive && fuel > 0`.
      - Pod dock: when `pod.towed` becomes true.
      - Wormhole ambient: while `wormholeActive`.
      - Wormhole complete: on level-complete transition.
