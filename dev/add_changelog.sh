@@ -43,19 +43,25 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Haptisches Feedback bei allen Steuerungs-Buttons (Rotation, Schub, Feuer, Tractor Beam)
-- Level-Editor verbessert
+- Multi-Shot-Powerup (6-fach Streuschuss) in Level 6
+- Zufallsgenerator für Level im Editor
 - Online-Leaderboard
-- WLAN-Spiel
+- WLAN-Multiplayer
+- Haptisches Feedback bei allen Steuerungs-Buttons
+- Absturz-Reporter mit automatischer Fehlerübermittlung
+- Kein Treibstoffverbrauch beim Tanken überm Fuel-Depot
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Haptic feedback for all control buttons (rotation, thrust, fire, tractor beam)
-- Level editor enhanced
+- Multi-shot power-up (6-way spread fire) in Level 6
+- Random level generator in editor
 - Online leaderboard
 - WLAN multiplayer
+- Haptic feedback for all control buttons
+- Crash reporter with automatic error reporting
+- No fuel consumption while refueling at fuel depot
 EOF
 )
 
