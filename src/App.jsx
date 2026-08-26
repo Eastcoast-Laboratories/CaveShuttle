@@ -966,11 +966,24 @@ function App() {
             </button>
           )}
 
-          {/* Hamburger button - outside all containers with position fixed */}
+          {/* Hamburger button - outside all containers with position fixed.
+              On real mobile devices in portrait mode, shrink to half size so it
+              covers less of the expanded vertical viewport. */}
           <button
             id="hamburger-button"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            style={{ position: 'fixed', top: '-5px', right: '22px', background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer', padding: '4px', zIndex: 3000 }}
+            style={{
+              position: 'fixed',
+              top: isMobile && window.innerHeight > window.innerWidth ? '-2px' : '-5px',
+              right: isMobile && window.innerHeight > window.innerWidth ? '22px' : '22px',
+              background: 'none',
+              border: 'none',
+              color: '#fff',
+              fontSize: isMobile && window.innerHeight > window.innerWidth ? '12px' : '24px',
+              cursor: 'pointer',
+              padding: isMobile && window.innerHeight > window.innerWidth ? '2px' : '4px',
+              zIndex: 3000,
+            }}
           >
             ☰
           </button>
