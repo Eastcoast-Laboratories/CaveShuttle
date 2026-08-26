@@ -19,6 +19,7 @@ export const levelEditorTranslations = {
     help5: '<strong>5.</strong> Verwende <strong>Pack herunterladen</strong>, um eine .json-Datei zu speichern, die du teilen kannst.<br />',
     help6: '<strong>6.</strong> Verwende <strong>Pack im Spiel installieren</strong>, um es sofort zu spielen.<br /><br />',
     helpShare: 'Wenn du es teilst, kann jeder dein Level-Pack im Spielmenü importieren.',
+    helpUpload: '<strong>7.</strong> Verwende <strong>In Community hochladen</strong>, um dein Pack direkt auf community.caveshuttle.z11.de zu veröffentlichen.',
 
     // Form labels
     packId: 'Pack-ID',
@@ -42,6 +43,8 @@ export const levelEditorTranslations = {
     openPackFile: 'Pack-Datei öffnen',
     downloadPack: 'Pack herunterladen',
     installPackInGame: 'Pack im Spiel installieren',
+    uploadToCommunity: 'In Community hochladen',
+    uploading: 'Wird hochgeladen...',
 
     // Messages
     addedToPack: '{id} zum Pack hinzugefügt.',
@@ -54,6 +57,9 @@ export const levelEditorTranslations = {
     packConflict: 'Pack {id} konnte aufgrund eines Konflikts nicht installiert werden.',
     draftTooLarge: 'Pack-Entwurf ist zu groß zum Speichern.',
     newPackConfirm: 'Neues Pack erstellen? Der aktuelle Entwurf wird verworfen.',
+    uploadSuccess: 'Pack hochgeladen! Siehe es auf community.caveshuttle.z11.de/packs/{id}.',
+    uploadFailed: 'Upload fehlgeschlagen: {error}',
+    uploadNeedsLevels: 'Pack muss mindestens ein Level enthalten zum Hochladen.',
 
     // Iframe title
     levelEditorTitle: 'Level Editor',
@@ -77,6 +83,7 @@ export const levelEditorTranslations = {
     help5: '<strong>5.</strong> Use <strong>Download Pack</strong> to save a .json file you can share.<br />',
     help6: '<strong>6.</strong> Use <strong>Install Pack in Game</strong> to play it immediately.<br /><br />',
     helpShare: 'If you share it, everybody can import your level-pack in their game menu.',
+    helpUpload: '<strong>7.</strong> Use <strong>Upload to Community</strong> to publish your pack directly to community.caveshuttle.z11.de.',
 
     // Form labels
     packId: 'Pack ID',
@@ -100,6 +107,8 @@ export const levelEditorTranslations = {
     openPackFile: 'Open Pack File',
     downloadPack: 'Download Pack',
     installPackInGame: 'Install Pack in Game',
+    uploadToCommunity: 'Upload to Community',
+    uploading: 'Uploading...',
 
     // Messages
     addedToPack: 'Added {id} to pack.',
@@ -112,6 +121,9 @@ export const levelEditorTranslations = {
     packConflict: 'Pack {id} could not be installed due to a conflict.',
     draftTooLarge: 'Pack draft is too large to save.',
     newPackConfirm: 'Create a new pack? The current draft will be discarded.',
+    uploadSuccess: 'Pack uploaded! View it at community.caveshuttle.z11.de/packs/{id}.',
+    uploadFailed: 'Upload failed: {error}',
+    uploadNeedsLevels: 'Pack must contain at least one level to upload.',
 
     // Iframe title
     levelEditorTitle: 'Level Editor',

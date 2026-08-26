@@ -1,45 +1,23 @@
 # Editor: Level-Packs erstellen, erweitern, herunterladen und online teilen
 
-## 1. Ziel
+## 1. Ziel (noch offen: nur Phase 2)
 
-Im Cave-Shuttle-Level-Editor soll ein Spieler folgendes tun können:
-
-- Mehrere selbst erstellte Levels zu einem **Level-Pack** sammeln.
-- Ein Pack als JSON-Datei herunterladen (ladbar im Spiel über den bestehenden Pack-Import).
-- Bereits ein einzelnes Level als Pack herunterladen, ohne vorher mehrere Levels anlegen zu müssen.
-- Einem bestehenden Pack nachträglich weitere Levels hinzufügen.
 - In Phase 2 das Pack direkt aus dem Editor an die Laravel-App (`roboyard.z11`) teilen, damit andere Spieler es dort bewerten und herunterladen können.
 - Das bestehende Bewertungssystem (Schwierigkeits-Rating) aus `roboyard.z11` soll DRY sowohl für Maps als auch für Packs nutzbar sein.
 
-## 2. Ausgangslage
+**Bereits umgesetzt** (nicht mehr Teil dieses Plans, ganz Phase 1): `src/ui/LevelEditor.jsx` implementiert den kompletten Pack-Builder — Draft-State in `localStorage`, Sidebar mit Pack-ID/Name/Version/Autor, Level-Liste (Edit/Move/Remove), `New Pack`, `Open Pack File`, `Download Pack`, `Install Pack in Game`. Der Editor-iframe (`public/level-editor/editor.js`) hat den `Add to Pack`-Button, der per `postMessage` (`EDITOR_ADD_TO_PACK`) an `LevelEditor.jsx` sendet. Ebenso bereits fertig: Import fertiger `.json`-Packs (`src/levels/levelpacks.js`, `src/levels/level-pack-import.js`) und Highscore-Zuordnung über `packId`/`packVersion` (`src/game/high-score-manager.js`). Fehlend ist ausschließlich das **Online-Sharing** (Phase 2).
 
-### 2.1 Cave Shuttle
+## 2. Relevante bestehende Bausteine (Kontext für die Umsetzung)
 
-- `public/level-editor/index.html` + `editor.js` bieten einen Canvas-Editor, der einzelne Levels als `.def`-Text exportiert.
-- `src/levels/levelpacks.js::registerCustomPack(meta, levelsMap)` speichert Packs in `localStorage` im Format `{ meta, levels }`.
-- `src/levels/level-pack-import.js::parseImportedPackFile(fileText)` validiert und parst Pack-JSON.
-- `ui/HamburgerMenu.jsx` kann `.json`-Packs importieren (`handleImportPack`).
-- `src/game/high-score-manager.js` speichert `packId`, `packVersion`, `mode` und `pass` an Highscore-Datensätzen.
+- **Cave Shuttle Client**: Der komplette Pack-Builder-Workflow (Editor → Pack sammeln → Download/Import/Install) ist bereits fertig (siehe 1.). `registerCustomPack(meta, levelsMap)` (`src/levels/levelpacks.js`) wird von `LevelEditor.jsx::installPack` bereits genutzt.
+- **Laravel — Roboyard-Altbestand** (`Map`, `Vote`, `VoteController`, `MobileApiController::shareMap`, `MapService`): dient nur als strukturelles Vorbild für Phase 2, ist aber Roboyard-Grid-spezifisch (Wände/Roboter/Ziele, GD-Bildgenerierung) und **nicht wiederverwendbar** für Cave Shuttles `.def`-Format.
+- **Laravel — `CaveShuttleApiController.php`**: dedizierter Cave-Shuttle-API-Controller (Score-Sync, Leaderboard, Export, Account, Auto-Login). Neue Pack-Endpunkte müssen hier ergänzt werden, **nicht** in `MobileApiController`. Nutzt `authenticateToken()` (SHA-256-Bearer-Token).
+- **Whitelist-Mechanik**: `isPackVersionAllowed()` prüft `packVersion` gegen eine statische `.env`-Whitelist (`CAVESHUTTLE_ALLOWED_PACK_VERSIONS`). Muss für Community-Packs angepasst werden (siehe 5.4.1).
+- **Auto-Account bereits vorhanden**: `src/game/auto-account.js` registriert/authentifiziert jeden Spieler automatisch und hält bereits einen API-Token bereit — für Phase 2 ist **kein zusätzlicher Login-Flow nötig**, der Token kann direkt für Pack-Uploads/Ratings verwendet werden.
 
-### 2.2 Laravel (community.caveshuttle.z11.de)
+## 3. Pack-Format (Spezifikation, bereits für den Import implementiert)
 
-- `Map`-Modell speichert einzelne Roboyard-Maps mit `map_string`.
-- `Vote`-Modell speichert `difficulty_rating` (0-5) pro Map.
-- `VoteController` verwaltet Ratings für Maps.
-- `MobileApiController::shareMap` ermöglicht das Teilen einzelner Maps per API-Token. Dieser Controller ist Roboyard-spezifisch; neue Cave-Shuttle-Endpunkte gehören **nicht** hierhin (siehe 2.3).
-- `MapService` enthält DRY-Hilfsmethoden (Preview, Duplikat-Prüfung, Zufallsname) für Roboyard-Maps — diese Logik ist fest an das Roboyard-Grid-Format (Wände, Roboter, Ziele, GD-Bildgenerierung) gekoppelt und **nicht wiederverwendbar** für Cave Shuttles `.def`-Format. Ein `PackService` kann nur strukturell analog sein (eigene Preview-/Duplikat-Logik nötig, siehe 8).
-
-### 2.3 Cave-Shuttle-spezifische Laravel-Komponenten (neu seit Planerstellung)
-
-- `CaveShuttleApiController.php` ist der dedizierte API-Controller für alle Cave-Shuttle-spezifischen Endpunkte (Score-Sync, Leaderboard, Export, Account-Löschung, Auto-Login, Settings-Sync, Crash-Reports). Er nutzt dasselbe `authenticateToken()`-Schema (SHA-256-Bearer-Token) wie `MobileApiController`, ist aber eine getrennte Klasse.
-- **Neue Pack-Endpunkte (`sharePack`, Rating, Download) gehören in `CaveShuttleApiController.php`, nicht in `MobileApiController`.** Abschnitt 5.4 wurde entsprechend korrigiert.
-- `isPackVersionAllowed(string $packVersion)` prüft `packVersion` gegen eine **statische Whitelist** aus `config('caveshuttle.allowed_pack_versions')` (env: `CAVESHUTTLE_ALLOWED_PACK_VERSIONS`, kommagetrennt). Score-Sync (`syncScores`) und `leaderboard` lehnen nicht gelistete `packVersion`-Werte ab. Ist die Liste leer, ist aktuell (Dev-Default) alles erlaubt.
-- Client (`src/game/high-score-manager.js::createRunContext`) sendet für jeden Lauf `packId` (Default: `'default'`) und `packVersion` (Default: `'1'`) mit; das Backend speichert beides in `CaveShuttleScore`.
-- **Auto-Account bereits vorhanden**: `src/game/auto-account.js` registriert/authentifiziert jeden Spieler automatisch (auch ohne manuellen Login) und hält einen API-Token bereit. Die in 5.5 geforderte Anmeldung ist damit **bereits gelöst** — kein zusätzlicher Login-Flow für Phase 2 nötig, der bestehende Token kann direkt für Pack-Uploads/Ratings verwendet werden.
-
-## 3. Pack-Format
-
-Das Pack-Format bleibt identisch mit dem bestehenden Importformat, um Brüche zu vermeiden:
+Neu erzeugte Packs aus dem Editor müssen exakt diesem bestehenden Format entsprechen, damit der vorhandene Import (`parseImportedPackFile`) sie ohne Änderung akzeptiert:
 
 ```json
 {
@@ -62,41 +40,11 @@ Das Pack-Format bleibt identisch mit dem bestehenden Importformat, um Brüche zu
 - `levels` ist ein Objekt mit Level-IDs als Schlüssel und `.def`-Inhalt als String.
 - Zusätzliche Felder wie `description`, `tags` oder `previewColor` können später im `meta`-Objekt ergänzt werden, ohne das Format zu brechen.
 
-## 4. Phase 1 – Lokale Pack-Verwaltung im Editor
+## 4. Phase 1 – Lokale Pack-Verwaltung im Editor (bereits umgesetzt, ein Rest offen)
 
-### 4.1 Editor-Zustand erweitern
+Die komplette Pack-Verwaltung ist bereits in `src/ui/LevelEditor.jsx` implementiert: Draft-State (React State + `localStorage`), Sidebar mit Meta-Feldern, Level-Liste mit Edit/Move/Remove, `New Pack`, `Open Pack File`, `Download Pack`, `Install Pack in Game`. Der Editor-iframe hat den `Add to Pack`-Button (`public/level-editor/editor.js::addToPack`).
 
-- Neue `PackBuilder`-Klasse oder Module in `public/level-editor/pack-builder.js`.
-- Speicherung des aktuellen Pack-Entwurfs in `localStorage` unter `caveshuttle_editor_draft_pack`.
-- Der Entwurf hat die gleiche Form `{ meta, levels }`.
-
-### 4.2 Neue Editor-UI
-
-- Sidebar-Bereich "Pack" mit:
-  - Pack-Name und Pack-ID Eingabefeldern.
-  - Liste der bisherigen Levels im Pack (klickbar zum Bearbeiten/Laden).
-  - Buttons: **Add to Pack**, **Remove from Pack**, **Move Up/Down**, **New Pack**, **Open Pack**, **Download Pack**.
-- Beim Klick auf **Add to Pack** wird das aktuell im Editor geöffnete Level in den Entwurf übernommen.
-- Beim **Download Pack** wird der Entwurf als `{{meta.id}}.json` heruntergeladen.
-- Beim **Open Pack** kann der Benutzer eine `.json`-Pack-Datei laden und den Entwurf fortführen.
-
-### 4.3 Einzelnes Level als Pack
-
-- Button **Download as Pack** im bestehenden Save-Modal erzeugt ein Pack mit nur einem Eintrag (`level1`) aus dem aktuellen Level.
-- Pack-Name und Pack-ID werden aus dem Levelnamen abgeleitet.
-
-### 4.4 Nachträgliches Hinzufügen
-
-- Über **Open Pack** lädt der Benutzer eine Pack-Datei oder ein in `localStorage` installiertes Pack.
-- Der Pack-Builder wechselt in den Entwurfsmodus.
-- Neue Levels können hinzugefügt, bestehende bearbeitet oder entfernt werden.
-- Beim Speichern wird ein neues Pack-JSON generiert; die Version sollte inkrementiert oder ein neuer `id`-Vorschlag gemacht werden, damit Highscore-Daten konsistent bleiben.
-
-### 4.5 Direktimport ins Spiel
-
-- Zusätzliche Buttons im Editor:
-  - **Install Pack in Game** speichert das Pack direkt über `registerCustomPack` in `localStorage`, ohne Datei-Download.
-  - Das Spiel kann das Pack dann sofort im Menu auswählen.
+**Einzig offen:** Ein Level direkt aus dem Editor-Save-Modal als Einzel-Pack herunterladen (`Download as Pack`, ohne vorher "Add to Pack" zu benutzen). Pack-Name/-ID würden aus dem Levelnamen abgeleitet, `levels: { level1: <content> }`.
 
 ## 5. Phase 2 – Online-Sharing über Laravel
 
@@ -125,23 +73,17 @@ Neue Tabelle `caveshuttle_packs`:
 
 ### 5.3 DRY-Bewertungssystem
 
-Option A (empfohlen): Polymorphe Ratings
+Bestehende `votes`-Tabelle polymorph machen (in-place Migration)
 
-- Neues `ratings`-System neben dem bestehenden `votes`:
-  - Tabelle `ratings`: `id`, `user_id`, `votable_id`, `votable_type` (`Map` oder `Pack`), `difficulty_rating`, `timestamps`, `deleted_at`.
-- Neue Migration erstellt `ratings`.
-- Bestehende `votes` können per Migration in `ratings` überführt werden (`votable_type = 'App\Models\Map'`, `votable_id = map_id`).
-- `Map` und `Pack` Modelle bekommen ein `Ratable`-Trait (`app/Traits/Ratable.php`) mit Methoden wie `averageDifficulty()`, `totalRatings()`, `userRating()`, `difficultyLabel()`.
-- `Vote` und `VoteController` werden durch `Rating` und `RatingController` ersetzt oder beide Controller delegieren an `RatableService`.
-- `RatableService` nimmt `votable_type` und `votable_id` entgegen und speichert/aktualisiert eine Bewertung DRY.
-
-Option B: Separate Vote-Tabelle
-
-- `votes` behält `map_id` und bekommt zusätzlich `pack_id`.
-- `Ratable`-Trait abstrahiert trotzdem die Logik, aber die Tabelle bleibt monolithisch.
-- Nachteil: Jede neue Ratable-Einheit erfordert neue Spalten.
-
-Empfehlung: **Option A**, da sauberer erweiterbar.
+- Die bestehende `votes`-Tabelle wird in-place migriert:
+  - `map_id` (unsignedBigInteger FK) → `votable_id` (unsignedBigInteger, kein FK)
+  - Neue Spalte `votable_type` (string, Morph-Typ)
+- Migration setzt alle bestehenden Datensätze auf `votable_type = 'App\Models\Map'`, `votable_id = map_id`.
+- `Vote`-Model bekommt `votable()` MorphTo-Relation; `fillable` wird angepasst.
+- `Map` und `Pack` Modelle bekommen `votes()` MorphMany-Relation (statt HasMany).
+- Die bestehenden Difficulty-Methoden (`averageDifficulty()`, `totalRatings()`, `userRating()`, `difficultyLabel()`) bleiben am `Map`-Model und nutzen die MorphMany-Relation. Für `Pack` wird ein Trait `Ratable` (`app/Traits/Ratable.php`) extrahiert, der diese Methoden DRY bereitstellt.
+- `VoteController` nimmt `votable_type` + `votable_id` entgegen statt `map_id`.
+- Keine zweite Tabelle, keine doppelte Logik, keine nullable FKs pro Typ.
 
 ### 5.4 Laravel-Komponenten
 
@@ -152,8 +94,8 @@ Empfehlung: **Option A**, da sauberer erweiterbar.
   - `store` (Upload, API und Web)
   - `destroy` (Soft-Delete)
   - `download` (JSON-Download, Counter erhöhen)
-- `app/Http/Controllers/CaveShuttleApiController::sharePack(Request)` — **korrigiert**: gehört in `CaveShuttleApiController` (bestehender dedizierter Cave-Shuttle-Controller, siehe 2.3), **nicht** in `MobileApiController` (das ist Roboyards Controller für `shareMap`). Nutzt dasselbe `authenticateToken()`-Schema.
-- `app/Services/PackService.php` strukturell analog zu `MapService` (Duplikat-Prüfung, Preview, Namensgenerierung als Rollen), aber **eigenständig implementiert** — `.def`-Format erfordert eigene Parsing-/Vorschau-Logik, keine Code-Wiederverwendung aus `MapService` möglich (siehe 2.2, 8).
+- `app/Http/Controllers/CaveShuttleApiController::sharePack(Request)` — gehört in `CaveShuttleApiController` (bestehender dedizierter Cave-Shuttle-Controller, siehe 2.), **nicht** in `MobileApiController` (das ist Roboyards Controller für `shareMap`). Nutzt dasselbe `authenticateToken()`-Schema.
+- `app/Services/PackService.php` strukturell analog zu `MapService` (Duplikat-Prüfung, Preview, Namensgenerierung als Rollen), aber **eigenständig implementiert** — `.def`-Format erfordert eigene Parsing-/Vorschau-Logik, keine Code-Wiederverwendung aus `MapService` möglich (siehe 2., 8.).
 - Views:
   - `packs/index.blade.php`
   - `packs/show.blade.php` mit Rating-Partial (`ratings/_difficulty.blade.php`), das auch in `maps/show.blade.php` wiederverwendet wird.
@@ -176,21 +118,16 @@ Aktuell gate't `CaveShuttleApiController::isPackVersionAllowed()` Score-Sync und
 ### 5.5 Cave-Shuttle-Anbindung
 
 - Im Editor wird ein **Share to Web**-Button ergänzt.
-- ~~Der Benutzer muss angemeldet sein~~ — **bereits gelöst**: `src/game/auto-account.js` registriert/authentifiziert jeden Spieler automatisch und hält bereits einen API-Token bereit (siehe 2.3). Kein zusätzlicher Login-Flow nötig, der bestehende Token wird direkt für den Upload verwendet.
+- ~~Der Benutzer muss angemeldet sein~~ — **bereits gelöst**: `src/game/auto-account.js` registriert/authentifiziert jeden Spieler automatisch und hält bereits einen API-Token bereit (siehe 2.). Kein zusätzlicher Login-Flow nötig, der bestehende Token wird direkt für den Upload verwendet.
 - Pack-JSON wird per `POST /api/packs` an Laravel gesendet.
 - Laravel antwortet mit `pack_id`, `share_url` und `download_url`.
 - Im Spiel (Hamburger-Menü) kann man zukünftig "Online Packs" öffnen, Liste von `roboyard.z11` abrufen und ein Pack direkt importieren.
 
 ## 6. Implementierungs-Schritte
 
-### 6.1 Phase 1
+### 6.1 Phase 1 (Rest)
 
-1. `public/level-editor/pack-builder.js` anlegen.
-2. Editor-HTML um Pack-Sidebar erweitern.
-3. Speicherung/Laden des Entwurfs in `localStorage`.
-4. Buttons: Download Pack, Download as Pack, Open Pack, Install Pack in Game.
-5. `parseImportedPackFile` und `registerCustomPack` ggf. an neues Format anpassen/erweitern (zusätzliche Felder erlauben).
-6. Tests im Browser durchführen: Import/Export, nachträgliches Erweitern.
+1. `Download as Pack`-Button im Save-Modal von `editor.js` ergänzen (Einzel-Pack ohne vorherigen "Add to Pack"-Schritt).
 
 ### 6.2 Phase 2
 
@@ -217,18 +154,16 @@ Aktuell gate't `CaveShuttleApiController::isPackVersionAllowed()` Score-Sync und
 
 - Soll `pack_data` als JSON in der Datenbank oder als Datei auf dem Server gespeichert werden? (Empfehlung: Datei, DB speichert Pfad.)
 - Soll es eine eigene `Pack`-Ressource oder eine generische `Ratable`-Ressource `Content` geben, die Maps und Packs vereinheitlicht?
-- Wie wird die Pack-Vorschau/Pack-Thumbnail generiert? Da `MapService`s Preview-Code (GD-Bildgenerierung) an Roboyards Grid-Format gebunden ist und nicht wiederverwendbar ist (siehe 2.2), braucht es eine eigene Lösung: z.B. Client generiert PNG beim Export/Upload und schickt es mit, oder Server rendert `.def`-Höhlenlayout neu (deutlich mehr Aufwand).
+- Wie wird die Pack-Vorschau/Pack-Thumbnail generiert? Da `MapService`s Preview-Code (GD-Bildgenerierung) an Roboyards Grid-Format gebunden ist und nicht wiederverwendbar ist (siehe 2.), braucht es eine eigene Lösung: z.B. Client generiert PNG beim Export/Upload und schickt es mit, oder Server rendert `.def`-Höhlenlayout neu (deutlich mehr Aufwand).
 - Soll `Map` und `Pack` getrennte Kommentar-Tabellen haben oder auch polymorphe Kommentare?
 
 ## 9. Dateien & Komponenten im Überblick
 
 ### Cave Shuttle
 
-- `public/level-editor/pack-builder.js` (neu)
-- `public/level-editor/index.html` (Pack-UI)
-- `public/level-editor/editor.js` (Pack-Events)
-- `src/levels/levelpacks.js` (ggf. Erweiterung)
-- `src/ui/HamburgerMenu.jsx` (Online-Packs später)
+- `public/level-editor/editor.js` (Save-Modal: `Download as Pack`-Button ergänzen)
+- `src/ui/HamburgerMenu.jsx` (später: "Online Packs"-Browser ergänzen; Import-Teil ist bereits fertig)
+- `src/ui/LevelEditor.jsx` (später: "Share to Web"-Button ergänzen; Pack-Builder ist bereits fertig)
 
 ### Laravel
 

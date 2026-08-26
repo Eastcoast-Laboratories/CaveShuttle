@@ -194,6 +194,16 @@
   background: #884;
 }
 
+.level-editor-btn-upload {
+  background: #259;
+}
+
+.level-editor-btn-upload:disabled {
+  background: #446;
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .level-editor-btn-full-width {
   width: 100%;
 }

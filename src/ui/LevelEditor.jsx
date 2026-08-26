@@ -4,6 +4,7 @@ import { storageKey } from '../core/storage-keys.js';
 import { levelEditorTranslations } from '../i18n/levelEditor.js';
 import { getAllPacks } from '../levels/levelpacks.js';
 import { getInstalledPacks } from '../core/progress-storage.js';
+import { autoAccountManager } from '../game/auto-account.js';
 import './level-editor.css';
 
 // CaveShuttle-specific imports are optional via props.
@@ -89,6 +90,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
   const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (iframeRef.current && iframeRef.current.contentWindow) {
@@ -273,6 +275,37 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
     }
   };
 
+  const uploadToCommunity = async () => {
+    if (!draft.meta.id || !draft.meta.name) {
+      setError(t.packIdNameRequired);
+      return;
+    }
+    if (!draft.levels || Object.keys(draft.levels).length === 0) {
+      setError(t.uploadNeedsLevels);
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const packData = {
+        meta: { ...draft.meta, createdAt: draft.meta.createdAt || Date.now() },
+        levels: draft.levels,
+      };
+      const result = await autoAccountManager.sharePack(packData);
+      if (result.success) {
+        setMessage(t.uploadSuccess.replace('{id}', result.packId));
+        setTimeout(() => setMessage(null), 5000);
+      } else {
+        const errMsg = result.error?.error || result.reason || 'Unknown error';
+        setError(t.uploadFailed.replace('{error}', errMsg));
+      }
+    } catch (err) {
+      setError(t.uploadFailed.replace('{error}', err.message));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const newPack = () => {
     if (window.confirm(t.newPackConfirm)) {
       setDraft(defaultDraft());
@@ -332,7 +365,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
           {showHelp && (
             <div
               className="level-editor-help-text"
-              dangerouslySetInnerHTML={{ __html: t.helpIntro + t.help1 + t.help2 + t.help3 + t.help4 + t.help5 + t.help6 + t.helpShare }}
+              dangerouslySetInnerHTML={{ __html: t.helpIntro + t.help1 + t.help2 + t.help3 + t.help4 + t.help5 + t.help6 + t.helpShare + t.helpUpload }}
             />
           )}
           {message && <div className="level-editor-message">{message}</div>}
@@ -373,6 +406,13 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
             {installPackFn && (
               <button onClick={installPack} className="level-editor-btn level-editor-btn-install level-editor-btn-full-width">{t.installPackInGame}</button>
             )}
+            <button
+              onClick={uploadToCommunity}
+              className="level-editor-btn level-editor-btn-upload level-editor-btn-full-width"
+              disabled={uploading}
+            >
+              {uploading ? t.uploading : t.uploadToCommunity}
+            </button>
           </div>
         </div>
       )}

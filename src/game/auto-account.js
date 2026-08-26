@@ -399,6 +399,42 @@ export class AutoAccountManager {
       return { success: false, error };
     }
   }
+
+  async sharePack(packData) {
+    if (!this.isRegistered()) {
+      console.log('[AUTO_ACCOUNT] Not registered, attempting auto-register before pack upload');
+      const regResult = await this.tryAutoRegister();
+      if (!regResult.success) {
+        return { success: false, reason: 'not_registered' };
+      }
+    }
+
+    const token = this.getToken();
+
+    try {
+      const response = await fetch(`${COMMUNITY_API_URL}/packs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ pack: packData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[AUTO_ACCOUNT] Pack upload failed:', response.status, errorData);
+        return { success: false, reason: 'server_error', status: response.status, error: errorData };
+      }
+
+      const data = await response.json();
+      console.log('[AUTO_ACCOUNT] Pack uploaded successfully:', data.pack_id);
+      return { success: true, packId: data.pack_id, url: data.share_url };
+    } catch (error) {
+      console.error('[AUTO_ACCOUNT] Network error during pack upload:', error);
+      return { success: false, reason: 'network_error', error };
+    }
+  }
 }
 
 export const autoAccountManager = new AutoAccountManager();
