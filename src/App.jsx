@@ -967,21 +967,21 @@ function App() {
           )}
 
           {/* Hamburger button - outside all containers with position fixed.
-              On real mobile devices in portrait mode, shrink to half size so it
-              covers less of the expanded vertical viewport. */}
+              Size is relative to screen dimensions via vmin so it scales
+              down naturally on small displays. */}
           <button
             id="hamburger-button"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
             style={{
               position: 'fixed',
-              top: isMobile && window.innerHeight > window.innerWidth ? '-2px' : '-5px',
-              right: isMobile && window.innerHeight > window.innerWidth ? '22px' : '22px',
+              top: '0',
+              right: '22px',
               background: 'none',
               border: 'none',
               color: '#fff',
-              fontSize: isMobile && window.innerHeight > window.innerWidth ? '12px' : '24px',
+              fontSize: 'clamp(12px, 3vmin, 24px)',
               cursor: 'pointer',
-              padding: isMobile && window.innerHeight > window.innerWidth ? '2px' : '4px',
+              padding: 'clamp(2px, 0.5vmin, 4px)',
               zIndex: 3000,
             }}
           >
