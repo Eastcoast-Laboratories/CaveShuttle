@@ -30,7 +30,7 @@ FEATURES
 
 HOW TO PLAY
 
-Use the on-screen touch buttons for acceleration, rotation, the tractor beam, and firing. Touch controls can be toggled and their opacity adjusted in the settings menu.
+Use the on-screen touch buttons, a virtual joystick, or gyroscope tilt for acceleration, rotation, the tractor beam, and firing. Touch controls can be toggled and their opacity adjusted in the settings menu.
 
 1. Fly close to the pod.
 2. Activate the tractor beam to dock it under your ship.

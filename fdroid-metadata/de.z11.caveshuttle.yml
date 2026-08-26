@@ -1,0 +1,45 @@
+Categories:
+  - Games
+  - Arcade
+License: GPL-3.0-or-later
+AuthorName: Ruben Barkow-Kuder
+WebSite: https://caveshuttle.z11.de
+SourceCode: https://github.com/Eastcoast-Laboratories/CaveShuttle
+IssueTracker: https://github.com/Eastcoast-Laboratories/CaveShuttle/issues
+Changelog: https://github.com/Eastcoast-Laboratories/CaveShuttle/releases
+
+AutoName: Cave Shuttle
+
+RepoType: git
+Repo: https://github.com/Eastcoast-Laboratories/CaveShuttle
+
+Builds:
+  - versionName: '4.4'
+    versionCode: 11
+    commit: 63399d86d4a8cec646ae60f2a5c51b82ab780df4
+    subdir: caveshuttle/app
+    sudo:
+      - apt-get update
+      - apt-get install -y npm
+    gradle:
+      - yes
+    rm:
+      - ios
+    prebuild:
+      - sed -i -e '/java.home/d' ../gradle.properties
+      - sed -i -e '/JavaLanguageVersion\|JavaVersion/s/17/21/' ../build.gradle
+      - pushd ../..
+      - npm install --build-from-source
+      - mkdir -p caveshuttle/app/capacitor-cordova-android-plugins
+      - echo "// Empty cordova variables" > caveshuttle/app/capacitor-cordova-android-plugins/cordova.variables.gradle
+      - bash dev/mobile-build.sh
+      - popd
+    scandelete:
+      - node_modules
+    gradleprops:
+      - fdroid
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '4.4'
+CurrentVersionCode: 11

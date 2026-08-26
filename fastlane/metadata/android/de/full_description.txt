@@ -1,0 +1,34 @@
+Flieg ein Raumschiff durch gefährliche Höhlen, rette den Pod und entkomme in den Himmel.
+
+Cave Shuttle ist ein physik-basiertes Arcade-Spiel über Präzisionsflug, Treibstoffmanagement und Impulskontrolle. Navigiere durch Höhlenlevel, weiche Wänden und feindlichem Feuer aus, docke den Pod an und bring ihn zurück in den offenen Himmel, um das Level abzuschließen.
+
+FUNKTIONEN
+
+- Physik-basierter Flug mit Schwerkraft, Trägheit und Impuls
+- Mehrere Höhlenlevel mit unterschiedlichen Layouts und Gefahren
+- Feindliche Bunker, Geschosse, Treibstoffdepots und Schiebetüren
+- Einzelspieler-Modus
+- Zwei-Spieler-Modus (lokal am selben Gerät oder über WLAN): Ein Spieler steuert das Schiff, der zweite Spieler steuert die Waffe und später im Spiel den Pod mit eigener Waffe und Antrieb
+- Bonusleben
+- Soundeffekte
+- Benannte Highscores
+- Zeitboni für schnelles Levelabschließen
+- Eigene Level-Packs und integrierter Level-Editor mit Export-Funktion
+- Lokaler Import und Export von Spielerdaten
+
+SO WIRD GESPIELT
+
+Verwende Touch-Buttons, einen virtuellen Joystick oder das Gyroskop für Beschleunigung, Rotation, Traktorstrahl und Feuern.
+
+1. Flieg nah an den Pod heran.
+2. Aktiviere den Traktorstrahl, um ihn unter dem Schiff anzudocken.
+3. Flieg mit dem Pod nach oben in den Himmel, um das Level abzuschließen.
+4. Sammle mehr Punkte durch effizientes Fliegen, Treibstoff sammeln, Level-Elemente auslösen, Bunker zerstören und schnelles Abschließen.
+
+HIGHSCORES
+
+Wähle einen Spielernamen oder nutze den generierten. Jeder Level-Abschluss und jeder komplette Durchlauf wird mit detaillierter Punkte-Aufschlüsselung aufgezeichnet. Highscore-Tabellen sind nach Level, Level-Pack und 1- oder 2-Spieler-Modus getrennt, damit du genau weißt, wie deine Punkte entstanden sind.
+
+---
+
+Cave Shuttle ist ein Spiel für kurze Sessions und wiederspielbare Arcade-Herausforderungen.
