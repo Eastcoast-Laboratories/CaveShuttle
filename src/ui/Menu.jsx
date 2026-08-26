@@ -105,7 +105,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
         position: 'relative',
       }}>
         <h1 style={{
-          fontSize: 'clamp(20px, 5vw, 48px)',
+          fontSize: 'clamp(18px, 4vw, 48px)',
           fontWeight: '400',
           margin: '0',
           fontFamily: '"Commodore 64", "Courier New", monospace',
@@ -124,8 +124,8 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
           <button
             onClick={() => onStart(twoPlayer)}
             style={{
-              padding: 'clamp(12px, 3vw, 20px) clamp(24px, 6vw, 60px)',
-              fontSize: 'clamp(12px, 3vw, 18px)',
+              padding: 'clamp(10px, 2.5vw, 20px) clamp(20px, 5vw, 60px)',
+              fontSize: 'clamp(10px, 2.5vw, 18px)',
               fontWeight: '600',
               fontFamily: '"Commodore 64", "Courier New", monospace',
               color: '#fff',
@@ -152,8 +152,8 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
             <button
               onClick={() => onMultiplayer?.()}
               style={{
-                padding: 'clamp(12px, 3vw, 20px) clamp(24px, 6vw, 60px)',
-                fontSize: 'clamp(12px, 3vw, 18px)',
+                padding: 'clamp(10px, 2.5vw, 20px) clamp(20px, 5vw, 60px)',
+                fontSize: 'clamp(10px, 2.5vw, 18px)',
                 fontWeight: '600',
                 fontFamily: '"Commodore 64", "Courier New", monospace',
                 color: '#fff',
@@ -245,10 +245,13 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
                 justifyContent: 'center',
                 color: '#fff',
                 fontWeight: '600',
-                fontSize: '12px',
+                fontSize: '11px',
                 fontFamily: '"Commodore 64", "Courier New", monospace',
                 zIndex: 1,
                 whiteSpace: 'nowrap',
+                padding: '0 6px',
+                boxSizing: 'border-box',
+                overflow: 'hidden',
               }}>
                 {twoPlayer ? t.twoPlayer : t.onePlayer}
               </div>
@@ -258,7 +261,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
         </div>
 
         <p style={{
-          fontSize: 'clamp(12px, 3vw, 18px)',
+          fontSize: 'clamp(10px, 2.5vw, 18px)',
           fontFamily: '"Commodore 64 Thin", "Courier New", monospace',
           fontWeight: '400',
           margin: '0',
