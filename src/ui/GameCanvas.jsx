@@ -138,13 +138,40 @@ function pointerToCanvas(canvas, clientX, clientY, w, h) {
   };
 }
 
-export default function GameCanvas({ width = GAME_WIDTH, height = GAME_HEIGHT, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange }) {
+export default function GameCanvas({ width: widthProp, height: heightProp, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange }) {
   const {
     showTouchButtons, joystickEnabled, isMobile,
     twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
     tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated,
     tiltSensorRef,
   } = useSettings();
+  // [PORTRAIT_VIEWPORT] Width stays fixed at GAME_WIDTH (preserves the horizontal
+  // tile scale and touch-button layout tuned for it). In portrait orientation the
+  // vertical viewport is expanded to match the screen's aspect ratio, so more of
+  // the level is rendered instead of being letterboxed with the level background
+  // color above/below a landscape-shaped slice.
+  const width = widthProp ?? GAME_WIDTH;
+  const [height, setHeight] = useState(() => {
+    if (heightProp) return heightProp;
+    if (typeof window === 'undefined') return GAME_HEIGHT;
+    const aspect = window.innerWidth / window.innerHeight;
+    return aspect < 1 ? Math.round(width / aspect) : GAME_HEIGHT;
+  });
+  useEffect(() => {
+    if (heightProp) return;
+    const updateHeight = () => {
+      const aspect = window.innerWidth / window.innerHeight;
+      const nextHeight = aspect < 1 ? Math.round(width / aspect) : GAME_HEIGHT;
+      console.log('[PORTRAIT_VIEWPORT] aspect:', aspect.toFixed(3), '-> height:', nextHeight);
+      setHeight(nextHeight);
+    };
+    window.addEventListener('resize', updateHeight);
+    window.addEventListener('orientationchange', updateHeight);
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      window.removeEventListener('orientationchange', updateHeight);
+    };
+  }, [heightProp, width]);
   const canvasRef = useRef(null);
   const soundManager = useRef(null);
   const { manager: networkManager } = useNetwork();
