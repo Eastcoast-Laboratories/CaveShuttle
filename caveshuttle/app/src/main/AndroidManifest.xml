@@ -18,7 +18,7 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
-            android:screenOrientation="userLandscape"
+            android:screenOrientation="fullSensor"
             android:exported="true">
 
             <intent-filter>
