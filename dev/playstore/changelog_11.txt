@@ -1,0 +1,20 @@
+# Play Store Changelogs für Version 4.4
+
+<en-GB>
+- Multi-shot power-up (6-way spread fire) in Level 6
+- Random level generator in editor
+- Online leaderboard
+- WLAN multiplayer
+- Haptic feedback for all control buttons
+- Crash reporter with automatic error reporting
+- No fuel consumption while refueling at fuel depot
+</en-GB>
+<de-DE>
+- Multi-Shot-Powerup (6-fach Streuschuss) in Level 6
+- Zufallsgenerator für Level im Editor
+- Online-Leaderboard
+- WLAN-Multiplayer
+- Haptisches Feedback bei allen Steuerungs-Buttons
+- Absturz-Reporter mit automatischer Fehlerübermittlung
+- Kein Treibstoffverbrauch beim Tanken überm Fuel-Depot
+</de-DE>

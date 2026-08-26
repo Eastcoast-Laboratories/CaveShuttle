@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Parse command line arguments — this script takes no options
+for arg in "$@"; do
+  echo "ERROR: Unknown option: $arg"
+  echo "Usage: bash dev/add_changelog.sh"
+  echo "This script reads the version from package.json and build.gradle."
+  echo "To bump the version, use: bash dev/mobile-build.sh -u; bash dev/add_changelog.sh"
+  exit 1
+done
+
 cd /var/www/CaveShuttle
 
 # Paths

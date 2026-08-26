@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.4 — August 26, 2026
+
+- Multi-Shot-Powerup (6-fach Streuschuss) in Level 6
+- Zufallsgenerator für Level im Editor
+- Online-Leaderboard
+- WLAN-Multiplayer
+- Haptisches Feedback bei allen Steuerungs-Buttons
+- Absturz-Reporter mit automatischer Fehlerübermittlung
+- Kein Treibstoffverbrauch beim Tanken überm Fuel-Depot
+
+
 ## 4.3 — August 19, 2026
 
 - Haptisches Feedback bei allen Steuerungs-Buttons (Rotation, Schub, Feuer, Tractor Beam)

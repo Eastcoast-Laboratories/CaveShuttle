@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.4 — August 26, 2026
+
+- Multi-shot power-up (6-way spread fire) in Level 6
+- Random level generator in editor
+- Online leaderboard
+- WLAN multiplayer
+- Haptic feedback for all control buttons
+- Crash reporter with automatic error reporting
+- No fuel consumption while refueling at fuel depot
+
+
 ## 4.3 — August 19, 2026
 
 - Haptic feedback for all control buttons (rotation, thrust, fire, tractor beam)

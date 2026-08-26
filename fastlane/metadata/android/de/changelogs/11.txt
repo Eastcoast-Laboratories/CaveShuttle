@@ -1,0 +1,7 @@
+- Multi-Shot-Powerup (6-fach Streuschuss) in Level 6
+- Zufallsgenerator für Level im Editor
+- Online-Leaderboard
+- WLAN-Multiplayer
+- Haptisches Feedback bei allen Steuerungs-Buttons
+- Absturz-Reporter mit automatischer Fehlerübermittlung
+- Kein Treibstoffverbrauch beim Tanken überm Fuel-Depot
