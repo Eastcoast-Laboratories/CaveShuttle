@@ -26,8 +26,16 @@ Im Cave-Shuttle-Level-Editor soll ein Spieler folgendes tun können:
 - `Map`-Modell speichert einzelne Roboyard-Maps mit `map_string`.
 - `Vote`-Modell speichert `difficulty_rating` (0-5) pro Map.
 - `VoteController` verwaltet Ratings für Maps.
-- `MobileApiController::shareMap` ermöglicht das Teilen einzelner Maps per API-Token.
-- `MapService` enthält bereits DRY-Hilfsmethoden (Preview, Duplikat-Prüfung, Zufallsname).
+- `MobileApiController::shareMap` ermöglicht das Teilen einzelner Maps per API-Token. Dieser Controller ist Roboyard-spezifisch; neue Cave-Shuttle-Endpunkte gehören **nicht** hierhin (siehe 2.3).
+- `MapService` enthält DRY-Hilfsmethoden (Preview, Duplikat-Prüfung, Zufallsname) für Roboyard-Maps — diese Logik ist fest an das Roboyard-Grid-Format (Wände, Roboter, Ziele, GD-Bildgenerierung) gekoppelt und **nicht wiederverwendbar** für Cave Shuttles `.def`-Format. Ein `PackService` kann nur strukturell analog sein (eigene Preview-/Duplikat-Logik nötig, siehe 8).
+
+### 2.3 Cave-Shuttle-spezifische Laravel-Komponenten (neu seit Planerstellung)
+
+- `CaveShuttleApiController.php` ist der dedizierte API-Controller für alle Cave-Shuttle-spezifischen Endpunkte (Score-Sync, Leaderboard, Export, Account-Löschung, Auto-Login, Settings-Sync, Crash-Reports). Er nutzt dasselbe `authenticateToken()`-Schema (SHA-256-Bearer-Token) wie `MobileApiController`, ist aber eine getrennte Klasse.
+- **Neue Pack-Endpunkte (`sharePack`, Rating, Download) gehören in `CaveShuttleApiController.php`, nicht in `MobileApiController`.** Abschnitt 5.4 wurde entsprechend korrigiert.
+- `isPackVersionAllowed(string $packVersion)` prüft `packVersion` gegen eine **statische Whitelist** aus `config('caveshuttle.allowed_pack_versions')` (env: `CAVESHUTTLE_ALLOWED_PACK_VERSIONS`, kommagetrennt). Score-Sync (`syncScores`) und `leaderboard` lehnen nicht gelistete `packVersion`-Werte ab. Ist die Liste leer, ist aktuell (Dev-Default) alles erlaubt.
+- Client (`src/game/high-score-manager.js::createRunContext`) sendet für jeden Lauf `packId` (Default: `'default'`) und `packVersion` (Default: `'1'`) mit; das Backend speichert beides in `CaveShuttleScore`.
+- **Auto-Account bereits vorhanden**: `src/game/auto-account.js` registriert/authentifiziert jeden Spieler automatisch (auch ohne manuellen Login) und hält einen API-Token bereit. Die in 5.5 geforderte Anmeldung ist damit **bereits gelöst** — kein zusätzlicher Login-Flow für Phase 2 nötig, der bestehende Token kann direkt für Pack-Uploads/Ratings verwendet werden.
 
 ## 3. Pack-Format
 
@@ -144,8 +152,8 @@ Empfehlung: **Option A**, da sauberer erweiterbar.
   - `store` (Upload, API und Web)
   - `destroy` (Soft-Delete)
   - `download` (JSON-Download, Counter erhöhen)
-- `app/Http/Controllers/MobileApiController::sharePack(Request)` analog zu `shareMap`.
-- `app/Services/PackService.php` analog zu `MapService` für Duplikat-Prüfung, Preview, Namensgenerierung.
+- `app/Http/Controllers/CaveShuttleApiController::sharePack(Request)` — **korrigiert**: gehört in `CaveShuttleApiController` (bestehender dedizierter Cave-Shuttle-Controller, siehe 2.3), **nicht** in `MobileApiController` (das ist Roboyards Controller für `shareMap`). Nutzt dasselbe `authenticateToken()`-Schema.
+- `app/Services/PackService.php` strukturell analog zu `MapService` (Duplikat-Prüfung, Preview, Namensgenerierung als Rollen), aber **eigenständig implementiert** — `.def`-Format erfordert eigene Parsing-/Vorschau-Logik, keine Code-Wiederverwendung aus `MapService` möglich (siehe 2.2, 8).
 - Views:
   - `packs/index.blade.php`
   - `packs/show.blade.php` mit Rating-Partial (`ratings/_difficulty.blade.php`), das auch in `maps/show.blade.php` wiederverwendet wird.
@@ -157,10 +165,18 @@ Empfehlung: **Option A**, da sauberer erweiterbar.
   - `GET /packs/{pack}/download`
   - `POST /difficulty/rate` mit `votable_type` und `votable_id`
 
+### 5.4.1 Pack-Versionen und die Leaderboard-Whitelist
+
+Aktuell gate't `CaveShuttleApiController::isPackVersionAllowed()` Score-Sync und Leaderboard über eine statische, admin-gepflegte `.env`-Whitelist (`CAVESHUTTLE_ALLOWED_PACK_VERSIONS`). Diese Mechanik passt nicht zu beliebig vielen Community-Pack-Versionen (kein Admin kann jede Upload-Version manuell freischalten). Zu entscheiden:
+
+- **Option A**: Whitelist gilt nur für `packId === 'default'` (offizieller Client-Versionsschutz); Community-Packs (`packId !== 'default'`) sind von der Prüfung ausgenommen und werden stattdessen nur akzeptiert, wenn ein passender `caveshuttle_packs`-Eintrag mit exakt dieser `pack_id`+`version`-Kombination existiert (Freigabe implizit durch Upload).
+- **Option B**: Beim Pack-Upload wird die `pack_id`+`version`-Kombination automatisch in eine DB-Tabelle (statt statischer Config) aufgenommen; `isPackVersionAllowed` prüft zusätzlich gegen diese Tabelle.
+- Empfehlung: **Option A**, da einfacher und ohne zusätzliche Tabelle umsetzbar; erfordert lediglich, dass `isPackVersionAllowed` bzw. der Aufrufer den `packId` mitprüft.
+
 ### 5.5 Cave-Shuttle-Anbindung
 
 - Im Editor wird ein **Share to Web**-Button ergänzt.
-- Der Benutzer muss angemeldet sein (API-Token aus der Spiel-App oder separater Login).
+- ~~Der Benutzer muss angemeldet sein~~ — **bereits gelöst**: `src/game/auto-account.js` registriert/authentifiziert jeden Spieler automatisch und hält bereits einen API-Token bereit (siehe 2.3). Kein zusätzlicher Login-Flow nötig, der bestehende Token wird direkt für den Upload verwendet.
 - Pack-JSON wird per `POST /api/packs` an Laravel gesendet.
 - Laravel antwortet mit `pack_id`, `share_url` und `download_url`.
 - Im Spiel (Hamburger-Menü) kann man zukünftig "Online Packs" öffnen, Liste von `roboyard.z11` abrufen und ein Pack direkt importieren.
@@ -181,11 +197,12 @@ Empfehlung: **Option A**, da sauberer erweiterbar.
 1. Migration `create_caveshuttle_packs_table` und `create_ratings_table` (polymorph).
 2. Migration: bestehende `votes` in `ratings` überführen (optional, Backfill).
 3. `Ratable`-Trait und `RatableService` anlegen.
-4. `Pack`-Modell, `PackService`, `PackController`, `MobileApiController::sharePack`.
+4. `Pack`-Modell, `PackService`, `PackController`, `CaveShuttleApiController::sharePack`.
 5. `RatingController` bzw. Anpassung `VoteController` für polymorphe Bewertungen.
-6. Views/Partials für Packs und das gemeinsame Rating-Partial.
-7. Editor-UI für "Share to Web" und Spiel-UI für "Online Packs".
-8. Play-Store-Text anpassen: User-Generated Packs & Online-Galerie.
+6. `isPackVersionAllowed` anpassen (siehe 5.4.1, Option A): Whitelist nur für `packId === 'default'` erzwingen, Community-Packs anhand vorhandenem `caveshuttle_packs`-Eintrag prüfen.
+7. Views/Partials für Packs und das gemeinsame Rating-Partial.
+8. Editor-UI für "Share to Web" und Spiel-UI für "Online Packs".
+9. Play-Store-Text anpassen: User-Generated Packs & Online-Galerie.
 
 ## 7. Sicherheit & Validierung
 
@@ -193,14 +210,14 @@ Empfehlung: **Option A**, da sauberer erweiterbar.
 - Server validiert Pack-JSON-Schema (Meta, Levels, `.def`-Inhalt).
 - Maximale Pack-Größe und Level-Anzahl begrenzen.
 - Soft-Delete für Packs, Spam-Meldung, Admin-Löschung.
-- Authentifizierung per API-Token für Uploads (wie bei `shareMap`).
+- Authentifizierung per API-Token für Uploads (bestehendes Schema aus `CaveShuttleApiController::authenticateToken`, bereits automatisch für jeden Spieler verfügbar via `auto-account.js`).
 - Rate-Limiting für Uploads und Downloads.
 
 ## 8. Offene Entscheidungen
 
 - Soll `pack_data` als JSON in der Datenbank oder als Datei auf dem Server gespeichert werden? (Empfehlung: Datei, DB speichert Pfad.)
 - Soll es eine eigene `Pack`-Ressource oder eine generische `Ratable`-Ressource `Content` geben, die Maps und Packs vereinheitlicht?
-- Wie wird die Pack-Vorschau/Pack-Thumbnail generiert? (Erstes Level-Preview oder generiertes Collage.)
+- Wie wird die Pack-Vorschau/Pack-Thumbnail generiert? Da `MapService`s Preview-Code (GD-Bildgenerierung) an Roboyards Grid-Format gebunden ist und nicht wiederverwendbar ist (siehe 2.2), braucht es eine eigene Lösung: z.B. Client generiert PNG beim Export/Upload und schickt es mit, oder Server rendert `.def`-Höhlenlayout neu (deutlich mehr Aufwand).
 - Soll `Map` und `Pack` getrennte Kommentar-Tabellen haben oder auch polymorphe Kommentare?
 
 ## 9. Dateien & Komponenten im Überblick
@@ -224,7 +241,7 @@ Empfehlung: **Option A**, da sauberer erweiterbar.
 - `app/Services/PackService.php`
 - `app/Http/Controllers/CaveShuttlePackController.php`
 - `app/Http/Controllers/RatingController.php`
-- `app/Http/Controllers/MobileApiController.php` (Erweiterung `sharePack`)
+- `app/Http/Controllers/CaveShuttleApiController.php` (Erweiterung `sharePack`, korrigiert von `MobileApiController`)
 - `resources/views/packs/*.blade.php`
 - `resources/views/ratings/_difficulty.blade.php` (DRY-Partial)
 - `routes/web.php` und `routes/api.php`
