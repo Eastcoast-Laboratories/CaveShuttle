@@ -57,6 +57,22 @@ function sanitizeLevelName(name) {
   return name.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
 }
 
+function normalizePackForExport(draft) {
+  const levelIds = Object.keys(draft.levels);
+  const normalizedLevels = {};
+  levelIds.forEach((oldId, index) => {
+    normalizedLevels[`level${index + 1}`] = draft.levels[oldId];
+  });
+  return {
+    meta: {
+      ...draft.meta,
+      levelCount: levelIds.length,
+      createdAt: draft.meta.createdAt || Date.now(),
+    },
+    levels: normalizedLevels,
+  };
+}
+
 function defaultDraft() {
   return {
     meta: { id: generatePackId(), name: generatePackName(), version: '1.0', author: getPlayerName(), createdAt: Date.now() },
@@ -236,7 +252,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       setError(t.packIdRequired);
       return;
     }
-    const pack = { meta: { ...draft.meta, createdAt: draft.meta.createdAt || Date.now() }, levels: draft.levels };
+    const pack = normalizePackForExport(draft);
     const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -262,7 +278,8 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       return;
     }
     try {
-      const result = installPackFn(draft.meta, draft.levels, true);
+      const pack = normalizePackForExport(draft);
+      const result = installPackFn(pack.meta, pack.levels, true);
       if (result.success) {
         if (onPackImported) onPackImported();
         setMessage(t.packInstalled.replace('{id}', draft.meta.id));
@@ -287,10 +304,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
     setUploading(true);
     setError(null);
     try {
-      const packData = {
-        meta: { ...draft.meta, createdAt: draft.meta.createdAt || Date.now() },
-        levels: draft.levels,
-      };
+      const packData = normalizePackForExport(draft);
       const result = await autoAccountManager.sharePack(packData);
       if (result.success) {
         setMessage(t.uploadSuccess.replace('{id}', result.packId));

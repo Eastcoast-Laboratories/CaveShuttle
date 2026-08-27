@@ -58,7 +58,8 @@ export class LevelLoader {
     }
     const content = pack.levels[levelId];
     if (!content) {
-      throw new Error(`[LEVEL_LOADER] Level ${levelId} not found in local pack ${packId}`);
+      const available = Object.keys(pack.levels).join(', ');
+      throw new Error(`[LEVEL_LOADER] Level ${levelId} not found in local pack ${packId}. Available levels: ${available}`);
     }
     return content;
   }

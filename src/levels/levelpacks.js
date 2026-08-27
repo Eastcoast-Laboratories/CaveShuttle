@@ -71,17 +71,26 @@ export function registerCustomPack(meta, levelsMap, forceOverwrite = false) {
   if (!levelsMap || Object.keys(levelsMap).length === 0) {
     throw new Error('Pack must contain at least one level.');
   }
-  
-  const existingPack = getInstalledPacks().find(p => p.meta.id === meta.id);
-  
+
+  // Normalize level IDs to level1, level2, ... so the game can progress sequentially
+  const levelIds = Object.keys(levelsMap);
+  const normalizedLevels = {};
+  levelIds.forEach((oldId, index) => {
+    normalizedLevels[`level${index + 1}`] = levelsMap[oldId];
+  });
+
+  const normalizedMeta = { ...meta, levelCount: levelIds.length };
+
+  const existingPack = getInstalledPacks().find(p => p.meta.id === normalizedMeta.id);
+
   if (existingPack && !forceOverwrite) {
     return { success: false, conflict: true, existingPack };
   }
-  
-  const pack = { meta, levels: levelsMap };
-  
+
+  const pack = { meta: normalizedMeta, levels: normalizedLevels };
+
   // Replace existing pack with same ID if present
-  const packs = getInstalledPacks().filter(p => p.meta.id !== meta.id);
+  const packs = getInstalledPacks().filter(p => p.meta.id !== normalizedMeta.id);
   packs.push(pack);
   saveInstalledPacks(packs);
   return { success: true, pack };
