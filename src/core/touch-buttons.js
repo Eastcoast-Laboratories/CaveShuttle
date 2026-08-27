@@ -45,9 +45,9 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   const baseThrustWidth = sizeFactor * 3.5;
   const baseThrustHeight = sizeFactor * 3;
   const baseFireWidth = sizeFactor * 2;
-  const fireHeight = sizeFactor * 2;
+  let fireHeight = sizeFactor * 2;
   const specialWidth = sizeFactor * 2;
-  const specialHeight = sizeFactor * 2;
+  let specialHeight = sizeFactor * 2;
 
   // anchorBottom: position buttons upward from the bottom edge (used for
   // two-player side strips where the rotation maps strip-bottom to screen-top).
@@ -69,7 +69,10 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   const bottomOffset = options.bottomOffset || 0;
 
   if (options.maximizeThrustHeight) {
-    thrustHeight = h - topEdge - buttonMargin - fireHeight - buttonGap - bottomOffset;
+    const availableHeight = h - topEdge - HUD_HEIGHT - buttonGap - bottomOffset;
+    fireHeight = availableHeight / 3;
+    specialHeight = fireHeight;
+    thrustHeight = availableHeight * 2 / 3;
   }
 
   if (options.maximizeRotateHeight) {
