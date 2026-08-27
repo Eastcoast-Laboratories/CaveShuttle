@@ -1552,6 +1552,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     const destroyShip = () => {
       if (shipDestroyed.current) return;
       if (godModeActiveRef.current) return;
+      if (performance.now() < respawnImmunityTimeRef.current) {
+        console.log('[RESPAWN_IMMUNITY] destroyShip blocked by respawn immunity');
+        return;
+      }
       shipDestroyed.current = true;
       // Stop the no-fuel warning sound if it was playing
       if (soundManager.current) soundManager.current.stopOnce('noFuel');
@@ -2424,7 +2428,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             const dy = es.y - ship.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < es.radius + 12) {
-              if (!godModeActiveRef.current && !isDying && performance.now() >= respawnImmunityTimeRef.current) {
+              if (!godModeActiveRef.current && !isDying) {
                 destroyShip();
               }
             }
