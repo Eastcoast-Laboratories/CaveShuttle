@@ -66,12 +66,14 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   let thrustHeight = baseThrustHeight;
   let fireWidth = baseFireWidth;
 
+  const bottomOffset = options.bottomOffset || 0;
+
   if (options.maximizeThrustHeight) {
-    thrustHeight = h - topEdge - buttonMargin - fireHeight - buttonGap;
+    thrustHeight = h - topEdge - buttonMargin - fireHeight - buttonGap - bottomOffset;
   }
 
   if (options.maximizeRotateHeight) {
-    rotateHeight = h - topEdge - buttonMargin - HUD_HEIGHT;
+    rotateHeight = h - topEdge - buttonMargin - HUD_HEIGHT - bottomOffset;
   }
 
   if (options.maximizeWidth) {
@@ -156,9 +158,8 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
 // same row. The right-side strip (P1) ends at the right canvas edge, the
 // left-side strip (P2) starts at the left canvas edge. No rotation is used:
 // returned coordinates are already in screen space.
-export function getSideStripButtons(w, topGap, topOffset, isRight, sizeScale, options = {}) {
+export function getSideStripButtons(w, h, topGap, topOffset, isRight, sizeScale, options = {}) {
   const stripWidth = 100;
-  const rowHeight = 80;
   const hitMargin = BUTTON_MARGIN_FACTOR * sizeScale;
   const gap = hitMargin * 2;
   const stripX = isRight ? w - stripWidth : 0;
@@ -170,6 +171,18 @@ export function getSideStripButtons(w, topGap, topOffset, isRight, sizeScale, op
   const showFire = options.showFire !== false;
   const buttons = [];
   if (!forceVisible && !showTouchButtons) return buttons;
+
+  // Distribute available height: thrust gets 1/2, other rows get 1/4 each
+  const bottomOffset = options.bottomOffset || 0;
+  const availableHeight = h - topGap - topOffset - HUD_HEIGHT - bottomOffset;
+  let visibleRows = 1; // rotate row is always visible
+  if (includePod || showFire) visibleRows++; // fire/pod row
+  if (showThrust) visibleRows++; // thrust row
+  const totalGaps = (visibleRows - 1) * gap;
+  const usableHeight = availableHeight - totalGaps;
+  // Weights: thrust = 2, other rows = 1 each -> thrust gets 2/(visibleRows+1) = 1/2 when 3 rows
+  const rowHeight = usableHeight / (visibleRows + (showThrust ? 1 : 0));
+  const thrustRowHeight = showThrust ? rowHeight * 2 : rowHeight;
 
   const addButton = (type, label, y, width, height, color, activeColor, fontSize = 24, xPos = stripX) => {
     buttons.push({
@@ -212,7 +225,7 @@ export function getSideStripButtons(w, topGap, topOffset, isRight, sizeScale, op
 
   // Thrust button (hidden for P2 until pod is docked)
   if (showThrust) {
-    addButton('accelerate', '↑', y, stripWidth, rowHeight, 'rgba(0, 255, 0, 0.2)', 'rgba(0, 255, 0, 0.5)', 32);
+    addButton('accelerate', '↑', y, stripWidth, thrustRowHeight, 'rgba(0, 255, 0, 0.2)', 'rgba(0, 255, 0, 0.5)', 32);
   }
 
   return buttons;
@@ -222,18 +235,20 @@ export function getSideStripButtons(w, topGap, topOffset, isRight, sizeScale, op
 // - Single-player: getTouchButtonRects builds the right-cluster layout.
 // - Two-player: getSideStripButtons builds the P1 (right) and P2 (left)
 //   vertical strips; this is where all 2-player buttons are defined.
-export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, isMobile = false, twoPlayer = false, podDocked = false, tiltSteering = false, networkRole = null) {
+export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, isMobile = false, twoPlayer = false, podDocked = false, tiltSteering = false, networkRole = null, bottomOffset = 0) {
   if (!twoPlayer && !networkRole) {
     if (tiltSteering) {
       return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
         maximizeThrustHeight: true,
         maximizeRotateHeight: true,
         tiltSteering: true,
+        bottomOffset,
       });
     }
     return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
       maximizeThrustHeight: true,
       maximizeRotateHeight: true,
+      bottomOffset,
     });
   }
 
@@ -246,6 +261,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
         maximizeRotateHeight: true,
         showFire: podDocked,
         tiltSteering,
+        bottomOffset,
       });
     } else {
       // Client controls the pod/turret: thrust only visible after pod is docked.
@@ -255,6 +271,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
         includePod: false,
         showThrust: podDocked,
         tiltSteering,
+        bottomOffset,
         typeMap: {
           rotateLeft: 'p2RotateLeft',
           rotateRight: 'p2RotateRight',
@@ -268,12 +285,13 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
   // Local two-player: side strips on a shared screen.
   const sizeScale = 0.7;
   // Player 1: right side strip (ends at the right edge, starts 100px left).
-  const playerOneButtons = getSideStripButtons(w, topGap, topOffset, true, sizeScale, { includePod: true, showTouchButtons, showFire: podDocked });
+  const playerOneButtons = getSideStripButtons(w, h, topGap, topOffset, true, sizeScale, { includePod: true, showTouchButtons, showFire: podDocked, bottomOffset });
   // Player 2: left side strip (starts at the left edge).
-  const playerTwoButtons = getSideStripButtons(w, topGap, topOffset, false, sizeScale, {
+  const playerTwoButtons = getSideStripButtons(w, h, topGap, topOffset, false, sizeScale, {
     includePod: false,
     showTouchButtons,
     showThrust: podDocked,
+    bottomOffset,
     typeMap: {
       rotateLeft: 'p2RotateLeft',
       rotateRight: 'p2RotateRight',

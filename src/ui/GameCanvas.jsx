@@ -137,7 +137,7 @@ function getCanvasContentGeom(canvas, w, h) {
       topOffset: +topOffset.toFixed(2),
     });
   }
-  return { scale, contentLeftClient, contentTopClient };
+  return { scale, contentLeftClient, contentTopClient, contentBottomClient: rect.top + offsetY + drawH };
 }
 
 // Touch-button geometry. topGap is a fixed canvas-space gap so the layout
@@ -148,9 +148,14 @@ function getCanvasContentGeom(canvas, w, h) {
 // amount so they stay on screen.
 function getLiveTouchGeom(canvas, w, h) {
   const ratio = typeof window !== 'undefined' ? window.innerWidth / window.innerHeight : w / h;
-  const { scale, contentTopClient } = getCanvasContentGeom(canvas, w, h);
+  const { scale, contentTopClient, contentBottomClient } = getCanvasContentGeom(canvas, w, h);
   const topOffset = Math.max(0, -contentTopClient / scale);
-  return { ratio, topOffset, topGap: TOP_GAP };
+  // Bottom cropping: the canvas element can extend beyond the viewport
+  // (object-fit: contain centers content, element fills parent which may be
+  // taller than the screen). Use window.innerHeight as the viewport bottom.
+  const viewportBottom = typeof window !== 'undefined' ? window.innerHeight : canvas.getBoundingClientRect().bottom;
+  const bottomOffset = Math.max(0, (contentBottomClient - viewportBottom) / scale);
+  return { ratio, topOffset, bottomOffset, topGap: TOP_GAP };
 }
 
 // Convert pointer client coordinates to canvas-internal coordinates,
@@ -563,9 +568,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const p = pointerToCanvas(canvas, clientX, clientY, width, height);
       // Measure button geometry live so hit-testing matches the rendered
       // positions even after orientation/resize without relying on event state.
-      const { ratio, topOffset, topGap } = getLiveTouchGeom(canvas, width, height);
+      const { ratio, topOffset, bottomOffset, topGap } = getLiveTouchGeom(canvas, width, height);
       const podDocked = podRef.current && podRef.current.towed;
-      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, isMobile, twoPlayer, podDocked, tiltSteering, networkRole).find((b) => {
+      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, isMobile, twoPlayer, podDocked, tiltSteering, networkRole, bottomOffset).find((b) => {
         const angle = b.angle || 0;
         const origin = b.origin || { x: 0, y: 0 };
         const cos = Math.cos(angle);
@@ -3289,8 +3294,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Measure geometry live each frame so the buttons stay pinned a
       // fixed screen-pixel distance from the on-screen canvas top on any
       // aspect ratio, independent of resize/orientation event timing.
-      const { ratio: liveRatio, topOffset: liveTopOffset, topGap: liveTopGap } = getLiveTouchGeom(canvasRef.current, width, height);
-      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, isMobile, twoPlayer, pod && pod.towed, tiltSteering, networkRole);
+      const { ratio: liveRatio, topOffset: liveTopOffset, bottomOffset: liveBottomOffset, topGap: liveTopGap } = getLiveTouchGeom(canvasRef.current, width, height);
+      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, isMobile, twoPlayer, pod && pod.towed, tiltSteering, networkRole, liveBottomOffset);
       for (const btn of touchButtons) {
         let active = false;
         switch (btn.type) {
