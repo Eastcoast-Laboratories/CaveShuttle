@@ -42,6 +42,15 @@ export const HUD_HEIGHT = 10;
 // Accounts for HUD height, bottom gap, and padding
 export const CAMERA_BOTTOM_OFFSET = 200;
 
+// Portrait zoom: in portrait orientation the canvas is very tall, so zoom in
+// to show a smaller portion of the level at a larger scale.
+// portraitZoom = min(PORTRAIT_ZOOM_MAX, height/width * PORTRAIT_ZOOM_FACTOR)
+// Example: a foldable phone in unfolded portrait mode at 800x2800 would yield
+// 3.5 * 1.9 = 6.65x zoom without a cap, showing almost nothing but the ship.
+// PORTRAIT_ZOOM_MAX clamps this so the level stays playable on extreme aspect ratios.
+export const PORTRAIT_ZOOM_MAX = 3;
+export const PORTRAIT_ZOOM_FACTOR = 1.9;
+
 // Pod physics
 export const POD_MASS_FACTOR = 2; // Pod is 2x heavier than the ship (affects tow physics / center of mass)
 export const POD_GRAVITY = 0.055; // Gravity applied to the pod when free-falling (off the holder)

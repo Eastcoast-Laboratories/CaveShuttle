@@ -13,7 +13,32 @@ import { TileRenderer } from '../game/tile-renderer.js';
 import { LevelLoader } from '../levels/level-loader.js';
 import { CollisionDetection } from '../physics/collision.js';
 import { SoundManager } from '../audio/sound-manager.js';
-import { SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY, POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE, GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT, JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS, DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL, CAMERA_BOTTOM_OFFSET, SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING, TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE, TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION, SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION, FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE, BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS, INITIAL_LIVES, POD_TETHER_LENGTH, ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED, ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD, GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR, MULTI_SHOT_TILE, MULTI_SHOT_COLOR, FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION, BULLET_SPEED, SHOOT_COOLDOWN_MS, REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS, REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE, VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP, VIBRATE_FIRE, VIBRATE_POD, SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS } from '../core/constants.js';
+import {
+  SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY,
+  POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE,
+  GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT,
+  JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS,
+  DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL,
+  CAMERA_BOTTOM_OFFSET, PORTRAIT_ZOOM_MAX, PORTRAIT_ZOOM_FACTOR,
+  SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING,
+  TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE,
+  TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION,
+  SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION,
+  FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE,
+  BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS,
+  INITIAL_LIVES, POD_TETHER_LENGTH,
+  ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
+  ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
+  GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
+  MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
+  FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
+  BULLET_SPEED, SHOOT_COOLDOWN_MS,
+  REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS,
+  REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE,
+  VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP,
+  VIBRATE_FIRE, VIBRATE_POD,
+  SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS,
+} from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
@@ -157,6 +182,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     const aspect = window.innerWidth / window.innerHeight;
     return aspect < 1 ? Math.round(width / aspect) : GAME_HEIGHT;
   });
+
+  // Portrait zoom: in portrait orientation the canvas is very tall, so zoom in
+  // to show a smaller portion of the level at a larger scale.
+  const portraitZoom = height > width ? Math.min(PORTRAIT_ZOOM_MAX, height / width * PORTRAIT_ZOOM_FACTOR) : 1;
+  const viewWidth = width / portraitZoom;
+  const viewHeight = height / portraitZoom;
   useEffect(() => {
     if (heightProp) return;
     const updateHeight = () => {
@@ -1059,8 +1090,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Reset camera to center on ship spawn, clamped to level bounds
           const levelWidth = lenx * scaledSize;
           const levelHeight = layout.length * scaledSize;
-          const camX = Math.max(0, Math.min(restartPos.x - width / 2, Math.max(0, levelWidth - width)));
-          const camY = Math.max(0, Math.min(restartPos.y - height / 2, Math.max(0, levelHeight - height)));
+          const camX = Math.max(0, Math.min(restartPos.x - viewWidth / 2, Math.max(0, levelWidth - viewWidth)));
+          const camY = Math.max(0, Math.min(restartPos.y - viewHeight / 2, Math.max(0, levelHeight - viewHeight)));
           setCamera({ x: camX, y: camY });
         }
         setBunkers(bunkerPositions.map(bp => new Bunker(bp.x, bp.y, bp.type)));
@@ -2618,16 +2649,16 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
         // Target camera position: center on ship, or on the wormhole during the level-complete animation
         const isWormholeActive = wormholeRef.current.active;
-        const targetX = isWormholeActive ? wormholeRef.current.x - width / 2 : ship.x - width / 2;
-        const targetY = isWormholeActive ? wormholeRef.current.y - height / 2 : ship.y - height / 2;
+        const targetX = isWormholeActive ? wormholeRef.current.x - viewWidth / 2 : ship.x - viewWidth / 2;
+        const targetY = isWormholeActive ? wormholeRef.current.y - viewHeight / 2 : ship.y - viewHeight / 2;
 
         // Smooth camera interpolation (lerp)
         const lerpFactor = 0.1;
-        const clampedTargetX = Math.max(0, Math.min(targetX, Math.max(0, levelWidth - width)));
+        const clampedTargetX = Math.max(0, Math.min(targetX, Math.max(0, levelWidth - viewWidth)));
         // Allow camera to go above level (sky), but clamp bottom to show full level
-        // If level is taller than canvas, clamp bottom to levelHeight - height
+        // If level is taller than canvas, clamp bottom to levelHeight - viewHeight
         // If level is shorter than canvas, clamp bottom to 0 (center level vertically)
-        const clampedTargetY = Math.min(targetY, levelHeight - height + CAMERA_BOTTOM_OFFSET);
+        const clampedTargetY = Math.min(targetY, levelHeight - viewHeight + CAMERA_BOTTOM_OFFSET);
         
         setCamera(prev => ({
           x: prev.x + (clampedTargetX - prev.x) * lerpFactor,
@@ -2821,6 +2852,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       ctx.save();
       if (!isWormhole && screenShake.intensity > 0) {
         ctx.translate(screenShake.x, screenShake.y);
+      }
+      // Portrait zoom: scale up so a smaller portion of the level is shown larger
+      if (portraitZoom > 1) {
+        ctx.scale(portraitZoom, portraitZoom);
       }
 
       // Draw stars in the sky (before level tiles)
@@ -3243,10 +3278,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ctx.restore();
       }
 
-      // Restore screen shake
-      if (screenShake.intensity > 0) {
-        ctx.restore();
-      }
+      // Restore screen shake / portrait zoom transform
+      ctx.restore();
 
       // Draw all touch control buttons (inside canvas).
       // Geometry comes from the shared helper so rendering and hit-testing stay in sync (DRY).
