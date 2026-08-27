@@ -8,6 +8,11 @@ export const POD_THRUST = 0.1; // Player 2 pod thruster strength
 export const ROTATION_SLOW_ANGLE_THRESHOLD = 15; // degrees: when starting rotation within this threshold of vertical, use slow rotation
 export const ROTATION_SLOW_MULTIPLIER = 0.4; // multiplier for rotation speed when in slow mode
 export const ROTATION_SNAP_ANGLE_THRESHOLD = 10; // degrees: when stopping rotation within this threshold of vertical, snap to 0°
+// Touch rotation ramp-up: touch buttons start slow, then speed up after holding.
+// Double-tap within TOUCH_ROTATE_DOUBLE_TAP_MS immediately uses fast speed.
+export const TOUCH_ROTATE_RAMP_MS = 500; // hold duration before fast rotation kicks in
+export const TOUCH_ROTATE_FAST_MULTIPLIER = 2.0; // speed multiplier after ramp or double-tap
+export const TOUCH_ROTATE_DOUBLE_TAP_MS = 300; // max interval between taps for double-tap detection
 export const MAX_SPEED = 5; // maximum speed for the ship
 export const FRICTION = 0.99; // friction coefficient
 export const SHIELD_DURATION = 300; // frames

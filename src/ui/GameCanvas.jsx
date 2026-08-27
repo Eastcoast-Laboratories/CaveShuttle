@@ -29,6 +29,7 @@ import {
   INITIAL_LIVES, POD_TETHER_LENGTH,
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
+  TOUCH_ROTATE_RAMP_MS, TOUCH_ROTATE_FAST_MULTIPLIER, TOUCH_ROTATE_DOUBLE_TAP_MS,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -230,6 +231,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const wasAcceleratingRef = useRef(false); // previous frame thrust state (for detecting start/stop)
   const wasTractorBeamRef = useRef(false); // previous frame tractor beam state (for detecting activation)
   const rotationSnapDisabledRef = useRef(false); // whether snapping is disabled for this rotation (started at exact 0°)
+  // Touch rotation ramp-up: track when touch rotation started and last tap time for double-tap
+  const touchRotateStartTimeRef = useRef(0); // timestamp when touch rotation started
+  const touchRotateFastRef = useRef(false); // whether fast mode is active (after ramp or double-tap)
+  const lastRotateLeftTapRef = useRef(0); // timestamp of last rotate left tap (for double-tap)
+  const lastRotateRightTapRef = useRef(0); // timestamp of last rotate right tap (for double-tap)
   // Track pointerId to button type mapping for multi-touch support
   const pointerButtonMap = useRef(new Map());
   // Track pointerIds that are currently pressing buttons (for joystick filtering)
@@ -596,8 +602,32 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           case 'pod': setTouchActive(true); setShieldAndBeamActive(true); break;
           case 'accelerate': setAccelerateActive(true); break;
           case 'fire': setFireActive(true); break;
-          case 'rotateLeft': setRotateLeftActive(true); break;
-          case 'rotateRight': setRotateRightActive(true); break;
+          case 'rotateLeft': {
+            const now = Date.now();
+            if (now - lastRotateLeftTapRef.current < TOUCH_ROTATE_DOUBLE_TAP_MS) {
+              touchRotateFastRef.current = true;
+              console.log('[TOUCH_ROTATE] Double-tap detected: fast mode (left)');
+            } else {
+              touchRotateFastRef.current = false;
+            }
+            lastRotateLeftTapRef.current = now;
+            touchRotateStartTimeRef.current = now;
+            setRotateLeftActive(true);
+            break;
+          }
+          case 'rotateRight': {
+            const now = Date.now();
+            if (now - lastRotateRightTapRef.current < TOUCH_ROTATE_DOUBLE_TAP_MS) {
+              touchRotateFastRef.current = true;
+              console.log('[TOUCH_ROTATE] Double-tap detected: fast mode (right)');
+            } else {
+              touchRotateFastRef.current = false;
+            }
+            lastRotateRightTapRef.current = now;
+            touchRotateStartTimeRef.current = now;
+            setRotateRightActive(true);
+            break;
+          }
           case 'p2RotateLeft': setP2RotateLeftActive(true); break;
           case 'p2RotateRight': setP2RotateRightActive(true); break;
           case 'p2Thrust': setP2ThrustActive(true); break;
@@ -698,8 +728,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               case 'shield': setShieldAndBeamActive(false); break;
               case 'accelerate': setAccelerateActive(false); break;
               case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
-              case 'rotateLeft': setRotateLeftActive(false); break;
-              case 'rotateRight': setRotateRightActive(false); break;
+              case 'rotateLeft': setRotateLeftActive(false); touchRotateFastRef.current = false; break;
+              case 'rotateRight': setRotateRightActive(false); touchRotateFastRef.current = false; break;
               case 'p2RotateLeft': setP2RotateLeftActive(false); break;
               case 'p2RotateRight': setP2RotateRightActive(false); break;
               case 'p2Thrust': setP2ThrustActive(false); break;
@@ -711,8 +741,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               case 'pod': setTouchActive(true); setShieldAndBeamActive(true); break;
               case 'accelerate': setAccelerateActive(true); break;
               case 'fire': setFireActive(true); break;
-              case 'rotateLeft': setRotateLeftActive(true); break;
-              case 'rotateRight': setRotateRightActive(true); break;
+              case 'rotateLeft': touchRotateStartTimeRef.current = Date.now(); touchRotateFastRef.current = false; setRotateLeftActive(true); break;
+              case 'rotateRight': touchRotateStartTimeRef.current = Date.now(); touchRotateFastRef.current = false; setRotateRightActive(true); break;
               case 'p2RotateLeft': setP2RotateLeftActive(true); break;
               case 'p2RotateRight': setP2RotateRightActive(true); break;
               case 'p2Thrust': setP2ThrustActive(true); break;
@@ -752,8 +782,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             case 'shield': setShieldAndBeamActive(false); break;
             case 'accelerate': setAccelerateActive(false); break;
             case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
-            case 'rotateLeft': setRotateLeftActive(false); break;
-            case 'rotateRight': setRotateRightActive(false); break;
+            case 'rotateLeft': setRotateLeftActive(false); touchRotateFastRef.current = false; break;
+            case 'rotateRight': setRotateRightActive(false); touchRotateFastRef.current = false; break;
             case 'p2RotateLeft': setP2RotateLeftActive(false); break;
             case 'p2RotateRight': setP2RotateRightActive(false); break;
             case 'p2Thrust': setP2ThrustActive(false); break;
@@ -1767,20 +1797,31 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             vibrateIfEnabled(VIBRATE_ROTATE);
           }
           wasRotationDirRef.current = currentDir;
+          // Touch rotation ramp-up: check if hold duration exceeded ramp threshold
+          const isTouchRotating = rotateLeftActive || rotateRightActive;
+          if (isTouchRotating && !touchRotateFastRef.current && touchRotateStartTimeRef.current > 0) {
+            if (Date.now() - touchRotateStartTimeRef.current > TOUCH_ROTATE_RAMP_MS) {
+              touchRotateFastRef.current = true;
+              console.log('[TOUCH_ROTATE] Ramp threshold exceeded: fast mode activated');
+            }
+          }
+          const touchMultiplier = (isTouchRotating && touchRotateFastRef.current) ? TOUCH_ROTATE_FAST_MULTIPLIER : 1;
           if (shipRotateLeft) {
             if (rotationSlowModeRef.current) {
-              ship.angle -= ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER;
+              ship.angle -= ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier;
               ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             } else {
-              ship.rotateLeft();
+              ship.angle -= ROTATION_SPEED * touchMultiplier;
+              ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             }
           }
           if (shipRotateRight) {
             if (rotationSlowModeRef.current) {
-              ship.angle += ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER;
+              ship.angle += ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier;
               ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             } else {
-              ship.rotateRight();
+              ship.angle += ROTATION_SPEED * touchMultiplier;
+              ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             }
           }
         }
