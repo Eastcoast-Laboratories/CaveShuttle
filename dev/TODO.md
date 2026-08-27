@@ -8,5 +8,5 @@
 - [ ] explosive obstacles
 - [ ] der feuer button ist ev. nicht mehr nötig oder ine option im menu, den auszublenden
 - [ ] Da wo die Schüsse aufkommen soll das Tile was den Schuss absorbiert, kurz 4 Pixel größer werden und dann wieder kleiner, die anzahl poixel soll definierbar in Konstanz
-- [x] wenn man respawned soll das raumschiff 1s immun sein gegen mines and bullets
-- [ ] die ramp-up muss auch für die drehung mit den m kyboard eingeführt werden, also bei touch buttons und keyboard controll muss das raumschiff schneller werden nach TOUCH_ROTATE_RAMP_MS, auch bei doppel keystroke rechts oder links auf der tastatur muss es sofort schnel drehen
+- [ ] testen ob nach respawn auch 1s immun gegen mines
+- [ ] der reaktor exlosions zentrum muss auch im portrait mode verschoben werden, da ist es an der falschen position, er soll ja immer dort das zentrum der explosions amnimation haben, o der reaktor steht im level.

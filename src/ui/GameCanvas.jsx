@@ -29,7 +29,7 @@ import {
   INITIAL_LIVES, POD_TETHER_LENGTH,
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
-  TOUCH_ROTATE_RAMP_MS, TOUCH_ROTATE_FAST_MULTIPLIER, TOUCH_ROTATE_DOUBLE_TAP_MS,
+  ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -457,6 +457,32 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
 
       setKeys(prev => ({ ...prev, [e.key]: true }));
+      // Rotation ramp-up: detect double-keystroke for immediate fast rotation
+      const isRotateKey = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+        ((!twoPlayer || networkRole === 'host') && (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D'));
+      if (isRotateKey) {
+        const now = Date.now();
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          if (now - lastRotateLeftTapRef.current < ROTATE_DOUBLE_TAP_MS) {
+            touchRotateFastRef.current = true;
+            console.log('[KEYBOARD_ROTATE] Double-keystroke detected: fast mode (left)');
+          } else {
+            touchRotateFastRef.current = false;
+          }
+          lastRotateLeftTapRef.current = now;
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          if (now - lastRotateRightTapRef.current < ROTATE_DOUBLE_TAP_MS) {
+            touchRotateFastRef.current = true;
+            console.log('[KEYBOARD_ROTATE] Double-keystroke detected: fast mode (right)');
+          } else {
+            touchRotateFastRef.current = false;
+          }
+          lastRotateRightTapRef.current = now;
+        }
+        if (touchRotateStartTimeRef.current === 0) {
+          touchRotateStartTimeRef.current = now;
+        }
+      }
       // Activate shield when Space or Ctrl is pressed
       if (e.key === ' ' || e.key === 'Space' || (!twoPlayer && (e.key === 'Control' || e.key === 'ControlLeft' || e.key === 'ControlRight'))) {
         setShieldAndBeamActive(true);
@@ -473,6 +499,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
 
       setKeys(prev => ({ ...prev, [e.key]: false }));
+      // Reset rotation ramp-up when rotation key is released
+      const isRotateKey = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
+        ((!twoPlayer || networkRole === 'host') && (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D'));
+      if (isRotateKey) {
+        touchRotateFastRef.current = false;
+        touchRotateStartTimeRef.current = 0;
+      }
       // Deactivate shield when Space or Ctrl is released
       if (e.key === ' ' || e.key === 'Space' || (!twoPlayer && (e.key === 'Control' || e.key === 'ControlLeft' || e.key === 'ControlRight'))) {
         setShieldAndBeamActive(false);
@@ -631,7 +664,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           case 'fire': setFireActive(true); break;
           case 'rotateLeft': {
             const now = Date.now();
-            if (now - lastRotateLeftTapRef.current < TOUCH_ROTATE_DOUBLE_TAP_MS) {
+            if (now - lastRotateLeftTapRef.current < ROTATE_DOUBLE_TAP_MS) {
               touchRotateFastRef.current = true;
               console.log('[TOUCH_ROTATE] Double-tap detected: fast mode (left)');
             } else {
@@ -644,7 +677,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           }
           case 'rotateRight': {
             const now = Date.now();
-            if (now - lastRotateRightTapRef.current < TOUCH_ROTATE_DOUBLE_TAP_MS) {
+            if (now - lastRotateRightTapRef.current < ROTATE_DOUBLE_TAP_MS) {
               touchRotateFastRef.current = true;
               console.log('[TOUCH_ROTATE] Double-tap detected: fast mode (right)');
             } else {
@@ -1826,15 +1859,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             vibrateIfEnabled(VIBRATE_ROTATE);
           }
           wasRotationDirRef.current = currentDir;
-          // Touch rotation ramp-up: check if hold duration exceeded ramp threshold
-          const isTouchRotating = rotateLeftActive || rotateRightActive;
-          if (isTouchRotating && !touchRotateFastRef.current && touchRotateStartTimeRef.current > 0) {
-            if (Date.now() - touchRotateStartTimeRef.current > TOUCH_ROTATE_RAMP_MS) {
+          // Rotation ramp-up: check if hold duration exceeded ramp threshold (applies to both touch and keyboard)
+          if (isRotating && !touchRotateFastRef.current && touchRotateStartTimeRef.current > 0) {
+            if (Date.now() - touchRotateStartTimeRef.current > ROTATE_RAMP_MS) {
               touchRotateFastRef.current = true;
-              console.log('[TOUCH_ROTATE] Ramp threshold exceeded: fast mode activated');
+              console.log('[ROTATE] Ramp threshold exceeded: fast mode activated');
             }
           }
-          const touchMultiplier = (isTouchRotating && touchRotateFastRef.current) ? TOUCH_ROTATE_FAST_MULTIPLIER : 1;
+          const touchMultiplier = (isRotating && touchRotateFastRef.current) ? ROTATE_FAST_MULTIPLIER : 1;
           if (shipRotateLeft) {
             if (rotationSlowModeRef.current) {
               ship.angle -= ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier * deltaTime;
