@@ -21,6 +21,10 @@ export const FUEL_CONSUMPTION = 0.1;
 export const POD_FUEL_CONSUMPTION = 0.05;
 export const FIRE_FUEL_CONSUMPTION = 0.2; // Fuel consumed per shot fired
 export const BULLET_SPEED = 8; // Speed of fired bullets
+// Bullet impact tile expansion: tiles that absorb bullets briefly expand then shrink back
+export const BULLET_IMPACT_EXPAND_PX = 4; // pixels to expand tile on impact (per side)
+export const BULLET_IMPACT_DURATION_MS = 200; // duration of the expand+shrink animation
+export const RESPAWN_IMMUNITY_MS = 1000; // ship is immune to bullets and mines for this duration after respawn
 
 // Fuel depots
 export const FUEL_DEPOT_CAPACITY = 80; // Max fuel a 2x2 depot can hold

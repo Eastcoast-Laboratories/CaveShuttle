@@ -34,6 +34,8 @@ import {
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
   BULLET_SPEED, SHOOT_COOLDOWN_MS,
+  BULLET_IMPACT_EXPAND_PX, BULLET_IMPACT_DURATION_MS,
+  RESPAWN_IMMUNITY_MS,
   REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS,
   REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE,
   VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP,
@@ -337,6 +339,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tiltRotateLeftRef = useRef(false);
   const tiltRotateRightRef = useRef(false);
   const tiltThrustRef = useRef(false);
+
+  // Bullet impact tile expansion: maps "tileX,tileY" -> impact timestamp
+  const tileImpactsRef = useRef(new Map());
+  // Respawn immunity: timestamp when immunity expires (0 = no immunity)
+  const respawnImmunityTimeRef = useRef(0);
 
   // [TILT] Listen to deviceorientation events and update sensor ref + tilt state
   useEffect(() => {
@@ -1431,6 +1438,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // it moved the win target onto the respawn point and falsely triggered "level completed".
       const target = findRespawnInRegion(ship.x, ship.y, podWasDockedRef.current) || restartPosition;
       console.log('[RESPAWN] respawnShipAndPod called at', ship.x.toFixed(0), ship.y.toFixed(0), '| wasDocked:', podWasDockedRef.current, '| target:', target ? { x: target.x.toFixed(0), y: target.y.toFixed(0) } : null);
+      // Grant temporary immunity to bullets and mines after respawn
+      respawnImmunityTimeRef.current = performance.now() + RESPAWN_IMMUNITY_MS;
       if (target) {
         ship.setPosition(target.x, target.y);
       }
@@ -2383,7 +2392,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             const dy = es.y - ship.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < es.radius + 12) {
-              if (!godModeActiveRef.current && !isDying) {
+              if (!godModeActiveRef.current && !isDying && performance.now() >= respawnImmunityTimeRef.current) {
                 destroyShip();
               }
             }
@@ -2538,6 +2547,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 if (REACTOR_TILES.includes(wallCollision.tile)) {
                   registerReactorHit(wallCollision.point);
                 }
+                // Register tile impact expansion effect
+                const scaledSize = tileRenderer.current.getScaledTileSize();
+                const tileX = Math.floor(bullet.x / scaledSize);
+                const tileY = Math.floor(bullet.y / scaledSize);
+                tileImpactsRef.current.set(`${tileX},${tileY}`, performance.now());
                 return false;
               }
 
@@ -2623,6 +2637,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Check collision with walls
           const wallCollision = collision.current.checkBulletCollision(bullet, level, 'bunker');
           if (wallCollision.collided) {
+            // Register tile impact expansion effect
+            const scaledSize = tileRenderer.current.getScaledTileSize();
+            const tileX = Math.floor(bullet.x / scaledSize);
+            const tileY = Math.floor(bullet.y / scaledSize);
+            tileImpactsRef.current.set(`${tileX},${tileY}`, performance.now());
             bullet.active = false;
             return false;
           }
@@ -2669,9 +2688,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const dy = bullet.y - ship.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 15) {
-            // Ship hit by bullet - check if shield is active or god mode is active
-            if (shieldAndBeamActive || godModeActiveRef.current) {
-              // Shield/god mode blocks the bullet
+            // Ship hit by bullet - check if shield, god mode, or respawn immunity is active
+            if (shieldAndBeamActive || godModeActiveRef.current || performance.now() < respawnImmunityTimeRef.current) {
+              // Shield/god mode/immunity blocks the bullet
               bullet.active = false;
               return false;
             }
@@ -2934,7 +2953,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Draw level with camera offset
       if (level && tilesetLoaded) {
-        tileRenderer.current.render(ctx, level, -camera.x, -camera.y);
+        tileRenderer.current.render(ctx, level, -camera.x, -camera.y, tileImpactsRef.current);
       }
 
       // Draw fuel depots with their remaining fuel fill

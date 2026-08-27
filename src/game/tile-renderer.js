@@ -1,7 +1,7 @@
 // Tile renderer using original blks tileset
 // Renders level tiles pixel-perfect using the original 8x8 pixel tileset and color palette
 
-import { SKY_FULL_STAR_DENSITY, GOD_MODE_TILE, MULTI_SHOT_TILE } from "../core/constants";
+import { SKY_FULL_STAR_DENSITY, GOD_MODE_TILE, MULTI_SHOT_TILE, BULLET_IMPACT_EXPAND_PX, BULLET_IMPACT_DURATION_MS } from "../core/constants";
 
 // Tiles that are visually wall-like but have mostly empty space — no collision.
 // These are the smaller components of larger wall structures (e.g. right half of a slope).
@@ -173,11 +173,12 @@ export class TileRenderer {
     return this.fuelDepotTiles.has(char);
   }
 
-  render(ctx, level, offsetX = 0, offsetY = 0) {
+  render(ctx, level, offsetX = 0, offsetY = 0, tileImpacts = null) {
     if (!this.loaded || !level || !level.layout) return;
 
     const scaledSize = this.getScaledTileSize();
     const layout = level.layout;
+    const now = tileImpacts ? performance.now() : 0;
 
     for (let y = 0; y < layout.length; y++) {
       const row = layout[y];
@@ -203,10 +204,37 @@ export class TileRenderer {
         const code = row.charCodeAt(x);
         const tileCanvas = this.tileCache.get(code);
         if (tileCanvas) {
+          // Check if this tile has an active bullet impact expansion
+          let drawX = offsetX + x * scaledSize;
+          let drawY = offsetY + y * scaledSize;
+          let drawW = scaledSize;
+          let drawH = scaledSize;
+
+          if (tileImpacts) {
+            const key = `${x},${y}`;
+            const impactTime = tileImpacts.get(key);
+            if (impactTime !== undefined) {
+              const elapsed = now - impactTime;
+              if (elapsed < BULLET_IMPACT_DURATION_MS) {
+                // Animation: expand to max at start, then shrink back to 0
+                // Use a sine curve: sin(pi * elapsed/duration) gives 0 -> 1 -> 0
+                const progress = Math.sin(Math.PI * elapsed / BULLET_IMPACT_DURATION_MS);
+                const expandPx = BULLET_IMPACT_EXPAND_PX * progress;
+                drawX -= expandPx;
+                drawY -= expandPx;
+                drawW += expandPx * 2;
+                drawH += expandPx * 2;
+              } else {
+                // Impact expired, clean up
+                tileImpacts.delete(key);
+              }
+            }
+          }
+
           ctx.drawImage(
             tileCanvas,
-            offsetX + x * scaledSize,
-            offsetY + y * scaledSize
+            drawX, drawY,
+            drawW, drawH
           );
         }
       }
