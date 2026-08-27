@@ -70,6 +70,10 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
     thrustHeight = h - topEdge - buttonMargin - fireHeight - buttonGap;
   }
 
+  if (options.maximizeRotateHeight) {
+    rotateHeight = h - topEdge - buttonMargin - HUD_HEIGHT;
+  }
+
   if (options.maximizeWidth) {
     if (options.maximizeWidth.rotateLeft) {
       rotateLeftWidth = w - 2 * buttonMargin - 2 * buttonGap - baseRotateWidth - baseThrustWidth;
@@ -223,13 +227,13 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
     if (tiltSteering) {
       return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
         maximizeThrustHeight: true,
-        rotateHeight: 200,
+        maximizeRotateHeight: true,
         tiltSteering: true,
       });
     }
     return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
       maximizeThrustHeight: true,
-      rotateHeight: 200,
+      maximizeRotateHeight: true,
     });
   }
 
@@ -239,7 +243,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
       // Host controls the ship: fire only visible after pod is docked.
       return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
         maximizeThrustHeight: true,
-        rotateHeight: 200,
+        maximizeRotateHeight: true,
         showFire: podDocked,
         tiltSteering,
       });
@@ -247,7 +251,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
       // Client controls the pod/turret: thrust only visible after pod is docked.
       return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
         maximizeThrustHeight: true,
-        rotateHeight: 200,
+        maximizeRotateHeight: true,
         includePod: false,
         showThrust: podDocked,
         tiltSteering,
