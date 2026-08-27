@@ -586,6 +586,26 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     const handlePointerDown = (e) => {
       // [SOUND] Resume the audio context on the first user gesture (autoplay policy).
       if (soundManager.current) soundManager.current.resume();
+
+      // Self-heal stuck joystick state: e.isPrimary is true only when this touch is
+      // the SOLE active finger on screen (browser-tracked, not our own state). If our
+      // internal joystick tracking still references a different/previous pointerId
+      // while the browser says this is the only finger down, a prior pointerup or
+      // pointercancel event was missed (known Android WebView issue) and the joystick
+      // state got stuck, causing every new single-finger touch to be misclassified as
+      // the "2nd finger" (shield). Detect and reset that stale state here.
+      if (e.isPrimary && joystickPointerId.current !== null && joystickPointerId.current !== e.pointerId) {
+        console.log('[JOYSTICK_STUCK] Stale joystick state detected on primary touch. old pointerId:', joystickPointerId.current, '| new pointerId:', e.pointerId, '| joystickActive:', joystickActive);
+        if (joystickTapTimerRef.current) {
+          clearTimeout(joystickTapTimerRef.current);
+          joystickTapTimerRef.current = null;
+        }
+        setJoystickActive(false);
+        joystickRotationSpeedRef.current = 0;
+        setAccelerateActive(false);
+        joystickPointerId.current = null;
+      }
+
       const btn = getButtonAt(e.clientX, e.clientY);
       if (btn) {
         e.preventDefault();
