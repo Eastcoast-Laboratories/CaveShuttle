@@ -1850,11 +1850,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Player 2 uses WASD: A/D rotates, W thrusts the pod once docked, Shift fires.
           // p2Left/p2Right/p2Thrust/p2Fire are computed at the top of the input block.
           if (!pod || pod.onHolder) {
-            if (p2Left) turretAngleRef.current -= TURRET_ROTATION_SPEED;
-            if (p2Right) turretAngleRef.current += TURRET_ROTATION_SPEED;
+            if (p2Left) turretAngleRef.current -= TURRET_ROTATION_SPEED * deltaTime;
+            if (p2Right) turretAngleRef.current += TURRET_ROTATION_SPEED * deltaTime;
           } else {
-            if (p2Left) pod.setAngle(pod.angle - POD_ROTATION_SPEED);
-            if (p2Right) pod.setAngle(pod.angle + POD_ROTATION_SPEED);
+            if (p2Left) pod.setAngle(pod.angle - POD_ROTATION_SPEED * deltaTime);
+            if (p2Right) pod.setAngle(pod.angle + POD_ROTATION_SPEED * deltaTime);
             // Pod thrust only when ship has fuel
             pod.setAccelerate(ship.fuel > 0 && p2Thrust);
             if (pod.accelerate > 0) {
