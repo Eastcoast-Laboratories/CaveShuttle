@@ -37,13 +37,13 @@ export class Ship {
     if (this.fuel < 0) this.fuel = 0;
   }
 
-  rotateLeft() {
-    this.angle -= ROTATION_SPEED;
+  rotateLeft(dt = 1) {
+    this.angle -= ROTATION_SPEED * dt;
     this.rotation = (this.angle * 180 / Math.PI) % 360;
   }
 
-  rotateRight() {
-    this.angle += ROTATION_SPEED;
+  rotateRight(dt = 1) {
+    this.angle += ROTATION_SPEED * dt;
     this.rotation = (this.angle * 180 / Math.PI) % 360;
   }
 

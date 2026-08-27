@@ -1808,19 +1808,19 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const touchMultiplier = (isTouchRotating && touchRotateFastRef.current) ? TOUCH_ROTATE_FAST_MULTIPLIER : 1;
           if (shipRotateLeft) {
             if (rotationSlowModeRef.current) {
-              ship.angle -= ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier;
+              ship.angle -= ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier * deltaTime;
               ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             } else {
-              ship.angle -= ROTATION_SPEED * touchMultiplier;
+              ship.angle -= ROTATION_SPEED * touchMultiplier * deltaTime;
               ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             }
           }
           if (shipRotateRight) {
             if (rotationSlowModeRef.current) {
-              ship.angle += ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier;
+              ship.angle += ROTATION_SPEED * ROTATION_SLOW_MULTIPLIER * touchMultiplier * deltaTime;
               ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             } else {
-              ship.angle += ROTATION_SPEED * touchMultiplier;
+              ship.angle += ROTATION_SPEED * touchMultiplier * deltaTime;
               ship.rotation = (ship.angle * 180 / Math.PI) % 360;
             }
           }
