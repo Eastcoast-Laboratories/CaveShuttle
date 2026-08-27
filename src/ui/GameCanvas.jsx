@@ -122,20 +122,7 @@ function getCanvasContentGeom(canvas, w, h) {
   const now = Date.now();
   if (now - lastCanvasGeomLog > CANVAS_GEOM_LOG_INTERVAL) {
     lastCanvasGeomLog = now;
-    console.log('[CANVAS_GEOM]', {
-      logicalW: w,
-      logicalH: h,
-      rectWidth: rect.width,
-      rectHeight: rect.height,
-      elementRatio: elementRatio.toFixed(3),
-      canvasRatio: canvasRatio.toFixed(3),
-      drawW: Math.round(drawW),
-      drawH: Math.round(drawH),
-      scale: +scale.toFixed(3),
-      contentLeftClient: Math.round(contentLeftClient),
-      contentTopClient: Math.round(contentTopClient),
-      topOffset: +topOffset.toFixed(2),
-    });
+    // console.log('[CANVAS_GEOM]', { logicalW: w, logicalH: h, rectWidth: rect.width, rectHeight: rect.height, elementRatio: elementRatio.toFixed(3), canvasRatio: canvasRatio.toFixed(3), drawW: Math.round(drawW), drawH: Math.round(drawH), scale: +scale.toFixed(3), contentLeftClient: Math.round(contentLeftClient), contentTopClient: Math.round(contentTopClient), topOffset: +topOffset.toFixed(2), });
   }
   return { scale, contentLeftClient, contentTopClient, contentBottomClient: rect.top + offsetY + drawH };
 }
@@ -198,7 +185,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     const updateHeight = () => {
       const aspect = window.innerWidth / window.innerHeight;
       const nextHeight = aspect < 1 ? Math.round(width / aspect) : GAME_HEIGHT;
-      console.log('[PORTRAIT_VIEWPORT] aspect:', aspect.toFixed(3), '-> height:', nextHeight);
+      // console.log('[PORTRAIT_VIEWPORT] aspect:', aspect.toFixed(3), '-> height:', nextHeight);
       setHeight(nextHeight);
     };
     window.addEventListener('resize', updateHeight);
