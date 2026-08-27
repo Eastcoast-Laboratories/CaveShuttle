@@ -38,6 +38,7 @@ function App() {
     tiltNeutralBeta, setTiltNeutralBeta,
     tiltNeutralGamma, setTiltNeutralGamma,
     tiltSteeringRotated, setTiltSteeringRotated,
+    orientationMode,
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled, setOnlineSyncEnabled,
     twoPlayer, setTwoPlayer,
@@ -995,7 +996,7 @@ function App() {
         <>
           <div id="hud-overlay" style={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0, 0, 0, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 10 }}>
             <div id="hud-stats" style={{ display: 'flex', flexDirection: 'row', gap: '16px', fontSize: '12px', color: '#fff', alignItems: 'center' }}>
-              <span className="hud-score-label" style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>SCORE {score}</span>
+              <span className="hud-score-label" style={{ fontWeight: '600', whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>SCORE {score}</span>
               <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LIVES {lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives))}</span>
               <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LEVEL {level}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

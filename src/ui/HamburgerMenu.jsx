@@ -54,6 +54,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
     touchButtonOpacity, setTouchButtonOpacity,
     vibrationEnabled, setVibrationEnabled,
     tiltSteering, tiltSteeringRotated, setTiltSteeringRotated,
+    orientationMode, setOrientationMode,
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled,
     twoPlayer, playerName, player2Name, currentPackId,
@@ -431,6 +432,24 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           )}
         </>
       )}
+
+      <hr />
+      <h3 className="hamburger-section-title">{t.orientation}</h3>
+      <div className="hamburger-settings-group">
+        <div className="hamburger-tri-toggle" style={{ display: 'flex', gap: '2px' }}>
+          {['landscape', 'portrait', 'auto'].map((mode) => (
+            <button
+              key={mode}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => { console.log('[ORIENTATION_MODE] setting to:', mode); setOrientationMode(mode); }}
+              className={`hamburger-toggle-btn ${orientationMode === mode ? 'on' : 'off'}`}
+              style={{ minWidth: '48px', textAlign: 'center' }}
+            >
+              {mode === 'landscape' ? t.orientationLandscape : mode === 'portrait' ? t.orientationPortrait : t.orientationAuto}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <hr />
       <h3 className="hamburger-section-title">{t.sound}</h3>

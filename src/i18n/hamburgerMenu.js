@@ -23,6 +23,10 @@ export const hamburgerMenuTranslations = {
     enabled: 'Aktiviert',
     sendCrashReports: 'Absturzberichte senden',
     onlineSync: 'Highscores online syncen',
+    orientation: 'Ausrichtung',
+    orientationLandscape: 'Land',
+    orientationPortrait: 'Port',
+    orientationAuto: 'Auto',
 
     // Button labels
     on: 'AN',
@@ -111,6 +115,10 @@ export const hamburgerMenuTranslations = {
     enabled: 'Enabled',
     sendCrashReports: 'Send crash reports',
     onlineSync: 'Sync highscores online',
+    orientation: 'Orientation',
+    orientationLandscape: 'Land',
+    orientationPortrait: 'Port',
+    orientationAuto: 'Auto',
 
     // Button labels
     on: 'ON',

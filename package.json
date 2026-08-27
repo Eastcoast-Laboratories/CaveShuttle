@@ -24,6 +24,7 @@
     "@capacitor/device": "^8.0.3",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.4.1",
+    "@capacitor/screen-orientation": "^8.0.1",
     "@geckos.io/client": "^3.1.0",
     "@geckos.io/server": "^3.1.0",
     "nanoid": "^3.3.17",

@@ -160,6 +160,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     showTouchButtons, joystickEnabled, isMobile,
     twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
     tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated,
+    orientationMode,
     tiltSensorRef,
   } = useSettings();
   // [PORTRAIT_VIEWPORT] Width stays fixed at GAME_WIDTH (preserves the horizontal
@@ -168,33 +169,39 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   // the level is rendered instead of being letterboxed with the level background
   // color above/below a landscape-shaped slice.
   const width = widthProp ?? GAME_WIDTH;
+  // Determine if portrait layout should be used based on orientationMode setting.
+  // 'auto' = detect from screen aspect ratio, 'portrait' = force portrait, 'landscape' = force landscape.
+  const isPortraitMode = orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight);
   const [height, setHeight] = useState(() => {
     if (heightProp) return heightProp;
     if (typeof window === 'undefined') return GAME_HEIGHT;
+    if (orientationMode === 'landscape') return GAME_HEIGHT;
     const aspect = window.innerWidth / window.innerHeight;
-    return aspect < 1 ? Math.round(width / aspect) : GAME_HEIGHT;
+    return aspect < 1 || orientationMode === 'portrait' ? Math.round(width / aspect) : GAME_HEIGHT;
   });
 
   // Portrait zoom: in portrait orientation the canvas is very tall, so zoom in
   // to show a smaller portion of the level at a larger scale.
-  const portraitZoom = height > width ? Math.min(PORTRAIT_ZOOM_MAX, height / width * PORTRAIT_ZOOM_FACTOR) : 1;
+  const portraitZoom = isPortraitMode ? Math.min(PORTRAIT_ZOOM_MAX, height / width * PORTRAIT_ZOOM_FACTOR) : 1;
   const viewWidth = width / portraitZoom;
   const viewHeight = height / portraitZoom;
   useEffect(() => {
     if (heightProp) return;
     const updateHeight = () => {
+      if (orientationMode === 'landscape') { setHeight(GAME_HEIGHT); return; }
       const aspect = window.innerWidth / window.innerHeight;
-      const nextHeight = aspect < 1 ? Math.round(width / aspect) : GAME_HEIGHT;
-      // console.log('[PORTRAIT_VIEWPORT] aspect:', aspect.toFixed(3), '-> height:', nextHeight);
+      const nextHeight = aspect < 1 || orientationMode === 'portrait' ? Math.round(width / aspect) : GAME_HEIGHT;
+      console.log('[ORIENTATION_HEIGHT] mode:', orientationMode, 'aspect:', aspect.toFixed(3), '-> height:', nextHeight);
       setHeight(nextHeight);
     };
+    updateHeight();
     window.addEventListener('resize', updateHeight);
     window.addEventListener('orientationchange', updateHeight);
     return () => {
       window.removeEventListener('resize', updateHeight);
       window.removeEventListener('orientationchange', updateHeight);
     };
-  }, [heightProp, width]);
+  }, [heightProp, width, orientationMode]);
   const canvasRef = useRef(null);
   const soundManager = useRef(null);
   const { manager: networkManager } = useNetwork();
