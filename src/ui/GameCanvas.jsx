@@ -3284,6 +3284,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Restore screen shake / portrait zoom transform
+      // Render particles before restore so they are affected by portrait zoom
+      particleSystem.current.render(ctx, camera.x, camera.y);
       ctx.restore();
 
       // Draw all touch control buttons (inside canvas).
@@ -3311,9 +3313,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
         drawTouchButton(ctx, btn, active, touchButtonOpacity, podIconRef.current, crosshairIconRef.current);
       }
-      // Render particles
-      particleSystem.current.render(ctx, camera.x, camera.y);
-
       // X-axis wrapping based on level width, not canvas width.
       // Only wrap if the crossing body is not blocked by a wall at the boundary.
       // While the pod is docked (towed), ship and pod must wrap in the SAME frame

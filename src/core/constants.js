@@ -34,7 +34,7 @@ export const GAME_SPEED = 0.5; // Global game speed multiplier (1.0 = full speed
 // Canvas internal resolution (fixed aspect ratio 4:3)
 export const GAME_WIDTH = 800;
 export const GAME_HEIGHT = 600;
-export const HUD_HEIGHT = 22;
+export const HUD_HEIGHT = 22; // TODO: calculate this dynamiclly instead of just fix. this only affects the button position distance from top
 
 
 // Camera scrolling
