@@ -72,6 +72,13 @@ const WORMHOLE_PARTICLE_COLORS = [
   'rgba(255,200,255,0.7)',
 ];
 
+// Fuel depot tile chars and offsets (hoisted to module level to avoid per-frame array allocation)
+const FUEL_DEPOT_CHARS = ['`', 'a', 'b', 'c'];
+const FUEL_DEPOT_OFFSETS = [[0, 0], [1, 0], [0, 1], [1, 1]];
+
+// Wormhole easing function (hoisted to module level to avoid per-frame closure allocation)
+const easeInCubic = t => t * t * t;
+
 // Minimum distance from a point (px, py) to a line segment (x1,y1)-(x2,y2)
 function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
   const dx = x2 - x1;
@@ -1211,6 +1218,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           cameraRef.current = { x: camX, y: camY };
           bulletsRef.current = [];
           playerBulletsRef.current = [];
+          particleSystem.current.clear();
         }
         setBunkers(bunkerPositions.map(bp => new Bunker(bp.x, bp.y, bp.type)));
         setEnemyMines(enemyMinePositions.map(ep => new EnemyMine(ep.x, ep.y)));
@@ -2005,7 +2013,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Door state machine: handle opening/closing animation and auto-close
       if (level) {
-        for (const door of doorsRef.current) {
+        const _doors = doorsRef.current;
+        for (let di = 0; di < _doors.length; di++) {
+          const door = _doors[di];
           switch (door.state) {
             case 'closed':
               // Door is solid (p tiles), waiting for trigger
@@ -2017,7 +2027,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 door.filledCols--;
                 // Clear one column from the left side
                 const colToClear = door.colStart + door.filledCols;
-                for (const row of door.rows) {
+                for (let ri = 0; ri < door.rows.length; ri++) {
+                  const row = door.rows[ri];
                   const rowStr = level.layout[row];
                   level.layout[row] = rowStr.substring(0, colToClear) + ' ' + rowStr.substring(colToClear + 1);
                 }
@@ -2040,7 +2051,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 door.filledCols++;
                 // Fill one column from the left side
                 const colToFill = door.colStart + door.filledCols - 1;
-                for (const row of door.rows) {
+                for (let ri = 0; ri < door.rows.length; ri++) {
+                  const row = door.rows[ri];
                   const rowStr = level.layout[row];
                   level.layout[row] = rowStr.substring(0, colToFill) + 'p' + rowStr.substring(colToFill + 1);
                 }
@@ -2357,43 +2369,66 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Check for power-up tile pickup (ship or pod touches the tile)
+      // Zero-allocation: check each point directly instead of building an array of objects.
       if (level && tilesetLoaded && gameState === 'playing' && !isDying) {
         const scaledSize = tileRenderer.current.getScaledTileSize();
-        // Check ship center and perimeter points for powerup contact
-        const checkPoints = [{ x: ship.x, y: ship.y }];
         const numPoints = 8;
-        for (let i = 0; i < numPoints; i++) {
-          const angle = (i / numPoints) * Math.PI * 2;
-          checkPoints.push({
-            x: ship.x + Math.cos(angle) * SHIP_COLLISION_RADIUS,
-            y: ship.y + Math.sin(angle) * SHIP_COLLISION_RADIUS
-          });
-        }
-        // Also check pod perimeter points if pod is active
-        const pod = podRef.current;
-        if (pod && pod.active) {
-          checkPoints.push({ x: pod.x, y: pod.y });
-          for (let i = 0; i < numPoints; i++) {
-            const angle = (i / numPoints) * Math.PI * 2;
-            checkPoints.push({
-              x: pod.x + Math.cos(angle) * POD_COLLISION_RADIUS,
-              y: pod.y + Math.sin(angle) * POD_COLLISION_RADIUS
-            });
-          }
-        }
-        for (const pt of checkPoints) {
-          const tileX = Math.floor(pt.x / scaledSize);
-          const tileY = Math.floor(pt.y / scaledSize);
+        let powerupFound = false;
+
+        // Check ship center + 8 perimeter points
+        const checkPoint = (px, py) => {
+          const tileX = Math.floor(px / scaledSize);
+          const tileY = Math.floor(py / scaledSize);
           if (tileY >= 0 && tileY < level.layout.length) {
             const row = level.layout[tileY];
             if (tileX >= 0 && tileX < row.length) {
               const tileHere = row[tileX];
               if (tileHere === GOD_MODE_TILE) {
                 activateGodMode(tileX, tileY);
-                break;
+                return true;
               } else if (tileHere === MULTI_SHOT_TILE) {
                 activateMultiShot(tileX, tileY);
-                break;
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+
+        // Ship center
+        if (checkPoint(ship.x, ship.y)) {
+          powerupFound = true;
+        }
+        // Ship perimeter
+        if (!powerupFound) {
+          for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2;
+            if (checkPoint(
+              ship.x + Math.cos(angle) * SHIP_COLLISION_RADIUS,
+              ship.y + Math.sin(angle) * SHIP_COLLISION_RADIUS
+            )) {
+              powerupFound = true;
+              break;
+            }
+          }
+        }
+        // Pod center + perimeter
+        if (!powerupFound) {
+          const pod = podRef.current;
+          if (pod && pod.active) {
+            if (checkPoint(pod.x, pod.y)) {
+              powerupFound = true;
+            }
+            if (!powerupFound) {
+              for (let i = 0; i < numPoints; i++) {
+                const angle = (i / numPoints) * Math.PI * 2;
+                if (checkPoint(
+                  pod.x + Math.cos(angle) * POD_COLLISION_RADIUS,
+                  pod.y + Math.sin(angle) * POD_COLLISION_RADIUS
+                )) {
+                  powerupFound = true;
+                  break;
+                }
               }
             }
           }
@@ -3108,11 +3143,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Slight flicker around the star's base brightness
           const flicker = 0.85 + 0.15 * Math.sin(time * star.flickerSpeed + star.flickerOffset);
           const alpha = Math.max(0, Math.min(1, star.brightness * flicker));
-          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
           ctx.beginPath();
           ctx.arc(star.x - cameraRef.current.x, star.y - cameraRef.current.y, star.size, 0, Math.PI * 2);
           ctx.fill();
         }
+        ctx.globalAlpha = 1;
       }
 
       // Draw level with camera offset
@@ -3125,7 +3162,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const scaledSize = tileRenderer.current.getScaledTileSize();
         const palette = tileRenderer.current.palette || [];
         const fuelColor = palette[50] || [255, 255, 0];
-        ctx.fillStyle = `rgba(${fuelColor[0]}, ${fuelColor[1]}, ${fuelColor[2]}, 1)`;
+        ctx.fillStyle = `rgb(${fuelColor[0]},${fuelColor[1]},${fuelColor[2]})`;
         for (const depot of fuelDepotsRef.current.values()) {
           const x = depot.x * scaledSize;
           const y = depot.y * scaledSize;
@@ -3138,8 +3175,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const fillY = y + h - fillHeight;
           ctx.fillRect(x - cameraRef.current.x, fillY - cameraRef.current.y, w, fillHeight);
           // Draw the depot border tiles on top (black interior made transparent)
-          const chars = ['`', 'a', 'b', 'c'];
-          const offsets = [[0, 0], [1, 0], [0, 1], [1, 1]];
+          const chars = FUEL_DEPOT_CHARS;
+          const offsets = FUEL_DEPOT_OFFSETS;
           for (let i = 0; i < chars.length; i++) {
             const tileCanvas = tileRenderer.current.getTileBorderCanvas(chars[i].charCodeAt(0));
             if (tileCanvas) {
@@ -3161,8 +3198,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Wormhole scale/alpha: ship and pod shrink and fade as they are pulled in
-      const easeIn = t => t * t * t;
-      const wormholeScale = isWormhole ? Math.max(0, 1 - easeIn(wormholeProgress)) : 1;
+      const wormholeScale = isWormhole ? Math.max(0, 1 - easeInCubic(wormholeProgress)) : 1;
       const wormholeAlpha = isWormhole ? Math.max(0, 1 - wormholeProgress) : 1;
 
       // Draw ship with camera offset (hidden while exploding)

@@ -12,6 +12,18 @@ export class Particle {
     this.active = true;
   }
 
+  reset(x, y, vx, vy, color, size, lifetime) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.color = color;
+    this.size = size;
+    this.lifetime = lifetime;
+    this.age = 0;
+    this.active = true;
+  }
+
   update(dt) {
     if (!this.active) return;
 
