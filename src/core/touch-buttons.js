@@ -101,6 +101,11 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
     fireWidth = baseFireWidth * 2 + buttonGap;
   }
 
+  const leftWidthScale = options.leftWidthScale || 1;
+  rotateLeftWidth *= leftWidthScale;
+  rotateRightWidth *= leftWidthScale;
+  const leftButtonGap = buttonGap * leftWidthScale;
+
   // Right cluster geometry.
   const fireX = w - fireWidth - buttonMargin;
   const specialX = fireX - buttonGap - specialWidth;
@@ -120,7 +125,7 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
     : (anchorBottom ? bottomEdge - rotateHeight : topEdge + HUD_HEIGHT);
   if (!tiltSteeringMode && (forceVisible || showTouchButtons)) {
     const rotateLeftX = buttonMargin;
-    const rotateRightX = buttonMargin + rotateLeftWidth + buttonGap;
+    const rotateRightX = buttonMargin + rotateLeftWidth + leftButtonGap;
     buttons.push(
       { type: typeMap.rotateLeft || 'rotateLeft', x: rotateLeftX, y: rotateY, w: rotateLeftWidth, h: rotateHeight, label: '↺', font: `${24 * sizeScale}px Arial`, color: 'rgba(0, 100, 255, 0.2)', activeColor: 'rgba(0, 100, 255, 0.5)', hitX: rotateLeftX - buttonHitMargin, hitY: rotateY - buttonHitMargin, hitW: rotateLeftWidth + buttonHitMargin * 2, hitH: rotateHeight + buttonHitMargin * 2 },
       { type: typeMap.rotateRight || 'rotateRight', x: rotateRightX, y: rotateY, w: rotateRightWidth, h: rotateHeight, label: '↻', font: `${24 * sizeScale}px Arial`, color: 'rgba(0, 100, 255, 0.2)', activeColor: 'rgba(0, 100, 255, 0.5)', hitX: rotateRightX - buttonHitMargin, hitY: rotateY - buttonHitMargin, hitW: rotateRightWidth + buttonHitMargin * 2, hitH: rotateHeight + buttonHitMargin * 2 }
@@ -144,7 +149,7 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
       // available height (screen height without HUD).
       const podX = buttonMargin;
       const podY = rotateY + rotateHeight + buttonGap;
-      const podW = rotateLeftWidth + buttonGap + rotateRightWidth;
+      const podW = rotateLeftWidth + leftButtonGap + rotateRightWidth;
       const availableHeight = h - topEdge - HUD_HEIGHT - bottomOffset;
       const podH = (availableHeight - buttonGap) * 1 / 3;
       buttons.push(
@@ -273,6 +278,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
       maximizeRotateHeight: true,
       podBelowRotate: true,
       doubleFireWidth: true,
+      leftWidthScale: 1.4,
       bottomOffset,
     });
   }
