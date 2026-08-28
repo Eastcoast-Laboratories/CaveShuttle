@@ -13,7 +13,7 @@ export class Ship {
     this.fuel = FUEL_MAX;
   }
 
-  update(dt, gravity = GRAVITY, gravityMultiplier = 1.0) {
+  update(dt, gravity = GRAVITY, gravityMultiplier = 1.0, frictionMultiplier = 1.0) {
     // Apply gravity (10% stronger, multiplied by difficulty multiplier)
     this.vy += gravity * gravityMultiplier * dt;
 
@@ -30,8 +30,9 @@ export class Ship {
     this.y += this.vy * dt;
 
     // Friction
-    this.vx *= Math.pow(FRICTION, dt);
-    this.vy *= Math.pow(FRICTION, dt);
+    const friction = Math.pow(FRICTION, dt * frictionMultiplier);
+    this.vx *= friction;
+    this.vy *= friction;
 
     // Clamp fuel
     if (this.fuel < 0) this.fuel = 0;

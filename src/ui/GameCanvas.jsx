@@ -344,6 +344,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tileImpactsRef = useRef(new Map());
   // Respawn immunity: timestamp when immunity expires (0 = no immunity)
   const respawnImmunityTimeRef = useRef(0);
+  // Cheat: Ctrl+Alt+Shift+Win+G toggles zero gravity
+  const gravityCheatActiveRef = useRef(false);
 
   // [TILT] Listen to deviceorientation events and update sensor ref + tilt state
   useEffect(() => {
@@ -457,6 +459,16 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
 
       setKeys(prev => ({ ...prev, [e.key]: true }));
+
+      // Cheat code: Ctrl+Alt+Shift+Win+G toggles zero gravity
+      if (e.key === 'g' || e.key === 'G') {
+        if (e.ctrlKey && e.altKey && e.shiftKey && e.metaKey) {
+          gravityCheatActiveRef.current = !gravityCheatActiveRef.current;
+          console.log('[CHEAT] Zero gravity:', gravityCheatActiveRef.current ? 'ON' : 'OFF');
+          e.preventDefault();
+          return;
+        }
+      }
       // Rotation ramp-up: detect double-keystroke for immediate fast rotation
       const isRotateKey = e.key === 'ArrowLeft' || e.key === 'ArrowRight' ||
         ((!twoPlayer || networkRole === 'host') && (e.key === 'a' || e.key === 'A' || e.key === 'd' || e.key === 'D'));
@@ -2280,7 +2292,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (networkRole !== 'client') {
       // Update ship (frozen while exploding)
       if (!isDying) {
-        ship.update(deltaTime, GRAVITY, gravityMultiplier);
+        ship.update(deltaTime, gravityCheatActiveRef.current ? 0 : GRAVITY, gravityMultiplier, gravityCheatActiveRef.current ? 5 : 1);
 
         // Consume fuel when shield is active (but not while refueling at a fuel depot)
         if (shieldAndBeamActive && !isRefueling) {
