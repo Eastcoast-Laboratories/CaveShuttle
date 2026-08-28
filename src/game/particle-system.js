@@ -80,12 +80,23 @@ export class ParticleSystem {
   }
 
   update(dt) {
-    this.particles.forEach(particle => particle.update(dt));
-    this.particles = this.particles.filter(p => p.active);
+    // In-place compaction instead of filter() to avoid allocating a new array every frame
+    // (this runs 60x/sec regardless of particle count -> significant GC pressure at high counts).
+    let writeIndex = 0;
+    for (let i = 0; i < this.particles.length; i++) {
+      const particle = this.particles[i];
+      particle.update(dt);
+      if (particle.active) {
+        this.particles[writeIndex++] = particle;
+      }
+    }
+    this.particles.length = writeIndex;
   }
 
   render(ctx, offsetX, offsetY) {
-    this.particles.forEach(particle => particle.render(ctx, offsetX, offsetY));
+    for (let i = 0; i < this.particles.length; i++) {
+      this.particles[i].render(ctx, offsetX, offsetY);
+    }
   }
 
   clear() {
