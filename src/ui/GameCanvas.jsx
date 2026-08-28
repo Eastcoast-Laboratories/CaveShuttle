@@ -2415,15 +2415,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Update bunkers and spawn bullets
       if (gameState === 'playing') {
         // Update enemy mines (host is authoritative; client only checks collisions)
+        // Visibility culling: only update mines within view + buffer
+        const mineCullMargin = 200;
+        const mineMinX = camera.x - mineCullMargin;
+        const mineMaxX = camera.x + viewWidth + mineCullMargin;
+        const mineMinY = camera.y - mineCullMargin;
+        const mineMaxY = camera.y + viewHeight + mineCullMargin;
         enemyMines.forEach((es, i) => {
           if (es.active) {
-            if (networkRole !== 'client') {
+            // Skip update for mines far outside the visible area
+            const inView = es.x >= mineMinX && es.x <= mineMaxX && es.y >= mineMinY && es.y <= mineMaxY;
+            if (inView && networkRole !== 'client') {
               es.update(deltaTime, level, tileRenderer.current, ship.x, ship.y);
               if (Math.random() < 0.01) {
                 console.log('[ENEMY_MINE]', i, 'pos:', es.x.toFixed(0), es.y.toFixed(0), 'angle:', es.angle.toFixed(2), 'active:', es.active);
               }
             }
-            // Collision with player ship
+            // Collision with player ship (always check, regardless of view culling)
             const dx = es.x - ship.x;
             const dy = es.y - ship.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -2452,8 +2460,16 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
         const newBullets = [...bullets];
         if (networkRole !== 'client') {
+          // Visibility culling: only update/shoot bunkers within view + 400px
+          const bunkerCullMargin = 400;
+          const bunkerMinX = camera.x - bunkerCullMargin;
+          const bunkerMaxX = camera.x + viewWidth + bunkerCullMargin;
+          const bunkerMinY = camera.y - bunkerCullMargin;
+          const bunkerMaxY = camera.y + viewHeight + bunkerCullMargin;
           bunkers.forEach(bunker => {
             if (bunker.active) {
+              // Skip bunkers far outside the visible area
+              if (bunker.x < bunkerMinX || bunker.x > bunkerMaxX || bunker.y < bunkerMinY || bunker.y > bunkerMaxY) return;
               const shot = bunker.update(deltaTime, ship.x, ship.y);
               if (shot) {
                 newBullets.push(new Bullet(bunker.x, bunker.y, shot.angle, shot.speed));
@@ -2556,13 +2572,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               }
             });
 
-            // Remove bullet if it goes too far off-screen (out of bounds)
-            const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
+            // Remove bullet if it's far outside the visible area AND moving away from it.
             if (bulletHit) return false;
-            if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
-                bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
-              return false;
-            }
+            const pBulletCullMargin = 400;
+            if (bullet.x < camera.x - pBulletCullMargin && bullet.vx <= 0) return false;
+            if (bullet.x > camera.x + viewWidth + pBulletCullMargin && bullet.vx >= 0) return false;
+            if (bullet.y < camera.y - pBulletCullMargin && bullet.vy <= 0) return false;
+            if (bullet.y > camera.y + viewHeight + pBulletCullMargin && bullet.vy >= 0) return false;
 
             // Skip tile-based collision checks when bullet is outside level bounds
             // to avoid getTileAt() errors on negative coordinates
@@ -2657,10 +2673,26 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           if (!bullet.active) return false;
           bullet.update(deltaTime);
 
-          // Remove bullet if it goes too far off-screen (out of bounds)
-          const BULLET_MAX_Y = SKY_FULL_STAR_DENSITY + 300;
-          if (bullet.x < -100 || bullet.x > level.width * 16 + 100 ||
-              bullet.y < -BULLET_MAX_Y || bullet.y > level.height * 16 + 100) {
+          // Remove bullet if it's far outside the visible area AND moving away from it.
+          // Keep bullets that are outside but flying towards the visible area.
+          const bulletCullMargin = 400;
+          const bulletMinX = camera.x - bulletCullMargin;
+          const bulletMaxX = camera.x + viewWidth + bulletCullMargin;
+          const bulletMinY = camera.y - bulletCullMargin;
+          const bulletMaxY = camera.y + viewHeight + bulletCullMargin;
+          if (bullet.x < bulletMinX && bullet.vx <= 0) {
+            bullet.active = false;
+            return false;
+          }
+          if (bullet.x > bulletMaxX && bullet.vx >= 0) {
+            bullet.active = false;
+            return false;
+          }
+          if (bullet.y < bulletMinY && bullet.vy <= 0) {
+            bullet.active = false;
+            return false;
+          }
+          if (bullet.y > bulletMaxY && bullet.vy >= 0) {
             bullet.active = false;
             return false;
           }
@@ -3135,10 +3167,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Buttons are rendered by tileRenderer.render() using their actual tile appearance (L, N)
 
-      // Draw enemy mines with camera offset
+      // Draw enemy mines with camera offset (cull off-screen mines)
       const showRedDot = Math.floor(performance.now() / 500) % 2 === 0;
+      const mineRenderMargin = 50;
       enemyMines.forEach((es, i) => {
         if (!es.active) return;
+        // Skip rendering mines outside the visible area
+        if (es.x < camera.x - mineRenderMargin || es.x > camera.x + viewWidth + mineRenderMargin ||
+            es.y < camera.y - mineRenderMargin || es.y > camera.y + viewHeight + mineRenderMargin) return;
         ctx.save();
         ctx.translate(es.x - camera.x, es.y - camera.y);
         ctx.rotate(es.angle);
