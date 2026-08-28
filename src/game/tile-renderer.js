@@ -302,7 +302,7 @@ export class TileRenderer {
       console.error('[TILE_RENDERER] getTileAt(' + source + '): row undefined at tileY=', tileY, '(layout has gap?)');
       return null;
     }
-    if (!Number.isFinite(tileX) || tileX < 0 || tileX >= row.length) {
+    if (!Number.isFinite(tileX) || tileX < 0 || tileX > row.length) {
       if (!Number.isFinite(tileX)) {
         console.error('[TILE_RENDERER] getTileAt(' + source + '): NaN tileX (x=', x, 'y=', y, ')');
       } else if (tileX < 0) {
