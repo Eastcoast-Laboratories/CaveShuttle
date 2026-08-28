@@ -64,6 +64,14 @@ function ensureBrightPodColor(rgb, minChannel = 64) {
 let lastCanvasGeomLog = 0;
 const CANVAS_GEOM_LOG_INTERVAL = 5000;
 
+// Precomputed wormhole particle colors (avoids per-spawn template literal allocation)
+const WORMHOLE_PARTICLE_COLORS = [
+  'rgba(120,200,255,0.7)',
+  'rgba(180,200,255,0.7)',
+  'rgba(220,200,255,0.7)',
+  'rgba(255,200,255,0.7)',
+];
+
 // Minimum distance from a point (px, py) to a line segment (x1,y1)-(x2,y2)
 function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
   const dx = x2 - x1;
@@ -255,7 +263,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const joystickTapTimerRef = useRef(null); // Timer to distinguish short tap (fire) from long press (joystick)
   const doorsRef = useRef([]); // Door system: sliding doors between H and G tiles
   const [level, setLevel] = useState(null);
-  const [camera, setCamera] = useState({ x: 0, y: 0 });
+  // camera is a ref, not state: it's only read inside the game loop for canvas drawing/culling
+  // and never used in JSX. Using setState here would trigger a full React re-render every
+  // single frame (60x/sec) unconditionally, which is expensive on low-end devices.
+  const cameraRef = useRef({ x: 0, y: 0 });
   const [tilesetLoaded, setTilesetLoaded] = useState(false);
   const [levelReady, setLevelReady] = useState(false);
   const [pod, setPod] = useState(null);
@@ -275,8 +286,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const respawnAreasRef = useRef([]);
   const [bunkers, setBunkers] = useState([]);
   const [enemyMines, setEnemyMines] = useState([]);
-  const [bullets, setBullets] = useState([]);
-  const [playerBullets, setPlayerBullets] = useState([]);
+  // bullets/playerBullets are refs, not state: same rationale as camera above.
+  const bulletsRef = useRef([]);
+  const playerBulletsRef = useRef([]);
   // POD button icon
   const podIconRef = useRef(null);
   // Fire button crosshair icon
@@ -288,7 +300,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const mineRedImageRef = useRef(null);
   const [buttons, setButtons] = useState([]);
   const [sliders, setSliders] = useState([]);
-  const [screenShake, setScreenShake] = useState({ x: 0, y: 0, intensity: 0 });
+  // screenShake is a ref, not state: it's updated every frame during shake and only
+  // read in canvas rendering (never in JSX). setState here would re-render React every frame.
+  const screenShakeRef = useRef({ x: 0, y: 0, intensity: 0 });
   const [podExploded, setPodExploded] = useState(false);
   const [podExplosionTime, setPodExplosionTime] = useState(null);
   const [podStartPosition, setPodStartPosition] = useState(null);
@@ -569,7 +583,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           particleSystem.current.spawnExplosion(data.x, data.y, 40, '#ffff00');
           particleSystem.current.spawnExplosion(data.x, data.y, 30, '#00ff00');
           if (soundManager.current) soundManager.current.playOnce('explosion');
-          setScreenShake({ x: 0, y: 0, intensity: 15 });
+          screenShakeRef.current = { x: 0, y: 0, intensity: 15 };
           vibrateIfEnabled([100, 50, 100, 50, 200]);
           ship.setVelocity(0, 0);
           ship.setAccelerate(false);
@@ -1188,12 +1202,15 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           meltdownEffectsTriggeredRef.current = false;
           meltdownGameOverCalledRef.current = false;
           planetExplosionRef.current = { active: false, startTime: 0, alpha: 0, x: 0, y: 0 };
+          screenShakeRef.current = { x: 0, y: 0, intensity: 0 };
           // Reset camera to center on ship spawn, clamped to level bounds
           const levelWidth = lenx * scaledSize;
           const levelHeight = layout.length * scaledSize;
           const camX = Math.max(0, Math.min(restartPos.x - viewWidth / 2, Math.max(0, levelWidth - viewWidth)));
           const camY = Math.max(0, Math.min(restartPos.y - viewHeight / 2, Math.max(0, levelHeight - viewHeight)));
-          setCamera({ x: camX, y: camY });
+          cameraRef.current = { x: camX, y: camY };
+          bulletsRef.current = [];
+          playerBulletsRef.current = [];
         }
         setBunkers(bunkerPositions.map(bp => new Bunker(bp.x, bp.y, bp.type)));
         setEnemyMines(enemyMinePositions.map(ep => new EnemyMine(ep.x, ep.y)));
@@ -1601,7 +1618,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       particleSystem.current.spawnExplosion(ship.x, ship.y, 40, '#ffff00');
       particleSystem.current.spawnExplosion(ship.x, ship.y, 30, '#00ff00');
       if (soundManager.current) soundManager.current.playOnce('explosion');
-      setScreenShake({ x: 0, y: 0, intensity: 15 });
+      screenShakeRef.current = { x: 0, y: 0, intensity: 15 };
       vibrateIfEnabled([100, 50, 100, 50, 200]);
       ship.setVelocity(0, 0);
       ship.setAccelerate(false);
@@ -1692,8 +1709,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
     // Draw a glowing spiral wormhole at world coordinates (wx, wy) with progress 0..1
     const drawWormhole = (ctx, wx, wy, progress, time) => {
-      const screenX = wx - camera.x;
-      const screenY = wy - camera.y;
+      const screenX = wx - cameraRef.current.x;
+      const screenY = wy - cameraRef.current.y;
       const maxRadius = 120;
       const radius = maxRadius * (0.2 + 0.8 * progress);
       const spin = time * 0.004;
@@ -1701,20 +1718,21 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Dark core that swallows the ship
       const coreGradient = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, radius);
-      coreGradient.addColorStop(0, 'rgba(0, 0, 0, 1)');
-      coreGradient.addColorStop(0.25, 'rgba(10, 0, 40, 0.95)');
-      coreGradient.addColorStop(0.6, 'rgba(60, 20, 120, 0.4)');
-      coreGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      coreGradient.addColorStop(0, 'rgba(0,0,0,1)');
+      coreGradient.addColorStop(0.25, 'rgba(10,0,40,0.95)');
+      coreGradient.addColorStop(0.6, 'rgba(60,20,120,0.4)');
+      coreGradient.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = coreGradient;
       ctx.beginPath();
       ctx.arc(screenX, screenY, radius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Spiral arms
+      // Spiral arms (step 5 instead of 3 to reduce path points by ~40%)
+      const armAlpha = 0.8 - progress * 0.5;
       for (let i = 0; i < arms; i++) {
         const baseAngle = (i / arms) * Math.PI * 2 + spin;
         ctx.beginPath();
-        for (let r = 0; r <= radius; r += 3) {
+        for (let r = 0; r <= radius; r += 5) {
           const angle = baseAngle + (r / radius) * Math.PI * 3;
           const x = screenX + Math.cos(angle) * r;
           const y = screenY + Math.sin(angle) * r;
@@ -1722,23 +1740,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           else ctx.lineTo(x, y);
         }
         const hue = (i * 60 + time * 0.05) % 360;
-        ctx.strokeStyle = `hsla(${hue}, 90%, 70%, ${0.8 - progress * 0.5})`;
+        ctx.strokeStyle = `hsla(${hue},90%,70%,${armAlpha})`;
         ctx.lineWidth = 3 - progress * 2;
         ctx.stroke();
       }
 
       // Bright outer glow
       const glow = ctx.createRadialGradient(screenX, screenY, radius * 0.5, screenX, screenY, radius * 1.5);
-      glow.addColorStop(0, `rgba(255, 255, 255, ${0.6 * progress})`);
-      glow.addColorStop(0.5, `rgba(100, 200, 255, ${0.35 * progress})`);
-      glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      glow.addColorStop(0, `rgba(255,255,255,${0.6 * progress})`);
+      glow.addColorStop(0.5, `rgba(100,200,255,${0.35 * progress})`);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = glow;
       ctx.beginPath();
       ctx.arc(screenX, screenY, radius * 1.5, 0, Math.PI * 2);
       ctx.fill();
 
       // Bright center
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + 0.5 * Math.sin(time * 0.01)})`;
+      ctx.fillStyle = `rgba(255,255,255,${0.5 + 0.5 * Math.sin(time * 0.01)})`;
       ctx.beginPath();
       ctx.arc(screenX, screenY, 8 + 4 * progress, 0, Math.PI * 2);
       ctx.fill();
@@ -1771,7 +1789,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           '| sinceStart:', sinceStart + 's',
           '| sinceRespawn:', sinceRespawn + 's',
           '| gameState:', gameState, '| frozen:', frozen,
-          '| bunkers:', bunkers.length, '| mines:', enemyMines.length, '| bullets:', bullets.length + playerBullets.length,
+          '| bunkers:', bunkers.length, '| mines:', enemyMines.length, '| bullets:', bulletsRef.current.length + playerBulletsRef.current.length,
           '| particles:', particleSystem.current.particles.length,
           '| ship:', ship.x.toFixed(0) + ',' + ship.y.toFixed(0), '| fuel:', ship.fuel.toFixed(0)
         );
@@ -2242,9 +2260,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         networkBulletQueueRef.current.push(...remaining);
       }
 
-      // Pure updater: only appends the bullets spawned/received above.
+      // Append the bullets spawned/received above directly (no setState -> no re-render).
       if (spawnedBullets.length > 0) {
-        setPlayerBullets(prev => [...prev, ...spawnedBullets]);
+        playerBulletsRef.current.push(...spawnedBullets);
       }
 
       // Check if 0.5 seconds have passed after pod explosion, then destroy ship
@@ -2467,19 +2485,17 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Update enemy mines (host is authoritative; client only checks collisions)
         // Visibility culling: only update mines within view + buffer
         const mineCullMargin = 200;
-        const mineMinX = camera.x - mineCullMargin;
-        const mineMaxX = camera.x + viewWidth + mineCullMargin;
-        const mineMinY = camera.y - mineCullMargin;
-        const mineMaxY = camera.y + viewHeight + mineCullMargin;
-        enemyMines.forEach((es, i) => {
+        const mineMinX = cameraRef.current.x - mineCullMargin;
+        const mineMaxX = cameraRef.current.x + viewWidth + mineCullMargin;
+        const mineMinY = cameraRef.current.y - mineCullMargin;
+        const mineMaxY = cameraRef.current.y + viewHeight + mineCullMargin;
+        for (let mi = 0; mi < enemyMines.length; mi++) {
+          const es = enemyMines[mi];
           if (es.active) {
             // Skip update for mines far outside the visible area
             const inView = es.x >= mineMinX && es.x <= mineMaxX && es.y >= mineMinY && es.y <= mineMaxY;
             if (inView && networkRole !== 'client') {
               es.update(deltaTime, level, tileRenderer.current, ship.x, ship.y);
-              if (Math.random() < 0.01) {
-                console.log('[ENEMY_MINE]', i, 'pos:', es.x.toFixed(0), es.y.toFixed(0), 'angle:', es.angle.toFixed(2), 'active:', es.active);
-              }
             }
             // Collision with player ship (always check, regardless of view culling)
             const dx = es.x - ship.x;
@@ -2506,23 +2522,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               }
             }
           }
-        });
+        }
 
-        const newBullets = [...bullets];
         if (networkRole !== 'client') {
           // Visibility culling: only update/shoot bunkers within view + 400px
           const bunkerCullMargin = 400;
-          const bunkerMinX = camera.x - bunkerCullMargin;
-          const bunkerMaxX = camera.x + viewWidth + bunkerCullMargin;
-          const bunkerMinY = camera.y - bunkerCullMargin;
-          const bunkerMaxY = camera.y + viewHeight + bunkerCullMargin;
-          bunkers.forEach(bunker => {
+          const bunkerMinX = cameraRef.current.x - bunkerCullMargin;
+          const bunkerMaxX = cameraRef.current.x + viewWidth + bunkerCullMargin;
+          const bunkerMinY = cameraRef.current.y - bunkerCullMargin;
+          const bunkerMaxY = cameraRef.current.y + viewHeight + bunkerCullMargin;
+          for (let bki = 0; bki < bunkers.length; bki++) {
+            const bunker = bunkers[bki];
             if (bunker.active) {
               // Skip bunkers far outside the visible area
-              if (bunker.x < bunkerMinX || bunker.x > bunkerMaxX || bunker.y < bunkerMinY || bunker.y > bunkerMaxY) return;
+              if (bunker.x < bunkerMinX || bunker.x > bunkerMaxX || bunker.y < bunkerMinY || bunker.y > bunkerMaxY) continue;
               const shot = bunker.update(deltaTime, ship.x, ship.y);
               if (shot) {
-                newBullets.push(new Bullet(bunker.x, bunker.y, shot.angle, shot.speed));
+                bulletsRef.current.push(new Bullet(bunker.x, bunker.y, shot.angle, shot.speed));
                 if (soundManager.current) soundManager.current.playOnce('bunkerFire');
                 // [NETWORK] Host broadcasts bunker bullets to the client
                 if (networkRole === 'host' && networkManager) {
@@ -2530,22 +2546,25 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 }
               }
             }
-          });
+          }
         }
         // [NETWORK] Client appends bunker bullets received from the host
         if (networkRole === 'client' && networkBulletQueueRef.current.length) {
           for (const item of networkBulletQueueRef.current.splice(0)) {
             if (item.type === 'bunkerBullet') {
-              newBullets.push(new Bullet(item.x, item.y, item.angle, item.speed));
+              bulletsRef.current.push(new Bullet(item.x, item.y, item.angle, item.speed));
               if (soundManager.current) soundManager.current.playOnce('bunkerFire');
             }
           }
         }
-        setBullets(newBullets);
 
-        // Update player bullets and check collision with bunkers
-        setPlayerBullets(prev => {
-          return prev.filter(bullet => {
+        // Update player bullets and check collision with bunkers.
+        // In-place compaction on playerBulletsRef.current (no filter() allocation, no setState).
+        {
+          const pBullets = playerBulletsRef.current;
+          let pWrite = 0;
+          for (let pbi = 0; pbi < pBullets.length; pbi++) {
+            const bullet = pBullets[pbi];
             // Update position
             bullet.x += bullet.vx * deltaTime;
             bullet.y += bullet.vy * deltaTime;
@@ -2558,10 +2577,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 // Active shield/tractor beam also protects the attached pod
                 if (shieldAndBeamActive && pod.towed) {
                   console.log('[POD_SHIELD] Own bullet hit pod but was blocked by shield');
-                  return false; // Remove bullet without detonating pod
+                  continue; // Remove bullet without detonating pod
                 }
                 if (detonatePod('own-bullet')) {
-                  return false; // Remove bullet
+                  continue; // Remove bullet
                 }
               }
             }
@@ -2629,12 +2648,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             }
 
             // Remove bullet if it's far outside the visible area AND moving away from it.
-            if (bulletHit) return false;
+            if (bulletHit) continue;
             const pBulletCullMargin = 400;
-            if (bullet.x < camera.x - pBulletCullMargin && bullet.vx <= 0) return false;
-            if (bullet.x > camera.x + viewWidth + pBulletCullMargin && bullet.vx >= 0) return false;
-            if (bullet.y < camera.y - pBulletCullMargin && bullet.vy <= 0) return false;
-            if (bullet.y > camera.y + viewHeight + pBulletCullMargin && bullet.vy >= 0) return false;
+            if (bullet.x < cameraRef.current.x - pBulletCullMargin && bullet.vx <= 0) continue;
+            if (bullet.x > cameraRef.current.x + viewWidth + pBulletCullMargin && bullet.vx >= 0) continue;
+            if (bullet.y < cameraRef.current.y - pBulletCullMargin && bullet.vy <= 0) continue;
+            if (bullet.y > cameraRef.current.y + viewHeight + pBulletCullMargin && bullet.vy >= 0) continue;
 
             // Skip tile-based collision checks when bullet is outside level bounds
             // to avoid getTileAt() errors on negative coordinates
@@ -2646,7 +2665,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               const reactorTileHere = tileRenderer.current.getTileAt(level, bullet.x, bullet.y, 'reactor-check');
               if (REACTOR_TILES.includes(reactorTileHere)) {
                 registerReactorHit({ x: bullet.x, y: bullet.y });
-                return false;
+                continue;
               }
 
               // Check collision with walls
@@ -2660,24 +2679,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 const tileX = Math.floor(bullet.x / scaledSize);
                 const tileY = Math.floor(bullet.y / scaledSize);
                 tileImpactsRef.current.set(`${tileX},${tileY}`, performance.now());
-                return false;
+                continue;
               }
 
             } // end in-bounds guard
 
-            return true;
-          });
-        });
+            // Bullet survived all checks — keep it
+            pBullets[pWrite++] = bullet;
+          }
+          pBullets.length = pWrite;
+        }
 
         // Update screen shake
-        if (screenShake.intensity > 0) {
-          const shakeX = (Math.random() - 0.5) * screenShake.intensity;
-          const shakeY = (Math.random() - 0.5) * screenShake.intensity;
-          setScreenShake(prev => ({
-            x: shakeX,
-            y: shakeY,
-            intensity: Math.max(0, prev.intensity - 0.5)
-          }));
+        if (screenShakeRef.current.intensity > 0) {
+          const ss = screenShakeRef.current;
+          ss.x = (Math.random() - 0.5) * ss.intensity;
+          ss.y = (Math.random() - 0.5) * ss.intensity;
+          ss.intensity = Math.max(0, ss.intensity - 0.5);
         }
 
         // Update particles
@@ -2690,7 +2708,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Trigger one-time meltdown start effects
           if (!meltdownEffectsTriggeredRef.current) {
             meltdownEffectsTriggeredRef.current = true;
-            setScreenShake({ x: 0, y: 0, intensity: 12 });
+            screenShakeRef.current = { x: 0, y: 0, intensity: 12 };
             particleSystem.current.spawnExplosion(reactorLastHitPointRef.current.x, reactorLastHitPointRef.current.y, 40, '#ffcc00');
             if (soundManager.current) soundManager.current.playOnce('explosion');
           }
@@ -2706,7 +2724,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               x: reactorLastHitPointRef.current.x,
               y: reactorLastHitPointRef.current.y
             };
-            setScreenShake({ x: 0, y: 0, intensity: 60 });
+            screenShakeRef.current = { x: 0, y: 0, intensity: 60 };
             if (soundManager.current) soundManager.current.playOnce('explosion');
           }
 
@@ -2723,34 +2741,38 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
       } // End of frozen else block
 
-      // Update bullets and check collision with ship
-      setBullets(prev => {
-        const activeBullets = prev.filter(bullet => {
-          if (!bullet.active) return false;
+      // Update bullets and check collision with ship.
+      // In-place compaction on bulletsRef.current (no filter() allocation, no setState).
+      {
+        const eBullets = bulletsRef.current;
+        let eWrite = 0;
+        for (let ebi = 0; ebi < eBullets.length; ebi++) {
+          const bullet = eBullets[ebi];
+          if (!bullet.active) continue;
           bullet.update(deltaTime);
 
           // Remove bullet if it's far outside the visible area AND moving away from it.
           // Keep bullets that are outside but flying towards the visible area.
           const bulletCullMargin = 400;
-          const bulletMinX = camera.x - bulletCullMargin;
-          const bulletMaxX = camera.x + viewWidth + bulletCullMargin;
-          const bulletMinY = camera.y - bulletCullMargin;
-          const bulletMaxY = camera.y + viewHeight + bulletCullMargin;
+          const bulletMinX = cameraRef.current.x - bulletCullMargin;
+          const bulletMaxX = cameraRef.current.x + viewWidth + bulletCullMargin;
+          const bulletMinY = cameraRef.current.y - bulletCullMargin;
+          const bulletMaxY = cameraRef.current.y + viewHeight + bulletCullMargin;
           if (bullet.x < bulletMinX && bullet.vx <= 0) {
             bullet.active = false;
-            return false;
+            continue;
           }
           if (bullet.x > bulletMaxX && bullet.vx >= 0) {
             bullet.active = false;
-            return false;
+            continue;
           }
           if (bullet.y < bulletMinY && bullet.vy <= 0) {
             bullet.active = false;
-            return false;
+            continue;
           }
           if (bullet.y > bulletMaxY && bullet.vy >= 0) {
             bullet.active = false;
-            return false;
+            continue;
           }
 
           // Skip tile-based collision checks when bullet is outside level bounds
@@ -2767,7 +2789,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             const tileY = Math.floor(bullet.y / scaledSize);
             tileImpactsRef.current.set(`${tileX},${tileY}`, performance.now());
             bullet.active = false;
-            return false;
+            continue;
           }
 
           } // end in-bounds guard
@@ -2782,16 +2804,16 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               if (shieldAndBeamActive && pod.towed) {
                 console.log('[POD_SHIELD] Bunker bullet hit pod but was blocked by shield');
                 bullet.active = false;
-                return false;
+                continue;
               }
               if (godModeActiveRef.current) {
                 // God mode protects the pod from bunker fire
                 console.log('[POD_GODMODE] Bunker bullet hit pod but was blocked by god mode');
                 bullet.active = false;
-                return false;
+                continue;
               }
               if (detonatePod('bunker-bullet')) {
-                return false; // Remove bullet
+                continue; // Remove bullet
               }
             }
           }
@@ -2803,7 +2825,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               console.log('[TETHER_HIT] Bunker bullet hit pod string at', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) });
               if (networkRole !== 'client') destroyShip();
               bullet.active = false;
-              return false;
+              continue;
             }
           }
 
@@ -2816,17 +2838,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             if (shieldAndBeamActive || godModeActiveRef.current || performance.now() < respawnImmunityTimeRef.current) {
               // Shield/god mode/immunity blocks the bullet
               bullet.active = false;
-              return false;
+              continue;
             }
             // Ship hit by bullet = destroy ship (host-authoritative in network mode)
             if (networkRole !== 'client') destroyShip();
-            return false;
+            continue;
           }
 
-          return true;
-        });
-        return activeBullets;
-      });
+          // Bullet survived all checks — keep it
+          eBullets[eWrite++] = bullet;
+        }
+        eBullets.length = eWrite;
+      }
 
       // Lose condition: fuel empty — delayed explosion after 3 seconds without thrust
       if (ship.fuel <= 0 && !fuelEmptyTimeRef.current && !isDying) {
@@ -2863,10 +2886,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // If level is shorter than canvas, clamp bottom to 0 (center level vertically)
         const clampedTargetY = Math.min(targetY, levelHeight - viewHeight + CAMERA_BOTTOM_OFFSET);
         
-        setCamera(prev => ({
-          x: prev.x + (clampedTargetX - prev.x) * lerpFactor,
-          y: prev.y + (clampedTargetY - prev.y) * lerpFactor
-        }));
+        const cam = cameraRef.current;
+        cam.x += (clampedTargetX - cam.x) * lerpFactor;
+        cam.y += (clampedTargetY - cam.y) * lerpFactor;
       }
 
       // Check if flying into sky (above level top at y=0)
@@ -2897,7 +2919,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 if (onScoreChange) onScoreChange({ points: SCORE_REACTOR_ESCAPE, type: 'reactor' });
                 if (soundManager.current) soundManager.current.playOnce('wormholeComplete');
               }
-              setScreenShake({ x: 0, y: 0, intensity: 0 });
+              screenShakeRef.current = { x: 0, y: 0, intensity: 0 };
               setGameState('wormhole');
               // [SOUND] Fade thrust loops out while starting the wormhole ambient loop.
               if (soundManager.current) {
@@ -2963,13 +2985,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           pod.y += pod.vy * deltaTime;
         }
 
-        // Spawn vortex particles around the wormhole
+        // Spawn vortex particles around the wormhole (precomputed colors to avoid per-spawn string allocation)
         if (Math.random() < 0.6) {
           const angle = Math.random() * Math.PI * 2;
           const radius = 30 + Math.random() * 60;
           const px = wx + Math.cos(angle) * radius;
           const py = wy + Math.sin(angle) * radius;
-          particleSystem.current.spawnExplosion(px, py, 4, `rgba(${100 + Math.random() * 155}, 200, 255, 0.7)`);
+          const wcolorIdx = (Math.random() * 4) | 0;
+          particleSystem.current.spawnExplosion(px, py, 4, WORMHOLE_PARTICLE_COLORS[wcolorIdx]);
         }
 
         if (progress >= 1) {
@@ -3062,8 +3085,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Apply screen shake (disabled during the wormhole animation)
       ctx.save();
-      if (!isWormhole && screenShake.intensity > 0) {
-        ctx.translate(screenShake.x, screenShake.y);
+      if (!isWormhole && screenShakeRef.current.intensity > 0) {
+        ctx.translate(screenShakeRef.current.x, screenShakeRef.current.y);
       }
       // Portrait zoom: scale up so a smaller portion of the level is shown larger
       if (portraitZoom > 1) {
@@ -3075,25 +3098,26 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (level && tilesetLoaded && stars.length > 0) {
         const time = performance.now();
         const starMargin = 10;
-        const starMinX = camera.x - starMargin;
-        const starMaxX = camera.x + viewWidth + starMargin;
-        const starMinY = camera.y - starMargin;
-        const starMaxY = camera.y + viewHeight + starMargin;
-        stars.forEach(star => {
-          if (star.x < starMinX || star.x > starMaxX || star.y < starMinY || star.y > starMaxY) return;
+        const starMinX = cameraRef.current.x - starMargin;
+        const starMaxX = cameraRef.current.x + viewWidth + starMargin;
+        const starMinY = cameraRef.current.y - starMargin;
+        const starMaxY = cameraRef.current.y + viewHeight + starMargin;
+        for (let si = 0; si < stars.length; si++) {
+          const star = stars[si];
+          if (star.x < starMinX || star.x > starMaxX || star.y < starMinY || star.y > starMaxY) continue;
           // Slight flicker around the star's base brightness
           const flicker = 0.85 + 0.15 * Math.sin(time * star.flickerSpeed + star.flickerOffset);
           const alpha = Math.max(0, Math.min(1, star.brightness * flicker));
           ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
           ctx.beginPath();
-          ctx.arc(star.x - camera.x, star.y - camera.y, star.size, 0, Math.PI * 2);
+          ctx.arc(star.x - cameraRef.current.x, star.y - cameraRef.current.y, star.size, 0, Math.PI * 2);
           ctx.fill();
-        });
+        }
       }
 
       // Draw level with camera offset
       if (level && tilesetLoaded) {
-        tileRenderer.current.render(ctx, level, -camera.x, -camera.y, tileImpactsRef.current, viewWidth, viewHeight);
+        tileRenderer.current.render(ctx, level, -cameraRef.current.x, -cameraRef.current.y, tileImpactsRef.current, viewWidth, viewHeight);
       }
 
       // Draw fuel depots with their remaining fuel fill
@@ -3112,7 +3136,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const maxFillHeight = scaledSize * 1.5;
           const fillHeight = Math.max(0, maxFillHeight * (depot.fuel / depot.maxFuel));
           const fillY = y + h - fillHeight;
-          ctx.fillRect(x - camera.x, fillY - camera.y, w, fillHeight);
+          ctx.fillRect(x - cameraRef.current.x, fillY - cameraRef.current.y, w, fillHeight);
           // Draw the depot border tiles on top (black interior made transparent)
           const chars = ['`', 'a', 'b', 'c'];
           const offsets = [[0, 0], [1, 0], [0, 1], [1, 1]];
@@ -3121,8 +3145,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             if (tileCanvas) {
               ctx.drawImage(
                 tileCanvas,
-                x + offsets[i][0] * scaledSize - camera.x,
-                y + offsets[i][1] * scaledSize - camera.y
+                x + offsets[i][0] * scaledSize - cameraRef.current.x,
+                y + offsets[i][1] * scaledSize - cameraRef.current.y
               );
             }
           }
@@ -3144,7 +3168,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Draw ship with camera offset (hidden while exploding)
       if (!isDying) {
         ctx.save();
-        ctx.translate(ship.x - camera.x, ship.y - camera.y);
+        ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
         ctx.rotate(ship.angle);
         ctx.scale(wormholeScale, wormholeScale);
         ctx.globalAlpha = wormholeAlpha;
@@ -3200,7 +3224,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Draw shield circle around ship (when pod button is pressed)
         if (shieldAndBeamActive && !isWormhole) {
           ctx.save();
-          ctx.translate(ship.x - camera.x, ship.y - camera.y);
+          ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
           ctx.beginPath();
           ctx.arc(0, 0, SHIELD_RADIUS, 0, Math.PI * 2);
           const shieldColor = levelColors ? `rgb(${levelColors.shield.join(',')})` : SHIELD_COLOR;
@@ -3213,7 +3237,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Draw god mode aura around the ship (golden pulsing ring)
         if (godModeActiveRef.current && !isWormhole) {
           ctx.save();
-          ctx.translate(ship.x - camera.x, ship.y - camera.y);
+          ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
           const pulse = Math.sin(performance.now() / 150) * 4;
           ctx.beginPath();
           ctx.arc(0, 0, SHIELD_RADIUS + 4 + pulse, 0, Math.PI * 2);
@@ -3226,7 +3250,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Draw multi-shot aura around the ship (orange pulsing ring, 20s after pickup)
         if (multiShotEnabledRef.current && multiShotAuraEndTimeRef.current > performance.now() && !isWormhole) {
           ctx.save();
-          ctx.translate(ship.x - camera.x, ship.y - camera.y);
+          ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
           const pulse = Math.sin(performance.now() / 200) * 3;
           ctx.beginPath();
           ctx.arc(0, 0, SHIELD_RADIUS + 2 + pulse, 0, Math.PI * 2);
@@ -3242,13 +3266,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Draw enemy mines with camera offset (cull off-screen mines)
       const showRedDot = Math.floor(performance.now() / 500) % 2 === 0;
       const mineRenderMargin = 50;
-      enemyMines.forEach((es, i) => {
-        if (!es.active) return;
+      for (let mi = 0; mi < enemyMines.length; mi++) {
+        const es = enemyMines[mi];
+        if (!es.active) continue;
         // Skip rendering mines outside the visible area
-        if (es.x < camera.x - mineRenderMargin || es.x > camera.x + viewWidth + mineRenderMargin ||
-            es.y < camera.y - mineRenderMargin || es.y > camera.y + viewHeight + mineRenderMargin) return;
+        if (es.x < cameraRef.current.x - mineRenderMargin || es.x > cameraRef.current.x + viewWidth + mineRenderMargin ||
+            es.y < cameraRef.current.y - mineRenderMargin || es.y > cameraRef.current.y + viewHeight + mineRenderMargin) continue;
         ctx.save();
-        ctx.translate(es.x - camera.x, es.y - camera.y);
+        ctx.translate(es.x - cameraRef.current.x, es.y - cameraRef.current.y);
         ctx.rotate(es.angle);
         const MINE_SIZE = 20;
         const mineSprite = (showRedDot && mineRedImageRef.current && mineRedImageRef.current.complete)
@@ -3267,40 +3292,42 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           ctx.stroke();
         }
         ctx.restore();
-      });
+      }
 
       // Draw sliders with camera offset
-      sliders.forEach(slider => {
+      for (let sli = 0; sli < sliders.length; sli++) {
+        const slider = sliders[sli];
         ctx.save();
-        ctx.translate(slider.x - camera.x, slider.y - camera.y);
-        
+        ctx.translate(slider.x - cameraRef.current.x, slider.y - cameraRef.current.y);
+
         // Slider body (orange)
         ctx.fillStyle = '#ff9900';
         ctx.fillRect(-16, -8, 32, 16);
-        
+
         // Slider outline
         ctx.strokeStyle = '#cc6600';
         ctx.lineWidth = 2;
         ctx.strokeRect(-16, -8, 32, 16);
-        
+
         // Movement indicator
         ctx.fillStyle = '#ffcc00';
         ctx.fillRect(-4, -4, 8, 8);
-        
+
         ctx.restore();
-      });
+      }
 
       // Draw bunkers with camera offset (skip inactive/destroyed and off-screen bunkers)
-      bunkers.forEach((bunker, bunkerIndex) => {
+      for (let bki = 0; bki < bunkers.length; bki++) {
+        const bunker = bunkers[bki];
         if (bunker.active &&
-            bunker.x >= camera.x - 50 && bunker.x <= camera.x + viewWidth + 50 &&
-            bunker.y >= camera.y - 50 && bunker.y <= camera.y + viewHeight + 50) {
+            bunker.x >= cameraRef.current.x - 50 && bunker.x <= cameraRef.current.x + viewWidth + 50 &&
+            bunker.y >= cameraRef.current.y - 50 && bunker.y <= cameraRef.current.y + viewHeight + 50) {
           ctx.save();
-          ctx.translate(bunker.x - camera.x, bunker.y - camera.y);
+          ctx.translate(bunker.x - cameraRef.current.x, bunker.y - cameraRef.current.y);
 
           // Blinking red dot for active bunkers. Offset the phase by the bunker index so
           // they don't all blink at the same time.
-          const blinkPhase = (Math.floor(Date.now() / 100) + bunkerIndex) % 15;
+          const blinkPhase = (Math.floor(Date.now() / 100) + bki) % 15;
           if (blinkPhase === 0) {
             const offset = BUNKER_INDICATOR_OFFSETS[bunker.type] || { x: 0, y: -8 };
             ctx.fillStyle = '#ff0000';
@@ -3311,47 +3338,51 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
           ctx.restore();
         }
-      });
+      }
 
       // Draw bullets with camera offset
-      bullets.forEach(bullet => {
+      const _bullets = bulletsRef.current;
+      for (let bi = 0; bi < _bullets.length; bi++) {
+        const bullet = _bullets[bi];
         ctx.save();
-        ctx.translate(bullet.x - camera.x, bullet.y - camera.y);
-        
+        ctx.translate(bullet.x - cameraRef.current.x, bullet.y - cameraRef.current.y);
+
         // Bullet (yellow circle)
         ctx.fillStyle = '#ffff00';
         ctx.beginPath();
         ctx.arc(0, 0, bullet.radius, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Bullet glow
         ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
         ctx.beginPath();
         ctx.arc(0, 0, bullet.radius * 2, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.restore();
-      });
+      }
 
       // Draw player bullets with camera offset
-      playerBullets.forEach(bullet => {
+      const _pBullets = playerBulletsRef.current;
+      for (let pbi = 0; pbi < _pBullets.length; pbi++) {
+        const bullet = _pBullets[pbi];
         ctx.save();
-        ctx.translate(bullet.x - camera.x, bullet.y - camera.y);
-        
+        ctx.translate(bullet.x - cameraRef.current.x, bullet.y - cameraRef.current.y);
+
         // Player bullet (cyan circle)
         ctx.fillStyle = '#00ffff';
         ctx.beginPath();
         ctx.arc(0, 0, 4, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Player bullet glow
         ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
         ctx.beginPath();
         ctx.arc(0, 0, 6, 0, Math.PI * 2);
         ctx.fill();
-        
+
         ctx.restore();
-      });
+      }
 
       // Draw the tow tether (visible line between ship and pod when being towed)
       if (pod && pod.active && pod.towed && !isWormhole) {
@@ -3360,8 +3391,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ctx.lineWidth = POD_TETHER_WIDTH;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(ship.x - camera.x, ship.y - camera.y);
-        ctx.lineTo(pod.x - camera.x, pod.y - camera.y);
+        ctx.moveTo(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
+        ctx.lineTo(pod.x - cameraRef.current.x, pod.y - cameraRef.current.y);
         ctx.stroke();
         ctx.restore();
       }
@@ -3369,7 +3400,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Draw pod with camera offset
       if (pod && pod.active) {
         ctx.save();
-        ctx.translate(pod.x - camera.x, pod.y - camera.y);
+        ctx.translate(pod.x - cameraRef.current.x, pod.y - cameraRef.current.y);
         ctx.scale(wormholeScale, wormholeScale);
         ctx.globalAlpha = wormholeAlpha;
 
@@ -3423,8 +3454,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             ctx.strokeStyle = 'rgba(255, 255, 0, 0.35)';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(ship.x - camera.x, ship.y - camera.y);
-            ctx.lineTo(pod.x - camera.x, pod.y - camera.y);
+            ctx.moveTo(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
+            ctx.lineTo(pod.x - cameraRef.current.x, pod.y - cameraRef.current.y);
             ctx.stroke();
             ctx.restore();
           }
@@ -3433,7 +3464,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Draw a small shield circle around the attached pod when the shield/tractor beam is active
         if (shieldAndBeamActive && pod.towed && !isWormhole) {
           ctx.save();
-          ctx.translate(pod.x - camera.x, pod.y - camera.y);
+          ctx.translate(pod.x - cameraRef.current.x, pod.y - cameraRef.current.y);
           ctx.beginPath();
           ctx.arc(0, 0, SHIELD_RADIUS * 0.5, 0, Math.PI * 2);
           const podShieldColor = levelColors ? `rgb(${levelColors.shield.join(',')})` : SHIELD_COLOR;
@@ -3446,8 +3477,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Draw fine iridescent tractor beam spiral (down to first obstacle only)
       if (beamActive) {
-        const sx = ship.x - camera.x;
-        const sy = ship.y - camera.y;
+        const sx = ship.x - cameraRef.current.x;
+        const sy = ship.y - cameraRef.current.y;
         const length = beamEndY - ship.y;
         if (length > 0) {
           const t = performance.now() / 300;
@@ -3505,7 +3536,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Restore screen shake / portrait zoom transform
       // Render particles before restore so they are affected by portrait zoom
-      particleSystem.current.render(ctx, camera.x, camera.y);
+      particleSystem.current.render(ctx, cameraRef.current.x, cameraRef.current.y);
       ctx.restore();
 
       // Draw all touch control buttons (inside canvas).
@@ -3590,8 +3621,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Start the explosion at the reactor's on-screen position and grow to cover the canvas
       const reactorX = planetExplosionRef.current.x;
       const reactorY = planetExplosionRef.current.y;
-      const cx = (reactorX - camera.x) * dpr;
-      const cy = (reactorY - camera.y) * dpr;
+      const cx = (reactorX - cameraRef.current.x) * dpr;
+      const cy = (reactorY - cameraRef.current.y) * dpr;
       const maxDistance = Math.max(
         Math.hypot(cx, cy),
         Math.hypot(cw - cx, cy),

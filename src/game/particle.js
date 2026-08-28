@@ -41,7 +41,6 @@ export class Particle {
     ctx.beginPath();
     ctx.arc(this.x - offsetX, this.y - offsetY, this.size * alpha, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
   }
 
   deactivate() {
