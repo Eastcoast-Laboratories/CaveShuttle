@@ -1326,6 +1326,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const lastTimeRef = useRef(performance.now());
   const renderFnRef = useRef(() => {});
   const canvasGeomLogRef = useRef({ frame: 0, last: 0 });
+  // Lag detection: track slow frames, throttle logging to avoid spam
+  const lagLogRef = useRef({ lastLogTime: 0, frameCount: 0, worstMs: 0 });
 
   // Helper: flood-fill from a point across the empty space bounded by '#' and walls,
   // collect ALL reachable '*' respawn points in the same area, then choose based on pod state:
@@ -1742,6 +1744,20 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     // Apply global game speed multiplier
     deltaTime *= GAME_SPEED;
     lastTimeRef.current = currentTime;
+
+    // Lag detection: a frame taking > 50ms means < 20fps. Aggregate and log at most once/second.
+    const LAG_THRESHOLD_MS = 50;
+    if (frameElapsedMs > LAG_THRESHOLD_MS) {
+      const lag = lagLogRef.current;
+      lag.frameCount++;
+      if (frameElapsedMs > lag.worstMs) lag.worstMs = frameElapsedMs;
+      if (currentTime - lag.lastLogTime > 1000) {
+        console.warn('[LAG]', lag.frameCount, 'slow frame(s) in the last', ((currentTime - lag.lastLogTime) / 1000).toFixed(1) + 's', '| worst:', lag.worstMs.toFixed(0) + 'ms', '(' + (1000 / lag.worstMs).toFixed(0) + 'fps)', '| bunkers:', bunkers.length, '| mines:', enemyMines.length, '| bullets:', bullets.length + playerBullets.length);
+        lag.lastLogTime = currentTime;
+        lag.frameCount = 0;
+        lag.worstMs = 0;
+      }
+    }
 
     // Update god mode timer and log state changes
     if (godModeEndTimeRef.current > currentTime) {
