@@ -173,16 +173,31 @@ export class TileRenderer {
     return this.fuelDepotTiles.has(char);
   }
 
-  render(ctx, level, offsetX = 0, offsetY = 0, tileImpacts = null) {
+  render(ctx, level, offsetX = 0, offsetY = 0, tileImpacts = null, viewWidth = null, viewHeight = null) {
     if (!this.loaded || !level || !level.layout) return;
 
     const scaledSize = this.getScaledTileSize();
     const layout = level.layout;
     const now = tileImpacts ? performance.now() : 0;
 
-    for (let y = 0; y < layout.length; y++) {
+    // Viewport culling: only iterate over tiles that can actually be visible on screen.
+    // offsetX/offsetY are -camera.x/-camera.y, so the visible tile range is derived from them.
+    let startRow = 0;
+    let endRow = layout.length;
+    let startCol = 0;
+    let endCol = layout[0] ? layout[0].length : 0;
+    if (viewWidth !== null && viewHeight !== null) {
+      startCol = Math.max(0, Math.floor(-offsetX / scaledSize) - 1);
+      endCol = Math.min(endCol, Math.ceil((-offsetX + viewWidth) / scaledSize) + 1);
+      startRow = Math.max(0, Math.floor(-offsetY / scaledSize) - 1);
+      endRow = Math.min(endRow, Math.ceil((-offsetY + viewHeight) / scaledSize) + 1);
+    }
+
+    for (let y = startRow; y < endRow; y++) {
       const row = layout[y];
-      for (let x = 0; x < row.length; x++) {
+      if (!row) continue;
+      const rowEndCol = Math.min(endCol, row.length);
+      for (let x = startCol; x < rowEndCol; x++) {
         const char = row[x];
         // Skip the empty-space tile (all black, opaque): the canvas is already black
         // and skipping it lets the stars behind the level stay visible.

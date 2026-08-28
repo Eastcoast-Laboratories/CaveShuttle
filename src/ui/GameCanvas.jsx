@@ -2544,61 +2544,67 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               }
             }
 
-            // Check collision with bunkers
+            // Check collision with bunkers. Mark inactive in place (no array
+            // allocation / no setState per bullet) - same pattern as enemy mines below.
+            // Bunkers are rendered/updated by checking bunker.active, so removal from
+            // the array is not required.
             let bulletHit = false;
-            const newBunkers = bunkers.filter(bunker => {
-              if (!bunker.active) return false; // Remove inactive bunkers
+            for (let bi = 0; bi < bunkers.length; bi++) {
+              const bunker = bunkers[bi];
+              if (!bunker.active) continue;
               const dx = bullet.x - bunker.x;
               const dy = bullet.y - bunker.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              if (distance < 20) {
+              if (dx * dx + dy * dy < 400) { // 20^2
                 bulletHit = true;
-                bunker.active = false; // Mark bunker as inactive
+                bunker.active = false;
                 if (onScoreChange) onScoreChange({ points: SCORE_BUNKER_DESTROYED, type: 'bunker' });
                 particleSystem.current.spawnExplosion(bunker.x, bunker.y, 20, '#ff6600');
                 if (soundManager.current) soundManager.current.playOnce('explosion');
-                return false; // Remove bunker
+                break; // one bullet can only hit one bunker
               }
-              return true;
-            });
-            setBunkers(newBunkers);
+            }
 
             // Check collision with enemy mines
-            enemyMines.forEach(es => {
-              if (!es.active) return;
-              const dx = bullet.x - es.x;
-              const dy = bullet.y - es.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              if (distance < es.radius + 3) {
-                bulletHit = true;
-                es.active = false;
-                particleSystem.current.spawnExplosion(es.x, es.y, 25, '#ff3333');
-                if (soundManager.current) soundManager.current.playOnce('explosion');
-                if (onScoreChange) onScoreChange({ points: SCORE_BUNKER_DESTROYED, type: 'enemy-ship' });
-              }
-            });
-
-            // Check collision with buttons (shot trigger)
-            let buttonHit = false;
-            buttons.forEach(button => {
-              const dx = bullet.x - button.x;
-              const dy = bullet.y - button.y;
-              const distance = Math.sqrt(dx * dx + dy * dy);
-              if (distance < 15) {
-                buttonHit = true;
-                console.log('[BUTTON_HIT] Button hit:', button.type, 'tag:', button.tag, 'door:', button.door ? 'yes' : 'no');
-                // Trigger door opening if button has an assigned door
-                if (button.door && button.door.state === 'closed') {
-                  console.log('[DOOR] Opening door, state:', button.door.state);
-                  button.door.state = 'opening';
-                  if (onScoreChange) onScoreChange({ points: SCORE_BUTTON_SLIDER, type: 'button' });
-                } else if (button.door) {
-                  console.log('[DOOR] Door not closed, state:', button.door.state);
-                } else {
-                  console.log('[DOOR] No door assigned to button');
+            if (!bulletHit) {
+              for (let mi = 0; mi < enemyMines.length; mi++) {
+                const es = enemyMines[mi];
+                if (!es.active) continue;
+                const dx = bullet.x - es.x;
+                const dy = bullet.y - es.y;
+                const hitRadius = es.radius + 3;
+                if (dx * dx + dy * dy < hitRadius * hitRadius) {
+                  bulletHit = true;
+                  es.active = false;
+                  particleSystem.current.spawnExplosion(es.x, es.y, 25, '#ff3333');
+                  if (soundManager.current) soundManager.current.playOnce('explosion');
+                  if (onScoreChange) onScoreChange({ points: SCORE_BUNKER_DESTROYED, type: 'enemy-ship' });
+                  break; // one bullet can only hit one mine
                 }
               }
-            });
+            }
+
+            // Check collision with buttons (shot trigger)
+            if (!bulletHit) {
+              for (let btni = 0; btni < buttons.length; btni++) {
+                const button = buttons[btni];
+                const dx = bullet.x - button.x;
+                const dy = bullet.y - button.y;
+                if (dx * dx + dy * dy < 225) { // 15^2
+                  console.log('[BUTTON_HIT] Button hit:', button.type, 'tag:', button.tag, 'door:', button.door ? 'yes' : 'no');
+                  // Trigger door opening if button has an assigned door
+                  if (button.door && button.door.state === 'closed') {
+                    console.log('[DOOR] Opening door, state:', button.door.state);
+                    button.door.state = 'opening';
+                    if (onScoreChange) onScoreChange({ points: SCORE_BUTTON_SLIDER, type: 'button' });
+                  } else if (button.door) {
+                    console.log('[DOOR] Door not closed, state:', button.door.state);
+                  } else {
+                    console.log('[DOOR] No door assigned to button');
+                  }
+                  break;
+                }
+              }
+            }
 
             // Remove bullet if it's far outside the visible area AND moving away from it.
             if (bulletHit) return false;
@@ -3033,10 +3039,17 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ctx.scale(portraitZoom, portraitZoom);
       }
 
-      // Draw stars in the sky (before level tiles)
+      // Draw stars in the sky (before level tiles). Star count scales with level width,
+      // so skip stars outside the visible viewport (+ small margin for size/flicker).
       if (level && tilesetLoaded && stars.length > 0) {
         const time = performance.now();
+        const starMargin = 10;
+        const starMinX = camera.x - starMargin;
+        const starMaxX = camera.x + viewWidth + starMargin;
+        const starMinY = camera.y - starMargin;
+        const starMaxY = camera.y + viewHeight + starMargin;
         stars.forEach(star => {
+          if (star.x < starMinX || star.x > starMaxX || star.y < starMinY || star.y > starMaxY) return;
           // Slight flicker around the star's base brightness
           const flicker = 0.85 + 0.15 * Math.sin(time * star.flickerSpeed + star.flickerOffset);
           const alpha = Math.max(0, Math.min(1, star.brightness * flicker));
@@ -3049,7 +3062,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Draw level with camera offset
       if (level && tilesetLoaded) {
-        tileRenderer.current.render(ctx, level, -camera.x, -camera.y, tileImpactsRef.current);
+        tileRenderer.current.render(ctx, level, -camera.x, -camera.y, tileImpactsRef.current, viewWidth, viewHeight);
       }
 
       // Draw fuel depots with their remaining fuel fill
@@ -3246,9 +3259,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ctx.restore();
       });
 
-      // Draw bunkers with camera offset
+      // Draw bunkers with camera offset (skip inactive/destroyed and off-screen bunkers)
       bunkers.forEach((bunker, bunkerIndex) => {
-        if (!bunker.destroyed) {
+        if (bunker.active &&
+            bunker.x >= camera.x - 50 && bunker.x <= camera.x + viewWidth + 50 &&
+            bunker.y >= camera.y - 50 && bunker.y <= camera.y + viewHeight + 50) {
           ctx.save();
           ctx.translate(bunker.x - camera.x, bunker.y - camera.y);
 
