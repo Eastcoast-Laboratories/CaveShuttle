@@ -849,8 +849,10 @@ function App() {
     onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },
   };
 
+  const isGameScreen = gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete';
+
   return (
-    <div className="app" id="app" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: '#000', color: '#fff', position: 'relative', overflow: 'hidden', touchAction: 'none' }}>
+    <div className={`app${isGameScreen ? ' game-screen' : ''}`} id="app" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: '#000', color: '#fff', position: 'relative', overflow: 'hidden', touchAction: 'none' }}>
       {(gameState === 'menu' || gameState === 'highscores') && (
         <TopRightMenu
           language={language}
@@ -935,7 +937,7 @@ function App() {
 
       {/* In-game hamburger and editor button (in-game layout; editor only in test mode).
           Non-game screens use the unified TopRightMenu instead. */}
-      {(gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') && (
+      {isGameScreen && (
         <>
           {/* Level editor button - only visible in editor test mode */}
           {ENABLE_LEVEL_EDITOR && isEditorTestMode && (
@@ -992,7 +994,7 @@ function App() {
       )}
 
       {/* Game canvas, HUD and overlays - only during active gameplay */}
-      {(gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') && (
+      {isGameScreen && (
         <>
           <div id="hud-overlay" style={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0, 0, 0, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 10 }}>
             <div id="hud-stats" style={{ display: 'flex', flexDirection: 'row', gap: '16px', color: '#fff', alignItems: 'center', fontFamily: '"Commodore 64 Thin", "Courier New", monospace', fontSize: '12px' }}>
@@ -1112,7 +1114,7 @@ function App() {
       )}
 
       {/* In-game hamburger overlay (uses shared settings via hamburgerSettingsProps). */}
-      {(gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') && showMobileMenu && (
+      {isGameScreen && showMobileMenu && (
         <HamburgerMenu
           isOpen={showMobileMenu}
           onClose={() => setShowMobileMenu(false)}
