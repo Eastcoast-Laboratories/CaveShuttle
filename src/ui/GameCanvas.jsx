@@ -341,7 +341,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   // Reactor meltdown state
   const reactorDamageMsRef = useRef(0);
   const reactorLastHitTimeRef = useRef(0);
-  const reactorLastHitPointRef = useRef({ x: 0, y: 0 });
+  const reactorCenterRef = useRef(null);
   const vibrationEnabledRef = useRef(vibrationEnabled);
   useEffect(() => { vibrationEnabledRef.current = vibrationEnabled; }, [vibrationEnabled]);
   const vibrateIfEnabled = (pattern) => { if (vibrationEnabledRef.current) vibrate(pattern); };
@@ -1202,6 +1202,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           podConnectScoreGivenRef.current = false;
           reactorDamageMsRef.current = 0;
           reactorLastHitTimeRef.current = 0;
+          reactorCenterRef.current = null;
           meltdownActiveRef.current = false;
           meltdownStartTimeRef.current = 0;
           meltdownExplosionTimeRef.current = 0;
@@ -1679,10 +1680,17 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     };
 
     // Accumulate reactor damage from a bullet hit; trigger the meltdown once charged.
-    const registerReactorHit = (point) => {
+    const registerReactorHit = (point, tile) => {
       const now = performance.now();
       const gap = now - reactorLastHitTimeRef.current;
-      reactorLastHitPointRef.current = point;
+      const tileSize = tileRenderer.current.getScaledTileSize();
+      const tileIndex = REACTOR_TILES.indexOf(tile);
+      const reactorLeftCol = Math.floor(point.x / tileSize) - tileIndex % 3;
+      const reactorTopRow = Math.floor(point.y / tileSize) - Math.floor(tileIndex / 3);
+      reactorCenterRef.current = {
+        x: (reactorLeftCol + 1.5) * tileSize,
+        y: (reactorTopRow + 1.5) * tileSize
+      };
       if (reactorLastHitTimeRef.current > 0 && gap <= REACTOR_HIT_TIMEOUT_MS) {
         reactorDamageMsRef.current += gap;
       } else {
@@ -1690,7 +1698,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         reactorDamageMsRef.current = 0;
       }
       reactorLastHitTimeRef.current = now;
-      console.log('[REACTOR_MELTDOWN] hit gap=' + gap.toFixed(0) + 'ms damage=' + reactorDamageMsRef.current.toFixed(0) + '/' + REACTOR_MELTDOWN_TRIGGER_MS + 'ms');
+      console.log('[REACTOR_MELTDOWN][REACTOR_CENTER] hit gap=' + gap.toFixed(0) + 'ms damage=' + reactorDamageMsRef.current.toFixed(0) + '/' + REACTOR_MELTDOWN_TRIGGER_MS + 'ms center=(' + reactorCenterRef.current.x + ',' + reactorCenterRef.current.y + ')');
       if (!meltdownActiveRef.current && reactorDamageMsRef.current >= REACTOR_MELTDOWN_TRIGGER_MS) {
         meltdownActiveRef.current = true;
         meltdownStartTimeRef.current = now;
@@ -2704,7 +2712,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               // instead of colliding. Detect hits by sampling the tile at the bullet position.
               const reactorTileHere = tileRenderer.current.getTileAt(level, bullet.x, bullet.y, 'reactor-check');
               if (REACTOR_TILES.includes(reactorTileHere)) {
-                registerReactorHit({ x: bullet.x, y: bullet.y });
+                registerReactorHit({ x: bullet.x, y: bullet.y }, reactorTileHere);
                 continue;
               }
 
@@ -2712,7 +2720,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               const wallCollision = collision.current.checkBulletCollision(bullet, level, 'player');
               if (wallCollision.collided) {
                 if (REACTOR_TILES.includes(wallCollision.tile)) {
-                  registerReactorHit(wallCollision.point);
+                  registerReactorHit(wallCollision.point, wallCollision.tile);
                 }
                 // Register tile impact expansion effect
                 const scaledSize = tileRenderer.current.getScaledTileSize();
@@ -2749,7 +2757,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           if (!meltdownEffectsTriggeredRef.current) {
             meltdownEffectsTriggeredRef.current = true;
             screenShakeRef.current = { x: 0, y: 0, intensity: 12 };
-            particleSystem.current.spawnExplosion(reactorLastHitPointRef.current.x, reactorLastHitPointRef.current.y, 40, '#ffcc00');
+            particleSystem.current.spawnExplosion(reactorCenterRef.current.x, reactorCenterRef.current.y, 40, '#ffcc00');
             if (soundManager.current) soundManager.current.playOnce('explosion');
           }
 
@@ -2761,8 +2769,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               active: true,
               startTime: now,
               alpha: 0,
-              x: reactorLastHitPointRef.current.x,
-              y: reactorLastHitPointRef.current.y
+              x: reactorCenterRef.current.x,
+              y: reactorCenterRef.current.y
             };
             screenShakeRef.current = { x: 0, y: 0, intensity: 60 };
             if (soundManager.current) soundManager.current.playOnce('explosion');
@@ -3685,8 +3693,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Start the explosion at the reactor's on-screen position and grow to cover the canvas
       const reactorX = planetExplosionRef.current.x;
       const reactorY = planetExplosionRef.current.y;
-      const cx = (reactorX - cameraRef.current.x) * dpr;
-      const cy = (reactorY - cameraRef.current.y) * dpr;
+      const shakeActive = screenShakeRef.current.intensity > 0;
+      const shakeX = shakeActive ? screenShakeRef.current.x : 0;
+      const shakeY = shakeActive ? screenShakeRef.current.y : 0;
+      const cx = ((reactorX - cameraRef.current.x) * portraitZoom + shakeX) * dpr;
+      const cy = ((reactorY - cameraRef.current.y) * portraitZoom + shakeY) * dpr;
       const maxDistance = Math.max(
         Math.hypot(cx, cy),
         Math.hypot(cw - cx, cy),
