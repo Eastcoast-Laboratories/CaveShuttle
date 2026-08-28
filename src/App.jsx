@@ -995,17 +995,22 @@ function App() {
       {(gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete') && (
         <>
           <div id="hud-overlay" style={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0, 0, 0, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 10 }}>
-            <div id="hud-stats" style={{ display: 'flex', flexDirection: 'row', gap: '16px', fontSize: '12px', color: '#fff', alignItems: 'center' }}>
-              <span className="hud-score-label" style={{ fontWeight: '600', whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>SCORE </span>
-              <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>{score}</span>
-              <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LIVES {lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives))}</span>
+            <div id="hud-stats" style={{ display: 'flex', flexDirection: 'row', gap: '16px', color: '#fff', alignItems: 'center', fontFamily: '"Commodore 64 Thin", "Courier New", monospace', fontSize: '12px' }}>
+              <span className="hud-score-label" style={{ whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>SCORE </span>
+              <span style={{ fontFamily: '"Commodore 64", "Courier New", monospace', fontWeight: '700', fontSize: '15px', whiteSpace: 'nowrap' }}>{score}</span>
+              <span className="hud-score-label" style={{ whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>LIVES </span>
+              <span style={{ whiteSpace: 'nowrap' }}>{lives === 0
+                ? (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)
+                    ? ''
+                    : <span style={{ fontFamily: '"Commodore 64", "Courier New", monospace', fontWeight: '700', fontSize: '15px' }}>0</span>)
+                : (lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives)))}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>FUEL</span>
-                <div style={{ width: '80px', height: '12px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px', overflow: 'hidden' }}>
+                <span style={{ whiteSpace: 'nowrap' }}>FUEL</span>
+                <div className={fuel <= 15 ? 'fuel-bar-critical' : ''} style={{ width: '80px', height: '12px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px', overflow: 'hidden' }}>
                   <div style={{ width: `${fuel}%`, height: '100%', background: fuel > 30 ? 'linear-gradient(90deg, #00ff88, #00cc66)' : 'linear-gradient(90deg, #ff4444, #cc0000)', transition: 'width 0.3s ease' }} />
                 </div>
               </div>
-              <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LEVEL {level}</span>
+              <span style={{ whiteSpace: 'nowrap' }}>LEVEL {level}</span>
             </div>
           </div>
 

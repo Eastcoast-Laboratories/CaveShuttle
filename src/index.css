@@ -41,6 +41,15 @@ body {
   100% { transform: translateX(-50%) scale(1); opacity: 1; }
 }
 
+@keyframes fuelCriticalBlink {
+  0%, 100% { background: rgba(255, 0, 0, 0.15); }
+  50% { background: rgba(255, 0, 0, 0.4); }
+}
+
+.fuel-bar-critical {
+  animation: fuelCriticalBlink 0.8s ease-in-out infinite;
+}
+
 @media (orientation: portrait) {
   .hud-score-label {
     display: none;

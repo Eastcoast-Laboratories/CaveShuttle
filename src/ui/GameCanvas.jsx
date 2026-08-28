@@ -1522,6 +1522,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       respawnImmunityTimeRef.current = performance.now() + RESPAWN_IMMUNITY_MS;
       if (target) {
         ship.setPosition(target.x, target.y);
+        // Respawn shield flash effect: spawn sparkle particles around the ship
+        particleSystem.current.spawnExplosion(target.x, target.y, 12, '#88ccff');
+        // Play synthesized power-on jingle (classic arcade respawn sound)
+        if (soundManager.current) soundManager.current.playRespawnJingle();
+        vibrateIfEnabled([30, 40, 60]);
       }
       // Always respawn pointing straight up and at rest
       ship.setVelocity(0, 0);
@@ -3291,6 +3296,29 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           ctx.beginPath();
           ctx.arc(0, 0, SHIELD_RADIUS + 2 + pulse, 0, Math.PI * 2);
           ctx.strokeStyle = MULTI_SHOT_COLOR;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Draw respawn shield flash: pulsing ring that fades out over immunity period
+        const immunityRemaining = respawnImmunityTimeRef.current - performance.now();
+        if (immunityRemaining > 0 && !isWormhole) {
+          ctx.save();
+          ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
+          const immunityProgress = 1 - (immunityRemaining / RESPAWN_IMMUNITY_MS);
+          const flashAlpha = Math.max(0, 1 - immunityProgress);
+          const flashPulse = Math.sin(performance.now() / 80) * 0.5 + 0.5;
+          const ringRadius = SHIELD_RADIUS + 6 + flashPulse * 4;
+          ctx.beginPath();
+          ctx.arc(0, 0, ringRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(136,204,255,${flashAlpha * (0.4 + flashPulse * 0.6)})`;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+          // Inner bright ring
+          ctx.beginPath();
+          ctx.arc(0, 0, SHIELD_RADIUS, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(200,230,255,${flashAlpha * 0.5})`;
           ctx.lineWidth = 2;
           ctx.stroke();
           ctx.restore();
