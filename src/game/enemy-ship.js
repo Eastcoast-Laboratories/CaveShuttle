@@ -152,21 +152,29 @@ export class EnemyMine {
     if (!level || !tileRenderer) return null;
     const scaledSize = tileRenderer.getScaledTileSize();
     const r = this.radius + (scaledSize / 2) - 5; // mines keep a small distance from walls
-    const points = [
-      { x: this.x, y: this.y },
-      { x: this.x - r, y: this.y },
-      { x: this.x + r, y: this.y },
-      { x: this.x, y: this.y - r },
-      { x: this.x, y: this.y + r },
-      { x: this.x - r * 0.7, y: this.y - r * 0.7 },
-      { x: this.x + r * 0.7, y: this.y - r * 0.7 },
-      { x: this.x - r * 0.7, y: this.y + r * 0.7 },
-      { x: this.x + r * 0.7, y: this.y + r * 0.7 },
-    ];
-    for (const p of points) {
-      const tile = tileRenderer.getTileAt(level, p.x, p.y, 'enemy-ship-perimeter');
-      if (tileRenderer.isWall(tile)) return { tile, point: p };
-    }
+    const r7 = r * 0.7;
+    const cx = this.x;
+    const cy = this.y;
+    // Check perimeter points via direct inline calls (no array/object allocation).
+    // This runs every frame for every active in-view mine - avoid GC churn.
+    let tile = tileRenderer.getTileAt(level, cx, cy, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx, y: cy } };
+    tile = tileRenderer.getTileAt(level, cx - r, cy, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx - r, y: cy } };
+    tile = tileRenderer.getTileAt(level, cx + r, cy, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx + r, y: cy } };
+    tile = tileRenderer.getTileAt(level, cx, cy - r, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx, y: cy - r } };
+    tile = tileRenderer.getTileAt(level, cx, cy + r, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx, y: cy + r } };
+    tile = tileRenderer.getTileAt(level, cx - r7, cy - r7, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx - r7, y: cy - r7 } };
+    tile = tileRenderer.getTileAt(level, cx + r7, cy - r7, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx + r7, y: cy - r7 } };
+    tile = tileRenderer.getTileAt(level, cx - r7, cy + r7, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx - r7, y: cy + r7 } };
+    tile = tileRenderer.getTileAt(level, cx + r7, cy + r7, 'enemy-ship-perimeter');
+    if (tileRenderer.isWall(tile)) return { tile, point: { x: cx + r7, y: cy + r7 } };
     return null;
   }
 

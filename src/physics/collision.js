@@ -1,6 +1,11 @@
 // Collision detection system
 import { SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS } from '../core/constants.js';
 
+// Tiles that are solid for ship/pod but should not block bunker- nor player-bullets
+// - Bunker variants (the functional bunker markers handle bullets themselves)
+// Module-level constant to avoid reallocating this array on every bullet collision check.
+const BULLET_PASS_THROUGH_TILES = ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', '[', 'X', 'Y', 'Z', '\\', ']', '^', '_', 'L', 'M', 'N', 'O', 'v', 'w', 'q', 'r', 's', 'u', 'x', 'ý', '§'];
+
 export class CollisionDetection {
   constructor(levelRenderer) {
     this.levelRenderer = levelRenderer;
@@ -17,31 +22,23 @@ export class CollisionDetection {
       return { collided: true, tile: centerTile, point: { x: ship.x, y: ship.y } };
     }
 
-    const shipPoints = this.getShipPoints(ship, shipRadius);
-
-    for (const point of shipPoints) {
-      const tile = this.levelRenderer.getTileAt(level, point.x, point.y, 'ship-perimeter');
-      if (this.levelRenderer.isWall(tile)) {
-        return { collided: true, tile, point };
-      }
-    }
-
-    return { collided: false };
+    return this.checkPerimeterCollision(level, ship.x, ship.y, shipRadius, 'ship-perimeter');
   }
 
-  getShipPoints(ship, radius) {
-    const points = [];
+  // Checks 8 perimeter points around (cx, cy) without allocating an array of point
+  // objects every call (this runs every frame for the ship/pod - avoid GC churn).
+  checkPerimeterCollision(level, cx, cy, radius, source) {
     const numPoints = 8;
-    
     for (let i = 0; i < numPoints; i++) {
       const angle = (i / numPoints) * Math.PI * 2;
-      points.push({
-        x: ship.x + Math.cos(angle) * radius,
-        y: ship.y + Math.sin(angle) * radius
-      });
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+      const tile = this.levelRenderer.getTileAt(level, x, y, source);
+      if (this.levelRenderer.isWall(tile)) {
+        return { collided: true, tile, point: { x, y } };
+      }
     }
-
-    return points;
+    return { collided: false };
   }
 
   resolveCollision(entity, collision) {
@@ -133,30 +130,7 @@ export class CollisionDetection {
     }
 
     // Check pod perimeter points
-    const podPoints = this.getPodPoints(pod, podRadius);
-    for (const point of podPoints) {
-      const tile = this.levelRenderer.getTileAt(level, point.x, point.y, 'pod-perimeter');
-      if (this.levelRenderer.isWall(tile)) {
-        return { collided: true, tile, point };
-      }
-    }
-
-    return { collided: false };
-  }
-
-  getPodPoints(pod, radius) {
-    const points = [];
-    const numPoints = 8;
-
-    for (let i = 0; i < numPoints; i++) {
-      const angle = (i / numPoints) * Math.PI * 2;
-      points.push({
-        x: pod.x + Math.cos(angle) * radius,
-        y: pod.y + Math.sin(angle) * radius
-      });
-    }
-
-    return points;
+    return this.checkPerimeterCollision(level, pod.x, pod.y, podRadius, 'pod-perimeter');
   }
 
   checkBulletCollision(bullet, level, owner = 'unknown') {
@@ -164,46 +138,31 @@ export class CollisionDetection {
 
     const bulletRadius = 2;
 
-    // Tiles that are solid for ship/pod but should not block bunker- nor player-bullets
-    // - Bunker variants (the functional bunker markers handle bullets themselves)
-    const bulletPassThroughTiles = ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', '[', 'X', 'Y', 'Z', '\\', ']', '^', '_', 'L', 'M', 'N', 'O', 'v', 'w', 'q', 'r', 's', 'u', 'x', 'ý', '§'];
-
     // Check bullet center
     const centerTile = this.levelRenderer.getTileAt(level, bullet.x, bullet.y, 'bullet-center:' + owner);
-    if (this.levelRenderer.isWall(centerTile) && !bulletPassThroughTiles.includes(centerTile)) {
+    if (this.levelRenderer.isWall(centerTile) && !BULLET_PASS_THROUGH_TILES.includes(centerTile)) {
       if (centerTile != 'p') {
         console.log('[BULLET_WALL_HIT] owner:', owner, 'tile:', centerTile, 'bullet pos:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) }, 'point:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) });
       }
       return { collided: true, tile: centerTile, point: { x: bullet.x, y: bullet.y } };
     }
 
-    // Check bullet perimeter points
-    const bulletPoints = this.getBulletPoints(bullet, bulletRadius);
-    for (const point of bulletPoints) {
-      const tile = this.levelRenderer.getTileAt(level, point.x, point.y, 'bullet-perimeter:' + owner);
-      if (this.levelRenderer.isWall(tile) && !bulletPassThroughTiles.includes(tile)) {
+    // Check bullet perimeter points directly, without allocating an array of point
+    // objects every call (this runs every frame for every active bullet).
+    const numPoints = 4;
+    for (let i = 0; i < numPoints; i++) {
+      const angle = (i / numPoints) * Math.PI * 2;
+      const x = bullet.x + Math.cos(angle) * bulletRadius;
+      const y = bullet.y + Math.sin(angle) * bulletRadius;
+      const tile = this.levelRenderer.getTileAt(level, x, y, 'bullet-perimeter:' + owner);
+      if (this.levelRenderer.isWall(tile) && !BULLET_PASS_THROUGH_TILES.includes(tile)) {
         if (tile != 'p') {
-          console.log('[BULLET_WALL_HIT] owner:', owner, 'tile:', tile, 'bullet pos:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) }, 'point:', { x: point.x.toFixed(1), y: point.y.toFixed(1) });
+          console.log('[BULLET_WALL_HIT] owner:', owner, 'tile:', tile, 'bullet pos:', { x: bullet.x.toFixed(1), y: bullet.y.toFixed(1) }, 'point:', { x: x.toFixed(1), y: y.toFixed(1) });
         }
-        return { collided: true, tile, point };
+        return { collided: true, tile, point: { x, y } };
       }
     }
 
     return { collided: false };
-  }
-
-  getBulletPoints(bullet, radius) {
-    const points = [];
-    const numPoints = 4;
-
-    for (let i = 0; i < numPoints; i++) {
-      const angle = (i / numPoints) * Math.PI * 2;
-      points.push({
-        x: bullet.x + Math.cos(angle) * radius,
-        y: bullet.y + Math.sin(angle) * radius
-      });
-    }
-
-    return points;
   }
 }
