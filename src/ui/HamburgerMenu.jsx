@@ -435,36 +435,6 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       )}
 
       <hr />
-      <h3
-        className="hamburger-section-title"
-        style={{ cursor: 'pointer', userSelect: 'none' }}
-        onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => setShowOrientation(!showOrientation)}
-      >
-        {showOrientation ? '▼' : '▶'} {t.orientation}
-      </h3>
-      {showOrientation && (
-        <div className="hamburger-settings-group">
-          <div className="hamburger-tri-toggle" style={{ display: 'flex', gap: '2px' }}>
-            {['landscape', 'portrait', 'auto'].map((mode) => (
-              <button
-                key={mode}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => { console.log('[ORIENTATION_MODE] setting to:', mode); setOrientationMode(mode); }}
-                className={`hamburger-toggle-btn ${orientationMode === mode ? 'on' : 'off'}`}
-                style={{ minWidth: '48px', textAlign: 'center' }}
-              >
-                {mode === 'landscape' ? t.orientationLandscape : mode === 'portrait' ? t.orientationPortrait : t.orientationAuto}
-              </button>
-            ))}
-          </div>
-          <p className="hamburger-hint" style={{ color: '#ffaa44', fontWeight: '600', marginTop: '8px' }}>
-            {t.orientationHint}
-          </p>
-        </div>
-      )}
-
-      <hr />
       <h3 className="hamburger-section-title">{t.sound}</h3>
       <div className="hamburger-settings-group">
         <SettingsSlider
@@ -491,6 +461,40 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           <p className="hamburger-hint">{t.vibrationHint}</p>
         )}
       </div>
+
+      <hr />
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowOrientation(!showOrientation)}
+      >
+        {showOrientation ? '▼' : '▶'} {t.orientation}
+      </h3>
+      {showOrientation && (
+        <div className="hamburger-settings-group">
+          <div className="hamburger-tri-toggle" style={{ display: 'flex', gap: '0', justifyContent: 'center' }}>
+            {['landscape', 'portrait', 'auto'].map((mode, i) => (
+              <button
+                key={mode}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => { console.log('[ORIENTATION_MODE] setting to:', mode); setOrientationMode(mode); }}
+                className={`hamburger-toggle-btn ${orientationMode === mode ? 'on' : 'off'}`}
+                style={{
+                  minWidth: '48px',
+                  textAlign: 'center',
+                  borderRadius: i === 0 ? '8px 0 0 8px' : i === 1 ? '0' : '0 8px 8px 0',
+                }}
+              >
+                {mode === 'landscape' ? t.orientationLandscape : mode === 'portrait' ? t.orientationPortrait : t.orientationAuto}
+              </button>
+            ))}
+          </div>
+          <p className="hamburger-hint" style={{ color: '#ffaa44', fontWeight: '600', marginTop: '8px' }}>
+            {t.orientationHint}
+          </p>
+        </div>
+      )}
 
       <hr />
       <h3 className="hamburger-section-title">{t.levelPacks}</h3>
