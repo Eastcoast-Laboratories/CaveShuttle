@@ -483,10 +483,18 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
                 style={{
                   minWidth: '48px',
                   textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: mode === 'auto' ? '4px 12px' : '4px 8px',
                   borderRadius: i === 0 ? '8px 0 0 8px' : i === 1 ? '0' : '0 8px 8px 0',
                 }}
               >
-                {mode === 'landscape' ? t.orientationLandscape : mode === 'portrait' ? t.orientationPortrait : t.orientationAuto}
+                {mode === 'landscape'
+                  ? <img src="/images/orientation/land.png" alt={t.orientationLandscape} style={{ width: '24px', height: '13px', verticalAlign: 'middle' }} />
+                  : mode === 'portrait'
+                    ? <img src="/images/orientation/port.png" alt={t.orientationPortrait} style={{ width: '13px', height: '24px', verticalAlign: 'middle' }} />
+                    : t.orientationAuto}
               </button>
             ))}
           </div>
