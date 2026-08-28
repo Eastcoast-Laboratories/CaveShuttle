@@ -27,6 +27,7 @@ export const hamburgerMenuTranslations = {
     orientationLandscape: 'Land',
     orientationPortrait: 'Port',
     orientationAuto: 'Auto',
+    orientationHint: 'Das Spiel ist besser im Landscape-Modus (Querformat) spielbar.',
 
     // Button labels
     on: 'AN',
@@ -119,6 +120,7 @@ export const hamburgerMenuTranslations = {
     orientationLandscape: 'Land',
     orientationPortrait: 'Port',
     orientationAuto: 'Auto',
+    orientationHint: 'The game is best played in landscape mode.',
 
     // Button labels
     on: 'ON',
