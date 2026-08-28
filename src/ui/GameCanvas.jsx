@@ -1328,6 +1328,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const canvasGeomLogRef = useRef({ frame: 0, last: 0 });
   // Lag detection: track slow frames, throttle logging to avoid spam
   const lagLogRef = useRef({ lastLogTime: 0, frameCount: 0, worstMs: 0 });
+  // Throttle fuel reporting to the parent: onFuelChange triggers a React state update
+  // (and re-render of the whole parent tree) in App.jsx. Fuel changes continuously while
+  // thrusting, so reporting every single frame causes needless re-renders 60x/sec.
+  const lastFuelReportRef = useRef({ time: 0, value: -1 });
 
   // Helper: flood-fill from a point across the empty space bounded by '#' and walls,
   // collect ALL reachable '*' respawn points in the same area, then choose based on pod state:
@@ -3017,9 +3021,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
 
-      // Report fuel to parent
+      // Report fuel to parent, throttled: onFuelChange triggers a setState in the parent
+      // (re-rendering the whole App tree), so avoid calling it every single frame while
+      // the value is only drifting slightly (e.g. continuous thrust). Large/instant changes
+      // (refuel, death, level start) are still reported immediately.
       if (onFuelChange) {
-        onFuelChange(ship.fuel);
+        const fuelReport = lastFuelReportRef.current;
+        const fuelDiff = Math.abs(ship.fuel - fuelReport.value);
+        if (fuelDiff >= 1 || currentTime - fuelReport.time > 150) {
+          onFuelChange(ship.fuel);
+          fuelReport.value = ship.fuel;
+          fuelReport.time = currentTime;
+        }
       }
 
       // Wormhole state is needed for rendering decisions below
