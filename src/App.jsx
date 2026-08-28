@@ -999,13 +999,13 @@ function App() {
               <span className="hud-score-label" style={{ fontWeight: '600', whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>SCORE </span>
               <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>{score}</span>
               <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LIVES {lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives))}</span>
-              <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LEVEL {level}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>FUEL</span>
                 <div style={{ width: '80px', height: '12px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px', overflow: 'hidden' }}>
                   <div style={{ width: `${fuel}%`, height: '100%', background: fuel > 30 ? 'linear-gradient(90deg, #00ff88, #00cc66)' : 'linear-gradient(90deg, #ff4444, #cc0000)', transition: 'width 0.3s ease' }} />
                 </div>
               </div>
+              <span style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>LEVEL {level}</span>
             </div>
           </div>
 
