@@ -76,7 +76,13 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   }
 
   if (options.maximizeRotateHeight) {
-    rotateHeight = h - topEdge - buttonMargin - HUD_HEIGHT - bottomOffset;
+    const availableHeight = h - topEdge - HUD_HEIGHT - bottomOffset;
+    if (options.podBelowRotate) {
+      // Reserve 1/3 for the POD button below the rotate buttons (with a gap between)
+      rotateHeight = (availableHeight - buttonGap) * 2 / 3;
+    } else {
+      rotateHeight = availableHeight - buttonMargin;
+    }
   }
 
   if (options.maximizeWidth) {
@@ -129,6 +135,18 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
       const podH = h - podY - buttonMargin;
       buttons.push(
         { type: podType, x: podX, y: podY, w: specialWidth * 1.7, h: podH, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: specialWidth * 1.7 + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
+      );
+    } else if (options.podBelowRotate) {
+      // 1-player mode: POD button sits below the rotate buttons on the left side,
+      // spanning the full width of both rotate buttons and taking 1/3 of the
+      // available height (screen height without HUD).
+      const podX = buttonMargin;
+      const podY = rotateY + rotateHeight + buttonGap;
+      const podW = rotateLeftWidth + buttonGap + rotateRightWidth;
+      const availableHeight = h - topEdge - HUD_HEIGHT - bottomOffset;
+      const podH = (availableHeight - buttonGap) * 1 / 3;
+      buttons.push(
+        { type: podType, x: podX, y: podY, w: podW, h: podH, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: podW + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
       );
     } else {
       buttons.push(
@@ -251,6 +269,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
     return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
       maximizeThrustHeight: true,
       maximizeRotateHeight: true,
+      podBelowRotate: true,
       bottomOffset,
     });
   }
