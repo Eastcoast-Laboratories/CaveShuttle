@@ -42,7 +42,7 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   // Base button sizes based on BUTTON_SIZE_FACTOR. Thrust is the largest.
   const baseRotateWidth = sizeFactor * 1.6;
   let rotateHeight = options.rotateHeight !== undefined ? options.rotateHeight : (sizeFactor * 3);
-  const baseThrustWidth = sizeFactor * 3.5;
+  const baseThrustWidth = sizeFactor * 4.5;
   const baseThrustHeight = sizeFactor * 3;
   const baseFireWidth = sizeFactor * 2;
   let fireHeight = sizeFactor * 2;
@@ -97,15 +97,17 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
     }
   }
 
+  if (options.doubleFireWidth) {
+    fireWidth = baseFireWidth * 2 + buttonGap;
+  }
+
   // Right cluster geometry.
   const fireX = w - fireWidth - buttonMargin;
   const specialX = fireX - buttonGap - specialWidth;
-  let fireY, specialY, thrustY, thrustX;
-  fireY = topEdge + HUD_HEIGHT;
-  specialY = topEdge + HUD_HEIGHT; // tractor and shield
-  thrustY = topEdge + fireHeight + buttonGap + HUD_HEIGHT;
-  thrustX = specialX;
-  thrustWidth = fireWidth + specialWidth + buttonGap;
+  const fireY = topEdge + HUD_HEIGHT;
+  const specialY = topEdge + HUD_HEIGHT; // tractor and shield
+  const thrustY = topEdge + fireHeight + buttonGap + HUD_HEIGHT;
+  const thrustX = w - thrustWidth - buttonMargin;
 
 
   const tiltSteeringMode = options.tiltSteering === true;
@@ -270,6 +272,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
       maximizeThrustHeight: true,
       maximizeRotateHeight: true,
       podBelowRotate: true,
+      doubleFireWidth: true,
       bottomOffset,
     });
   }
