@@ -1268,6 +1268,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       setGameState('playing');
       setLives(initialLives);
       activeLevelTimeRef.current = 0;
+      lastRespawnTimeRef.current = performance.now();
       if (onLivesChange) onLivesChange(initialLives);
     }
   }, [levelProp, currentLevel]);
@@ -1332,6 +1333,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   // (and re-render of the whole parent tree) in App.jsx. Fuel changes continuously while
   // thrusting, so reporting every single frame causes needless re-renders 60x/sec.
   const lastFuelReportRef = useRef({ time: 0, value: -1 });
+  // Timestamp for lag diagnostics: when the ship last respawned (set on level start and on every respawn).
+  const lastRespawnTimeRef = useRef(performance.now());
 
   // Helper: flood-fill from a point across the empty space bounded by '#' and walls,
   // collect ALL reachable '*' respawn points in the same area, then choose based on pod state:
@@ -1484,6 +1487,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
     // Reset ship and pod back to their level-start state (DRY helper used by every respawn site)
     const respawnShipAndPod = () => {
+      lastRespawnTimeRef.current = performance.now();
       // Find respawn point using flood-fill from current ship position; fallback to initial restartPos.
       // target; the respawn point is a separate, dynamically-computed spawn location. Overwriting
       // it moved the win target onto the respawn point and falsely triggered "level completed".
@@ -1756,7 +1760,21 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       lag.frameCount++;
       if (frameElapsedMs > lag.worstMs) lag.worstMs = frameElapsedMs;
       if (currentTime - lag.lastLogTime > 1000) {
-        console.warn('[LAG]', lag.frameCount, 'slow frame(s) in the last', ((currentTime - lag.lastLogTime) / 1000).toFixed(1) + 's', '| worst:', lag.worstMs.toFixed(0) + 'ms', '(' + (1000 / lag.worstMs).toFixed(0) + 'fps)', '| bunkers:', bunkers.length, '| mines:', enemyMines.length, '| bullets:', bullets.length + playerBullets.length);
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString('de-DE', { hour12: false }) + '.' + String(now.getMilliseconds()).padStart(3, '0');
+        const sinceStart = (activeLevelTimeRef.current / 1000).toFixed(1);
+        const sinceRespawn = ((currentTime - lastRespawnTimeRef.current) / 1000).toFixed(1);
+        console.warn(
+          '[LAG]', lag.frameCount, 'slow frame(s) in the last', ((currentTime - lag.lastLogTime) / 1000).toFixed(1) + 's',
+          '| worst:', lag.worstMs.toFixed(0) + 'ms', '(' + (1000 / lag.worstMs).toFixed(0) + 'fps)',
+          '| at:', timestamp,
+          '| sinceStart:', sinceStart + 's',
+          '| sinceRespawn:', sinceRespawn + 's',
+          '| gameState:', gameState, '| frozen:', frozen,
+          '| bunkers:', bunkers.length, '| mines:', enemyMines.length, '| bullets:', bullets.length + playerBullets.length,
+          '| particles:', particleSystem.current.particles.length,
+          '| ship:', ship.x.toFixed(0) + ',' + ship.y.toFixed(0), '| fuel:', ship.fuel.toFixed(0)
+        );
         lag.lastLogTime = currentTime;
         lag.frameCount = 0;
         lag.worstMs = 0;
