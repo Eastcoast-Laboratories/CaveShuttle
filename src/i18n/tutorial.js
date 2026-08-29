@@ -52,6 +52,7 @@ export const tutorialTranslations = {
       cancel: 'Abbrechen',
       restartLevel1: 'Level 1 neu starten',
       skip: 'Überspringen',
+      finish: 'Tutorial beenden',
       stepBack: 'Vorherigen Schritt anzeigen',
       stepIndicator: (n, total) => `Schritt ${n}/${total}`,
       shieldAction: {
@@ -120,6 +121,7 @@ export const tutorialTranslations = {
       cancel: 'Cancel',
       restartLevel1: 'Restart Level 1',
       skip: 'Skip',
+      finish: 'Finish tutorial',
       stepBack: 'Show previous step',
       stepIndicator: (n, total) => `Step ${n}/${total}`,
       shieldAction: {

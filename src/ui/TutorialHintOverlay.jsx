@@ -31,6 +31,7 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
 
   const holdMs = Math.min(holdProgressMs, holdTargetMs);
   const canStepBack = stepIndex > 1;
+  const isLastStep = stepIndex >= totalSteps;
 
   // Action steps: small card, pointer events pass through outside the card.
   return (
@@ -50,10 +51,10 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
           <button
             className="tutorial-hint-overlay__nav-btn tutorial-hint-overlay__skip"
             onClick={onSkip}
-            title={hints.skip}
-            aria-label={hints.skip}
+            title={isLastStep ? hints.finish : hints.skip}
+            aria-label={isLastStep ? hints.finish : hints.skip}
           >
-            ▶|
+            {isLastStep ? `${hints.finish} ▶|` : `${hints.skip} ▶|`}
           </button>
         )}
         <span className="tutorial-hint-overlay__step">{hints.stepIndicator(stepIndex, totalSteps)}</span>
