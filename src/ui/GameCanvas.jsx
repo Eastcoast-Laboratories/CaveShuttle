@@ -311,7 +311,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   // read in canvas rendering (never in JSX). setState here would re-render React every frame.
   const screenShakeRef = useRef({ x: 0, y: 0, intensity: 0 });
   const [podExploded, setPodExploded] = useState(false);
-  const [podExplosionTime, setPodExplosionTime] = useState(null);
+  const podExplosionTimeRef = useRef(null);
   const [podStartPosition, setPodStartPosition] = useState(null);
   const [stars, setStars] = useState([]);
   const [levelColors, setLevelColors] = useState(null);
@@ -330,6 +330,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const levelCompleteTriggered = useRef(false);
   const pendingLevelCompleteData = useRef(null);
   const activeLevelTimeRef = useRef(0); // active play time for the current level in ms
+  const gameTimeRef = useRef(performance.now());
   const replayLoggerRef = useRef(new ReplayLogger());
   const shipDestroyed = useRef(false);
   const deathAnim = useRef({ active: false, timeLeft: 0 });
@@ -602,7 +603,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           pod.towed = false;
           pod.active = false;
           setPodExploded(true);
-          setPodExplosionTime(performance.now());
+          podExplosionTimeRef.current = gameTimeRef.current;
           particleSystem.current.spawnExplosion(data.x, data.y, 40, '#00ff00');
           if (soundManager.current) soundManager.current.playOnce('explosion');
           vibrateIfEnabled([80, 30, 80]);
@@ -1196,6 +1197,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Reset level complete guard for the new level
           levelCompleteTriggered.current = false;
           shipDestroyed.current = false;
+          gameTimeRef.current = performance.now();
           replayLoggerRef.current.start();
           deathAnim.current = { active: false, timeLeft: 0 };
           wormholeRef.current = { active: false, progress: 0, x: 0, y: 0, startTime: 0, started: false, shipStart: null, podOffset: null };
@@ -1520,7 +1522,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const target = findRespawnInRegion(ship.x, ship.y, podWasDockedRef.current) || restartPosition;
       console.log('[RESPAWN] respawnShipAndPod called at', ship.x.toFixed(0), ship.y.toFixed(0), '| wasDocked:', podWasDockedRef.current, '| target:', target ? { x: target.x.toFixed(0), y: target.y.toFixed(0) } : null);
       // Grant temporary immunity to bullets and mines after respawn
-      respawnImmunityTimeRef.current = performance.now() + RESPAWN_IMMUNITY_MS;
+      respawnImmunityTimeRef.current = gameTimeRef.current + RESPAWN_IMMUNITY_MS;
       if (target) {
         ship.setPosition(target.x, target.y);
         // Respawn shield flash effect: spawn sparkle particles around the ship
@@ -1575,7 +1577,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
       setPodExploded(false);
-      setPodExplosionTime(null);
+      podExplosionTimeRef.current = null;
       podDelayedExplosionRef.current = null;
       shipDestroyed.current = false;
     };
@@ -1589,7 +1591,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       pod.towed = false;
       pod.active = false;
       setPodExploded(true);
-      setPodExplosionTime(performance.now());
+      podExplosionTimeRef.current = gameTimeRef.current;
       particleSystem.current.spawnExplosion(pod.x, pod.y, 40, '#00ff00');
       if (soundManager.current) soundManager.current.playOnce('explosion');
       vibrateIfEnabled([80, 30, 80]);
@@ -1605,7 +1607,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     const destroyShip = () => {
       if (shipDestroyed.current) return;
       if (godModeActiveRef.current) return;
-      if (performance.now() < respawnImmunityTimeRef.current) {
+      if (gameTimeRef.current < respawnImmunityTimeRef.current) {
         console.log('[RESPAWN_IMMUNITY] destroyShip blocked by respawn immunity');
         return;
       }
@@ -1621,7 +1623,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // will detonate 0.5s later so it can fall away from the exploding ship.
         podWasDockedRef.current = !!pod.towed;
         pod.towed = false;
-        podDelayedExplosionRef.current = performance.now() + 500;
+        podDelayedExplosionRef.current = gameTimeRef.current + 500;
         console.log('[POD_EXPLOSION] Pod tether severed at ship destruction, delayed detonation scheduled in 0.5s | wasTowed:', podWasDockedRef.current);
       } else if (!podExploded) {
         podWasDockedRef.current = false;
@@ -1652,7 +1654,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (tileX < 0 || tileX >= row.length) return;
       if (row[tileX] !== GOD_MODE_TILE) return;
       level.layout[tileY] = row.substring(0, tileX) + ' ' + row.substring(tileX + 1);
-      godModeEndTimeRef.current = performance.now() + GOD_MODE_DURATION_MS;
+      godModeEndTimeRef.current = gameTimeRef.current + GOD_MODE_DURATION_MS;
       godModeActiveRef.current = true;
       const tileSize = tileRenderer.current.getScaledTileSize();
       const px = tileX * tileSize + tileSize / 2;
@@ -1670,7 +1672,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (row[tileX] !== MULTI_SHOT_TILE) return;
       level.layout[tileY] = row.substring(0, tileX) + ' ' + row.substring(tileX + 1);
       multiShotEnabledRef.current = true;
-      multiShotAuraEndTimeRef.current = performance.now() + 20000;
+      multiShotAuraEndTimeRef.current = gameTimeRef.current + 20000;
       if (onMultiShotChange) onMultiShotChange(true);
       const tileSize = tileRenderer.current.getScaledTileSize();
       const px = tileX * tileSize + tileSize / 2;
@@ -1681,7 +1683,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
     // Accumulate reactor damage from a bullet hit; trigger the meltdown once charged.
     const registerReactorHit = (point, tile) => {
-      const now = performance.now();
+      const now = gameTimeRef.current;
       const gap = now - reactorLastHitTimeRef.current;
       const tileSize = tileRenderer.current.getScaledTileSize();
       const tileIndex = REACTOR_TILES.indexOf(tile);
@@ -1785,7 +1787,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
     const currentTime = performance.now();
     const frameElapsedMs = currentTime - lastTimeRef.current;
-    let deltaTime = frameElapsedMs / 16.67; // Normalize to 1.0 at 60fps
+    const gameDeltaMs = frozen ? 0 : frameElapsedMs;
+    gameTimeRef.current += gameDeltaMs;
+    const gameNow = gameTimeRef.current;
+    let deltaTime = gameDeltaMs / 16.67; // Normalize to 1.0 at 60fps
     // Cap delta to avoid a "spiral of death" if a single frame is very slow
     if (deltaTime > 3) deltaTime = 3;
     // Apply global game speed multiplier
@@ -1820,8 +1825,31 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
     }
 
+    // Death animation: explode for ~1s with debris, then game over or respawn
+    const isDying = deathAnim.current.active;
+    // Player 2 input: host uses network input, client captures local input to send to host.
+    const p2Left = networkRole === 'host'
+      ? networkInputRef.current.left
+      : (keys['a'] || keys['A'] || p2RotateLeftActive);
+    const p2Right = networkRole === 'host'
+      ? networkInputRef.current.right
+      : (keys['d'] || keys['D'] || p2RotateRightActive);
+    const p2Thrust = networkRole === 'host'
+      ? networkInputRef.current.thrust
+      : (keys['w'] || keys['W'] || p2ThrustActive);
+    const p2Fire = networkRole === 'host'
+      ? networkInputRef.current.fire
+      : (keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || p2FireActive);
+    // Tractor beam (Space key, Ctrl key, or on-screen touch button)
+    // Includes shieldAndBeamActive for network sync (client receives host's shield state)
+    const tractorBeamActive = keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive || shieldAndBeamActive;
+    const beamActive = tractorBeamActive;
+    let beamEndY = ship.y;
+    let isRefueling = false;
+
+    if (!frozen) {
     // Update god mode timer and log state changes
-    if (godModeEndTimeRef.current > currentTime) {
+    if (godModeEndTimeRef.current > gameNow) {
       if (!godModeActiveRef.current) {
         godModeActiveRef.current = true;
         console.log('[GOD_MODE] Activated until', (godModeEndTimeRef.current / 1000).toFixed(2));
@@ -1833,8 +1861,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
     }
 
-      // Death animation: explode for ~1s with debris, then game over or respawn
-      const isDying = deathAnim.current.active;
       if (isDying) {
         deathAnim.current.timeLeft -= deltaTime;
         // Keep spawning debris for a lively explosion
@@ -1850,20 +1876,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           finalizeDeath();
         }
       }
-
-      // Player 2 input: host uses network input, client captures local input to send to host.
-      const p2Left = networkRole === 'host'
-        ? networkInputRef.current.left
-        : (keys['a'] || keys['A'] || p2RotateLeftActive);
-      const p2Right = networkRole === 'host'
-        ? networkInputRef.current.right
-        : (keys['d'] || keys['D'] || p2RotateRightActive);
-      const p2Thrust = networkRole === 'host'
-        ? networkInputRef.current.thrust
-        : (keys['w'] || keys['W'] || p2ThrustActive);
-      const p2Fire = networkRole === 'host'
-        ? networkInputRef.current.fire
-        : (keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || p2FireActive);
 
       // Handle input (skipped while the ship is exploding)
       if (!isDying) {
@@ -2078,9 +2090,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
 
-      // Tractor beam (Space key, Ctrl key, or on-screen touch button)
-      // Includes shieldAndBeamActive for network sync (client receives host's shield state)
-      const tractorBeamActive = keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive || shieldAndBeamActive;
       if (tractorBeamActive && !wasTractorBeamRef.current) {
         vibrateIfEnabled(VIBRATE_POD);
       }
@@ -2107,11 +2116,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Tractor beam raycast: beam shoots straight down until it hits the first obstacle.
-      const beamActive = tractorBeamActive;
       // Disabled while the pod is being towed (docked):
       // && !(pod && pod.towed)
-      let beamEndY = ship.y;
-      let isRefueling = false;
       if (beamActive && level && tilesetLoaded) {
         const maxBeam = 240;
         const step = 4;
@@ -2171,7 +2177,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // updater multiple times (StrictMode), which would otherwise duplicate or skip shots.
       const spawnedBullets = [];
       if (!isDying && (playerOneCanFire || playerTwoCanFire)) {
-        const now = performance.now();
+        const now = gameNow;
         const bulletSpeed = BULLET_SPEED;
 
         // Player 1 (ship) fires independently
@@ -2291,14 +2297,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Check if 0.5 seconds have passed after pod explosion, then destroy ship
-      if (podExploded && podExplosionTime) {
-        const timeSinceExplosion = performance.now() - podExplosionTime;
+      if (podExploded && podExplosionTimeRef.current) {
+        const timeSinceExplosion = gameNow - podExplosionTimeRef.current;
         if (timeSinceExplosion >= 500 && !isDying) {
           if (!godModeActiveRef.current && networkRole !== 'client') {
             destroyShip();
           }
           setPodExploded(false);
-          setPodExplosionTime(null);
+          podExplosionTimeRef.current = null;
         }
       }
 
@@ -2342,32 +2348,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
 
-      // [SOUND] Drive the looping sounds from the current game state each frame.
-      // Gameplay loops are silenced while frozen, dying or during the wormhole animation.
-      // Thrust loops are not stopped here; they are faded out when the wormhole starts.
-      if (soundManager.current) {
-        const sm = soundManager.current;
-        const soundInactive = frozen || isDying || wormholeRef.current.active;
-        if (!wormholeRef.current.active) {
-          const shipThrusting = networkRole === 'client'
-            ? !frozen && !isDying && !!networkSnapshotRef.current?.ship?.accelerate
-            : !frozen && !isDying &&
-              (keys['ArrowUp'] || (!twoPlayer && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
-          const podThrusting = !frozen && !isDying && twoPlayer && pod && pod.towed && !pod.onHolder && p2Thrust;
-          sm.setLoop('shipThrust', shipThrusting);
-          sm.setLoop('podThrust', podThrusting);
-        }
-        sm.setLoop('podWobble', !soundInactive && (shieldAndBeamActive || touchActive));
-        sm.setLoop('fuelDrain', !soundInactive && isRefueling);
-      }
-
       // Track active level play time. Paused while frozen (menus/overlays/tutorial) or during wormhole.
-      if (!frozen && gameState === 'playing') {
-        activeLevelTimeRef.current += frameElapsedMs;
+      if (gameState === 'playing') {
+        activeLevelTimeRef.current += gameDeltaMs;
       }
 
       // Skip all updates if frozen or during the wormhole level-complete animation
-      if (frozen || wormholeRef.current.active) {
+      if (wormholeRef.current.active) {
         // Still render the scene but don't update anything
       } else {
       if (networkRole !== 'client') {
@@ -2519,7 +2506,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Trigger the delayed pod detonation 0.5s after the ship was destroyed.
       if (podDelayedExplosionRef.current && !podExploded && pod && pod.active) {
-        const timeUntilDetonation = podDelayedExplosionRef.current - performance.now();
+        const timeUntilDetonation = podDelayedExplosionRef.current - gameNow;
         if (timeUntilDetonation <= 0) {
           detonatePod('ship-destruction');
           podDelayedExplosionRef.current = null;
@@ -2751,7 +2738,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
         // Reactor meltdown: one-time effects, countdown, planet explosion
         if (meltdownActiveRef.current) {
-          const now = performance.now();
+          const now = gameNow;
 
           // Trigger one-time meltdown start effects
           if (!meltdownEffectsTriggeredRef.current) {
@@ -2767,7 +2754,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             // Planet explodes
             planetExplosionRef.current = {
               active: true,
-              startTime: now,
+              startTime: performance.now(), // wall-clock: rendering animation continues after game-over freeze
               alpha: 0,
               x: reactorCenterRef.current.x,
               y: reactorCenterRef.current.y
@@ -2777,8 +2764,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           }
 
           if (planetExplosionRef.current.active) {
-            planetExplosionRef.current.alpha = Math.min(1, (now - planetExplosionRef.current.startTime) / 1500);
-            if (now - planetExplosionRef.current.startTime > 2500 && !meltdownGameOverCalledRef.current) {
+            const wallNow = performance.now();
+            planetExplosionRef.current.alpha = Math.min(1, (wallNow - planetExplosionRef.current.startTime) / 1500);
+            if (wallNow - planetExplosionRef.current.startTime > 2500 && !meltdownGameOverCalledRef.current) {
               meltdownGameOverCalledRef.current = true;
               if (onGameOver) onGameOver();
               setGameState('gameover');
@@ -2883,7 +2871,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 15) {
             // Ship hit by bullet - check if shield, god mode, or respawn immunity is active
-            if (shieldAndBeamActive || godModeActiveRef.current || performance.now() < respawnImmunityTimeRef.current) {
+            if (shieldAndBeamActive || godModeActiveRef.current || gameNow < respawnImmunityTimeRef.current) {
               // Shield/god mode/immunity blocks the bullet
               bullet.active = false;
               continue;
@@ -2901,13 +2889,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Lose condition: fuel empty — delayed explosion after 3 seconds without thrust
       if (ship.fuel <= 0 && !fuelEmptyTimeRef.current && !isDying) {
-        fuelEmptyTimeRef.current = performance.now();
+        fuelEmptyTimeRef.current = gameNow;
         console.log('[FUEL_EMPTY] Ship ran out of fuel at', ship.x.toFixed(0), ship.y.toFixed(0), '| explosion in', FUEL_EMPTY_DESTROY_DELAY_MS, 'ms');
         if (soundManager.current) soundManager.current.playOnce('noFuel');
       }
 
       if (fuelEmptyTimeRef.current && !isDying) {
-        const elapsed = performance.now() - fuelEmptyTimeRef.current;
+        const elapsed = gameNow - fuelEmptyTimeRef.current;
         if (elapsed >= FUEL_EMPTY_DESTROY_DELAY_MS) {
           fuelEmptyTimeRef.current = null;
           console.log('[FUEL_EMPTY] Delay expired, destroying ship');
@@ -2959,7 +2947,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 progress: 0,
                 x: ship.x,
                 y: ship.y - 120,
-                startTime: performance.now()
+                startTime: gameTimeRef.current
               };
               // Escaping with the pod during an active meltdown grants a large bonus.
               if (meltdownActiveRef.current && !meltdownEscapedRef.current) {
@@ -2988,7 +2976,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       // Wormhole level-complete animation
       if (gameState === 'wormhole' && wormholeRef.current.active) {
-        const now = performance.now();
+        const now = gameNow;
         const duration = 2500; // ms
         const elapsed = now - wormholeRef.current.startTime;
         const progress = Math.min(1, elapsed / duration);
@@ -3065,12 +3053,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // [NETWORK] Host streams authoritative state; client streams P2 inputs.
-      networkSendTimerRef.current += frameElapsedMs;
+      networkSendTimerRef.current += gameDeltaMs;
       if (networkSendTimerRef.current > 50 && networkManager && networkRole) {
         networkSendTimerRef.current = 0;
         if (networkRole === 'host') {
           networkManager.sendState({
-            t: currentTime,
+            t: gameNow,
             ship: {
               x: ship.x,
               y: ship.y,
@@ -3108,6 +3096,26 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             fire: p2Fire
           });
         }
+      }
+    }
+
+      // [SOUND] Drive the looping sounds from the current game state each frame.
+      // Gameplay loops are silenced while frozen, dying or during the wormhole animation.
+      // Thrust loops are not stopped here; they are faded out when the wormhole starts.
+      if (soundManager.current) {
+        const sm = soundManager.current;
+        const soundInactive = frozen || isDying || wormholeRef.current.active;
+        if (!wormholeRef.current.active) {
+          const shipThrusting = networkRole === 'client'
+            ? !frozen && !isDying && !!networkSnapshotRef.current?.ship?.accelerate
+            : !frozen && !isDying &&
+              (keys['ArrowUp'] || (!twoPlayer && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+          const podThrusting = !frozen && !isDying && twoPlayer && pod && pod.towed && !pod.onHolder && p2Thrust;
+          sm.setLoop('shipThrust', shipThrusting);
+          sm.setLoop('podThrust', podThrusting);
+        }
+        sm.setLoop('podWobble', !soundInactive && (shieldAndBeamActive || touchActive));
+        sm.setLoop('fuelDrain', !soundInactive && isRefueling);
       }
 
       // Report fuel to parent, throttled: onFuelChange triggers a setState in the parent
@@ -3297,7 +3305,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
 
         // Draw multi-shot aura around the ship (orange pulsing ring, 20s after pickup)
-        if (multiShotEnabledRef.current && multiShotAuraEndTimeRef.current > performance.now() && !isWormhole) {
+        if (multiShotEnabledRef.current && multiShotAuraEndTimeRef.current > gameTimeRef.current && !isWormhole) {
           ctx.save();
           ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
           const pulse = Math.sin(performance.now() / 200) * 3;
@@ -3310,7 +3318,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
 
         // Draw respawn shield flash: pulsing ring that fades out over immunity period
-        const immunityRemaining = respawnImmunityTimeRef.current - performance.now();
+        const immunityRemaining = respawnImmunityTimeRef.current - gameTimeRef.current;
         if (immunityRemaining > 0 && !isWormhole) {
           ctx.save();
           ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
@@ -3584,7 +3592,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const cw = canvas.width;
         const ch = canvas.height;
         const now = performance.now();
-        const remaining = Math.max(0, (meltdownExplosionTimeRef.current - now) / 1000);
+        const remaining = Math.max(0, (meltdownExplosionTimeRef.current - gameTimeRef.current) / 1000);
         const pulse = 0.5 + 0.5 * Math.sin(now / 100);
 
         // Full-screen pulsing red warning tint
