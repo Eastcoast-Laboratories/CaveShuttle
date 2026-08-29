@@ -1,6 +1,6 @@
-Pilot a spaceship through dangerous caves, rescue the pod, and escape into the sky.
+Pilot a spaceship through dangerous caves, rescue the cargo pod, and escape into the sky.
 
-Cave Shuttle is a physics-based arcade game about precision flying, fuel management, and momentum control. Navigate through cave levels, dodge walls and enemy fire, dock the pod, and deliver it back upward into open sky to complete the level.
+Cave Shuttle is a physics-based arcade game about precision flying, fuel management, and momentum control. Navigate through cave levels, dodge walls and enemy fire, dock the cargo pod, and deliver it back upward into open sky to complete the level.
 
 FEATURES
 
@@ -8,7 +8,7 @@ FEATURES
 - Several cave levels with distinct layouts and hazards
 - Enemy bunkers, bullets, fuel depots and slider doors
 - Single-player mode
-- Two-player mode (local on the same device or via Wi-Fi): one player controls the ship, the second player controls the gun and later in the game the pod with its own gun and thruster
+- Two-player mode (local on the same device or via Wi-Fi): one player controls the ship, the second player controls the gun and later in the game the cargo pod with its own gun and thruster
 - Bonus lives
 - Sound effects
 - Named high scores
@@ -20,9 +20,9 @@ HOW TO PLAY
 
 Use on-screen touch buttons, a virtual joystick, or gyroscope tilt for acceleration, rotation, the tractor beam, and firing.
 
-1. Fly close to the pod.
+1. Fly close to the cargo pod.
 2. Activate the tractor beam to dock it under your ship.
-3. Fly upward into the sky with the pod to finish the level.
+3. Fly upward into the sky with the cargo pod to finish the level.
 4. Earn more points by flying efficiently, collecting fuel, triggering level elements, destroying bunkers, and finishing quickly.
 
 HIGH SCORES

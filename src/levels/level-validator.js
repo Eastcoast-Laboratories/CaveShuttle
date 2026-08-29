@@ -186,7 +186,7 @@ export function validateLevel(level) {
     errors.push("expected at least one '*', found 0");
   }
   if (ms.length !== 1) {
-    errors.push(`expected exactly one pod holder 'm', found ${ms.length}`);
+    errors.push(`expected exactly one cargo pod holder 'm', found ${ms.length}`);
   }
 
   // Respawn stars must have at least MIN_RESPAWN_OBSTACLE_DISTANCE_BELOW rows
@@ -285,7 +285,7 @@ export function validateLevel(level) {
     }
     for (const d of '01234') {
       if (!near.includes(d)) {
-        warnings.push(`pod holder missing stand tile '${d}' near m@${my},${mx}`);
+        warnings.push(`cargo pod holder missing stand tile '${d}' near m@${my},${mx}`);
       }
     }
   }
@@ -309,11 +309,11 @@ export function validateLevel(level) {
     }
 
     if (!seen.has(key(...ms[0]))) {
-      errors.push("pod holder 'm' is NOT reachable from '*' (level uncompletable)");
+      errors.push("cargo pod holder 'm' is NOT reachable from '*' (level uncompletable)");
     } else {
       const [my, mx] = ms[0];
       if (my - 1 >= 0 && isWall(padded[my - 1][mx])) {
-        errors.push("cell directly above pod holder 'm' is a wall (pod spawns into rock)");
+        errors.push("cell directly above cargo pod holder 'm' is a wall (cargo pod spawns into rock)");
       }
     }
 

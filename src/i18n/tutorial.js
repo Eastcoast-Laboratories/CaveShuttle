@@ -11,9 +11,9 @@ export const tutorialTranslations = {
     intro: 'Hier erfährst du in Kürze, wie du deine erste Mission steuerst.',
     
     objective: 'Ziel',
-    objectiveText: 'Fliege über den Pod und aktiviere den Traktorstrahl, damit er an deinem Schiff andockt. Schleppe ihn an die Oberfläche und dort in den Himmel, um das Level zu beenden.',
+    objectiveText: 'Fliege über die Frachtkugel und aktiviere den Traktorstrahl, damit sie an deinem Schiff andockt. Schleppe sie an die Oberfläche und dort in den Himmel, um das Level zu beenden.',
     
-    dockingPodImageText: 'Der Pod dockt an dein Schiff, wenn du nah genug den Traktorstrahl aktivierst.',
+    dockingPodImageText: 'Die Frachtkugel dockt an dein Schiff, wenn du nah genug den Traktorstrahl aktivierst.',
     
     controls: 'Steuerung',
     
@@ -46,7 +46,7 @@ export const tutorialTranslations = {
       rotate: 'Handy nach links/rechts kippen = Schiff drehen',
       thrust: 'Handy vor/zurück kippen = Schub (relativ zur kalibrierten Position)',
       fire: 'Tippen irgendwo auf dem Bildschirm = Feuern',
-      pod: 'Touch-Button für Traktorstrahl & Pod-Docking',
+      pod: 'Touch-Button für Traktorstrahl & Frachtkugel-Docking',
     },
     guidedHints: {
       cancel: 'Abbrechen',
@@ -60,7 +60,7 @@ export const tutorialTranslations = {
         hold: 'Halte den Schild/Traktor-Button',
       },
       brakingInfo: {
-        text: 'Drehe das Raumschiff ganz leicht nach rechts und gebe Schub um dich in Richtung de runden Pods zu bewegen, dann drehe die Nase des Raumschiffs wieder nach oben und benutze den Schub zum Bremsen damit du langsam über dem runden Pod schwebst.',
+        text: 'Drehe das Raumschiff ganz leicht nach rechts und gebe Schub um dich in Richtung der runden Frachtkugeln zu bewegen, dann drehe die Nase des Raumschiffs wieder nach oben und benutze den Schub zum Bremsen damit du langsam über der runden Frachtkugel schwebst.',
         hold: 'Halte den Rechts-Dreh-Button',
       },
       tractorAndThrustAction: {
@@ -79,9 +79,9 @@ export const tutorialTranslations = {
     intro: 'This is a quick overview of how to control your first campaign.',
 
     objective: 'Objective',
-    objectiveText: 'Fly over the pod and activate the tractor beam to dock it under your ship.<br>Then carry it up to the sky to finish the level.',
+    objectiveText: 'Fly over the cargo pod and activate the tractor beam to dock it under your ship.<br>Then carry it up to the sky to finish the level.',
 
-    dockingPodImageText: 'The pod will dock under your ship when you get close enough and activate the tractor beam.',
+    dockingPodImageText: 'The cargo pod will dock under your ship when you get close enough and activate the tractor beam.',
 
     controls: 'Controls',
     
@@ -115,7 +115,7 @@ export const tutorialTranslations = {
       rotate: 'Tilt phone left/right = ship rotation',
       thrust: 'Tilt phone forward/back = thrust (relative to calibrated neutral position)',
       fire: 'Tap anywhere on screen = fire',
-      pod: 'Touch button for Tractor Beam / Pod docking',
+      pod: 'Touch button for Tractor Beam / Cargo Pod docking',
     },
     guidedHints: {
       cancel: 'Cancel',
@@ -129,7 +129,7 @@ export const tutorialTranslations = {
         hold: 'Hold the shield/tractor button',
       },
       brakingInfo: {
-        text: 'Rotate the ship slightly to the right and thrust to move towards the round pod, then point the nose upward again and use thrust to brake so you hover slowly over the round pod.',
+        text: 'Rotate the ship slightly to the right and thrust to move towards the round cargo pod, then point the nose upward again and use thrust to brake so you hover slowly over the round cargo pod.',
         hold: 'Hold the rotate-right button',
       },
       tractorAndThrustAction: {

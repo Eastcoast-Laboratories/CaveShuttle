@@ -65,12 +65,12 @@ export const hamburgerMenuTranslations = {
     shoot: 'Schießen',
     rotate: 'Drehen',
     thrust: 'Schub',
-    shootWithPod: 'Schießen (mit Pod)',
+    shootWithPod: 'Schießen (mit Frachtkugel)',
     rotateTurret: 'Geschütz drehen',
-    rotatePod: 'Pod drehen',
+    rotatePod: 'Frachtkugel drehen',
     player1Ship: 'Spieler 1 — Schiff',
     player2Pod: 'Spieler 2 — {role}',
-    pod: 'Pod',
+    pod: 'Frachtkugel',
     turret: 'Geschütz',
 
     // Level packs
@@ -158,12 +158,12 @@ export const hamburgerMenuTranslations = {
     shoot: 'Shoot',
     rotate: 'Rotate',
     thrust: 'Thrust',
-    shootWithPod: 'Shoot (with Pod)',
+    shootWithPod: 'Shoot (with Cargo Pod)',
     rotateTurret: 'Rotate Turret',
-    rotatePod: 'Rotate Pod',
+    rotatePod: 'Rotate Cargo Pod',
     player1Ship: 'Player 1 — Ship',
     player2Pod: 'Player 2 — {role}',
-    pod: 'Pod',
+    pod: 'Cargo Pod',
     turret: 'Turret',
 
     // Level packs

@@ -1,6 +1,6 @@
-Flieg ein Raumschiff durch gefährliche Höhlen, rette den Pod und entkomme in den Himmel.
+Flieg ein Raumschiff durch gefährliche Höhlen, rette die Frachtkugel und entkomme in den Himmel.
 
-Cave Shuttle ist ein physik-basiertes Arcade-Spiel über Präzisionsflug, Treibstoffmanagement und Impulskontrolle. Navigiere durch Höhlenlevel, weiche Wänden und feindlichem Feuer aus, docke den Pod an und bring ihn zurück in den offenen Himmel, um das Level abzuschließen.
+Cave Shuttle ist ein physik-basiertes Arcade-Spiel über Präzisionsflug, Treibstoffmanagement und Impulskontrolle. Navigiere durch Höhlenlevel, weiche Wänden und feindlichem Feuer aus, docke die Frachtkugel an und bring sie zurück in den offenen Himmel, um das Level abzuschließen.
 
 FUNKTIONEN
 
@@ -8,7 +8,7 @@ FUNKTIONEN
 - Mehrere Höhlenlevel mit unterschiedlichen Layouts und Gefahren
 - Feindliche Bunker, Geschosse, Treibstoffdepots und Schiebetüren
 - Einzelspieler-Modus
-- Zwei-Spieler-Modus (lokal am selben Gerät oder über WLAN): Ein Spieler steuert das Schiff, der zweite Spieler steuert die Waffe und später im Spiel den Pod mit eigener Waffe und Antrieb
+- Zwei-Spieler-Modus (lokal am selben Gerät oder über WLAN): Ein Spieler steuert das Schiff, der zweite Spieler steuert die Waffe und später im Spiel die Frachtkugel mit eigener Waffe und Antrieb
 - Bonusleben
 - Soundeffekte
 - Benannte Highscores
@@ -20,9 +20,9 @@ SO WIRD GESPIELT
 
 Verwende Touch-Buttons, einen virtuellen Joystick oder das Gyroskop für Beschleunigung, Rotation, Traktorstrahl und Feuern.
 
-1. Flieg nah an den Pod heran.
-2. Aktiviere den Traktorstrahl, um ihn unter dem Schiff anzudocken.
-3. Flieg mit dem Pod nach oben in den Himmel, um das Level abzuschließen.
+1. Flieg nah an die Frachtkugel heran.
+2. Aktiviere den Traktorstrahl, um sie unter dem Schiff anzudocken.
+3. Flieg mit der Frachtkugel nach oben in den Himmel, um das Level abzuschließen.
 4. Sammle mehr Punkte durch effizientes Fliegen, Treibstoff sammeln, Level-Elemente auslösen, Bunker zerstören und schnelles Abschließen.
 
 HIGHSCORES

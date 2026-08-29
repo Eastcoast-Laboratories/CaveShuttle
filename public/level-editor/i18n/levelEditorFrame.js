@@ -71,7 +71,7 @@
       fuel: 'Treibstoff:',
       bunkerChance: 'Bunker-Wahrscheinlichkeit:',
       fuelChance: 'Treibstoff-Wahrscheinlichkeit:',
-      podColor: 'Pod-Farbe:',
+      podColor: 'Frachtkugel-Farbe:',
 
       // Canvas info
       cursorPos: 'X: {x}, Y: {y}',
@@ -172,7 +172,7 @@
       fuel: 'Fuel:',
       bunkerChance: 'Bunker Chance:',
       fuelChance: 'Fuel Chance:',
-      podColor: 'Pod Color:',
+      podColor: 'Cargo Pod Color:',
 
       // Canvas info
       cursorPos: 'X: {x}, Y: {y}',

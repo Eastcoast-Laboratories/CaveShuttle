@@ -141,7 +141,7 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
       const podY = topEdge + HUD_HEIGHT - 80; // positioned 80px shifted up, because the image is rendered at the bottom of the button
       const podH = h - podY - buttonMargin;
       buttons.push(
-        { type: podType, x: podX, y: podY, w: specialWidth * 1.7, h: podH, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: specialWidth * 1.7 + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
+        { type: podType, x: podX, y: podY, w: specialWidth * 1.7, h: podH, label: 'CARGO', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: specialWidth * 1.7 + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
       );
     } else if (options.podBelowRotate) {
       // 1-player mode: POD button sits below the rotate buttons on the left side,
@@ -153,11 +153,11 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
       const availableHeight = h - topEdge - HUD_HEIGHT - bottomOffset;
       const podH = (availableHeight - buttonGap) * 1 / 3;
       buttons.push(
-        { type: podType, x: podX, y: podY, w: podW, h: podH, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: podW + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
+        { type: podType, x: podX, y: podY, w: podW, h: podH, label: 'CARGO', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: podW + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
       );
     } else {
       buttons.push(
-        { type: podType, x: specialX, y: specialY, w: specialWidth, h: specialHeight, label: 'POD', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: specialX - buttonHitMargin, hitY: specialY - buttonHitMargin, hitW: specialWidth + buttonHitMargin * 2, hitH: specialHeight + buttonHitMargin * 2 }
+        { type: podType, x: specialX, y: specialY, w: specialWidth, h: specialHeight, label: 'CARGO', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: specialX - buttonHitMargin, hitY: specialY - buttonHitMargin, hitW: specialWidth + buttonHitMargin * 2, hitH: specialHeight + buttonHitMargin * 2 }
       );
     }
   }
@@ -240,7 +240,7 @@ export function getSideStripButtons(w, h, topGap, topOffset, isRight, sizeScale,
 
   // Fire row. In two-player mode P1 gets the POD / special button left of fire.
   if (includePod) {
-    addButton('pod', 'POD', y, halfWidth, rowHeight, 'rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0.5)', 14);
+    addButton('pod', 'CARGO', y, halfWidth, rowHeight, 'rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0.5)', 14);
     if (showFire) {
       addButton('fire', '⌖', y, halfWidth, rowHeight, 'rgba(255, 0, 0, 0.2)', 'rgba(255, 0, 0, 0.5)', 24, stripX + halfWidth + gap);
     }

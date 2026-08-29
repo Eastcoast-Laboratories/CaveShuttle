@@ -7,7 +7,7 @@ const TILE_CATEGORIES = {
   SLIDERS: 'Sliders',
   BUTTONS: 'Buttons',
   BUNKERS: 'Bunkers',
-  POD: 'Pod',
+  POD: 'Cargo Pod',
   FUEL: 'Fuel',
   REACTOR: 'Reactor',
   WALLS: 'Walls',
@@ -54,12 +54,12 @@ const TILE_DEFINITIONS = [
   { char: 'Z', color: '#555555', name: 'Bunker (ceiling right)', category: TILE_CATEGORIES.BUNKERS },
   
   // Pod holder
-  { char: 'm', color: '#00ff00', name: 'Pod Holder (POD_HOLDER_CHAR)', category: TILE_CATEGORIES.POD },
-  { char: '0', color: '#00ff00', name: 'Pod Holder Ball 0 (ignored)', category: TILE_CATEGORIES.POD },
-  { char: '1', color: '#00ff00', name: 'Pod Holder Ball 1 (ignored)', category: TILE_CATEGORIES.POD },
-  { char: '2', color: '#00ff00', name: 'Pod Holder Ball 2 (ignored)', category: TILE_CATEGORIES.POD },
-  { char: '3', color: '#33cc33', name: 'Pod Stand 3', category: TILE_CATEGORIES.POD },
-  { char: '4', color: '#33cc33', name: 'Pod Stand 4', category: TILE_CATEGORIES.POD },
+  { char: 'm', color: '#00ff00', name: 'Cargo Pod Holder (POD_HOLDER_CHAR)', category: TILE_CATEGORIES.POD },
+  { char: '0', color: '#00ff00', name: 'Cargo Pod Holder Ball 0 (ignored)', category: TILE_CATEGORIES.POD },
+  { char: '1', color: '#00ff00', name: 'Cargo Pod Holder Ball 1 (ignored)', category: TILE_CATEGORIES.POD },
+  { char: '2', color: '#00ff00', name: 'Cargo Pod Holder Ball 2 (ignored)', category: TILE_CATEGORIES.POD },
+  { char: '3', color: '#33cc33', name: 'Cargo Pod Stand 3', category: TILE_CATEGORIES.POD },
+  { char: '4', color: '#33cc33', name: 'Cargo Pod Stand 4', category: TILE_CATEGORIES.POD },
   
   // Fuel alcoves
   { char: '`', color: '#00ffff', name: 'Fuel alcove top left (no-collision)', category: TILE_CATEGORIES.FUEL },
