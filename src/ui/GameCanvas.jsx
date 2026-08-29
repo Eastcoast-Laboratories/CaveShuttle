@@ -1663,6 +1663,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         podWasDockedRef.current = false;
       }
       console.log('[RESPAWN_AREA] Ship destroyed at', ship.x.toFixed(0), ship.y.toFixed(0), '| podDocked:', podWasDockedRef.current);
+      // Guided tutorial: if the player dies during the docking or escape phase,
+      // repeat the relevant action step after respawn. Before docking -> repeat
+      // tractorAndThrustAction (step 3); after docking -> repeat escapeThrustAction (step 4).
+      if (guidedTutorialStep && onGuidedTutorialAction) {
+        if (['tractorAndThrustAction', 'playingUntilDocked'].includes(guidedTutorialStep)) {
+          console.log('[TUTORIAL_GUIDE] ship destroyed before docking, repeating step 3');
+          onGuidedTutorialAction('repeatTractorAndThrust');
+        } else if (guidedTutorialStep === 'escapeThrustAction') {
+          console.log('[TUTORIAL_GUIDE] ship destroyed after docking, repeating step 4');
+          onGuidedTutorialAction('repeatEscapeThrust');
+        }
+      }
       // Big explosion with debris flying apart
       particleSystem.current.spawnExplosion(ship.x, ship.y, 80, '#ff6600');
       particleSystem.current.spawnExplosion(ship.x, ship.y, 40, '#ffff00');
