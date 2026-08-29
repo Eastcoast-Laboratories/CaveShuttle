@@ -16,6 +16,7 @@ const SOUND_VOLUMES = {
   wormholeAmbient: 0.4,
   wormholeComplete: 0.7,
   noFuel: 0.6,
+  respawn: 0.6,
 };
 
 export class SoundManager {
@@ -127,32 +128,5 @@ export class SoundManager {
   resume() {
     console.log('[SOUND_MANAGER] resume');
     this.engine.resume();
-  }
-
-  // Synthesize a short "power-on" respawn jingle using oscillators (no sound file needed).
-  // Classic arcade style: two quick rising tones that signal "you're back".
-  playRespawnJingle() {
-    const ctx = this.engine.audioContext;
-    if (!ctx) return;
-    const master = this.engine.masterVolume;
-    const now = ctx.currentTime;
-
-    const playTone = (freq, start, dur, vol) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(freq, now + start);
-      gain.gain.setValueAtTime(0, now + start);
-      gain.gain.linearRampToValueAtTime(vol * master, now + start + 0.01);
-      gain.gain.linearRampToValueAtTime(0, now + start + dur);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now + start);
-      osc.stop(now + start + dur + 0.02);
-    };
-
-    // Rising two-tone jingle: 440Hz -> 880Hz
-    playTone(440, 0, 0.12, 0.25);
-    playTone(880, 0.1, 0.18, 0.2);
   }
 }

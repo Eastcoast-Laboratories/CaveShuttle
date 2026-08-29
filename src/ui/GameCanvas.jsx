@@ -1561,8 +1561,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ship.setPosition(target.x, target.y);
         // Respawn shield flash effect: spawn sparkle particles around the ship
         particleSystem.current.spawnExplosion(target.x, target.y, 12, '#88ccff');
-        // Play synthesized power-on jingle (classic arcade respawn sound)
-        if (soundManager.current) soundManager.current.playRespawnJingle();
+        // Play respawn sound
+        if (soundManager.current) soundManager.current.playOnce('respawn');
         vibrateIfEnabled([30, 40, 60]);
       }
       // Always respawn pointing straight up and at rest

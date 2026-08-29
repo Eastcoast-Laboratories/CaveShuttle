@@ -15,6 +15,7 @@ This directory holds the sound effects for the Web Audio engine. The loader expe
 | `pod_dock.wav` | Pod docking to ship | one-shot |
 | `wormhole_ambient.wav` | Wormhole visible | loop, longer is better |
 | `wormhole_complete.wav` | Level finished through wormhole | one-shot |
+| `respawn.mp3` | Ship respawn after death | one-shot |
 
 ## Suggested free sources
 
@@ -42,5 +43,6 @@ This directory holds the sound effects for the Web Audio engine. The loader expe
 | `explosion.mp3` | [Pixabay Sound ID 47821](https://pixabay.com/sound-effects/freesound_community-explosion-47821/) | freesound_community | Pixabay License |
 | `pod_wobble.wav`, `fuel_drain.wav`, `pod_dock.wav` | [63 Digital sound effects](https://opengameart.org/content/63-digital-sound-effects-lasers-phasers-space-etc) | Kenney | CC0 |
 | `wormhole_ambient.wav` | [Sci-Fi Drone Loop](https://opengameart.org/content/sci-fi-drone-loop) | jdagenet | CC-BY 3.0 |
+| `respawn.mp3` | [Freesound game-start 6104](https://freesound.org/) | freesound_community | Freesound License |
 
 `wormhole_ambient.wav` is licensed under CC-BY 3.0 and is used with attribution above.

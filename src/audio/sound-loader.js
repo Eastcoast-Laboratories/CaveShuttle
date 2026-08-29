@@ -17,6 +17,7 @@ export const SOUND_FILES = {
   wormholeAmbient: 'wormhole_ambient.mp3',
   wormholeComplete: 'wormhole_complete.wav',
   noFuel: 'no-fuel.mp3',
+  respawn: 'respawn.mp3',
 };
 
 // Fetch and decode every sound file. Errors are logged with a unique tag and
