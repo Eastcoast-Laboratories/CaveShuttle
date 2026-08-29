@@ -29,6 +29,26 @@ export class CapacitorManager {
     return this.platform === 'web';
   }
 
+  // Detect Apple platforms (iOS or macOS) even when running in a browser
+  // (not as a native app). Uses userAgent and platform hints.
+  isAppleBrowser() {
+    if (this.isNative) return false;
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    // iPad on iOS 13+ reports as Mac in userAgent, so check for touch + Mac.
+    const isIPad = /Macintosh/.test(ua) && 'ontouchend' in document;
+    const isIOSBrowser = /iPad|iPhone|iPod/.test(ua) || isIPad;
+    const isMacBrowser = /MacIntel|Macintosh/.test(platform) || /Mac OS/.test(ua);
+    return isIOSBrowser || isMacBrowser;
+  }
+
+  isAndroidBrowser() {
+    if (this.isNative) return false;
+    if (typeof navigator === 'undefined') return false;
+    return /Android/.test(navigator.userAgent || '');
+  }
+
   async loadPlugin(pluginName) {
     try {
       const plugin = await import(`@capacitor/${pluginName}`);
