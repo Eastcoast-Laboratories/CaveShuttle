@@ -25,6 +25,9 @@ import { useLanguage } from './i18n/LanguageContext.jsx';
 import { useSettings } from './i18n/SettingsContext.jsx';
 import { getHighscoreTranslations } from './i18n/highscores.js';
 
+// Guided tutorial: delay before re-showing a step after death (explosion + respawn).
+const GUIDED_REPEAT_AFTER_DEATH_MS = 3000;
+
 function App() {
   const { language, setLanguage } = useLanguage();
   const t = getHighscoreTranslations(language);
@@ -406,11 +409,11 @@ function App() {
       // Clear immediately so GameCanvas resets its hold refs, then wait 2s
       // for the explosion animation and respawn to play before re-showing.
       setGuidedTutorialStep(null);
-      setTimeout(() => setGuidedTutorialStep('tractorAndThrustAction'), 2000);
+      setTimeout(() => setGuidedTutorialStep('tractorAndThrustAction'), GUIDED_REPEAT_AFTER_DEATH_MS);
     } else if (action === 'repeatEscapeThrust') {
       // Ship destroyed after docking: repeat step 4 after respawn.
       setGuidedTutorialStep(null);
-      setTimeout(() => setGuidedTutorialStep('escapeThrustAction'), 2000);
+      setTimeout(() => setGuidedTutorialStep('escapeThrustAction'), GUIDED_REPEAT_AFTER_DEATH_MS);
     }
   };
 
