@@ -294,7 +294,7 @@ function App() {
     gameOverSavedRef.current = false;
     if (guidedTutorialPending) {
       // Resume a pending guided tutorial run from a previous session.
-      setGuidedTutorialStep('shieldAction');
+      setGuidedTutorialStep('materializing');
       setGuidedHoldProgress({ ms: 0, target: 0 });
     } else if (!tutorialDismissed) {
       setShowTutorial(true);
@@ -357,7 +357,7 @@ function App() {
     localStorage.setItem(storageKey('tutorialDismissed'), 'true');
     setGuidedTutorialPending(true);
     localStorage.setItem(storageKey('guidedTutorialPending'), 'true');
-    setGuidedTutorialStep('shieldAction');
+    setGuidedTutorialStep('materializing');
     setGuidedHoldProgress({ ms: 0, target: 0 });
     tutorialBackgroundRef.current = null;
     // Leave any online session before starting a local run.
@@ -379,7 +379,9 @@ function App() {
   const handleGuidedTutorialAction = (action) => {
     console.log('[TUTORIAL_GUIDE] action:', action, '-> current step:', guidedTutorialStep);
     setGuidedHoldProgress({ ms: 0, target: 0 });
-    if (action === 'shieldAction') {
+    if (action === 'materializing') {
+      setGuidedTutorialStep('shieldAction');
+    } else if (action === 'shieldAction') {
       setGuidedTutorialStep('playingBeforeBrakingHint');
     } else if (action === 'playingBeforeBrakingHint') {
       setGuidedTutorialStep('brakingInfo');
@@ -1248,7 +1250,7 @@ function App() {
         />
       )}
 
-      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingUntilDocked' && (
+      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingUntilDocked' && (
         <TutorialHintOverlay
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}

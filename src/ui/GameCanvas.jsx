@@ -53,6 +53,7 @@ const GUIDED_HOLD_SHIELD_MS = 1000;
 const GUIDED_HOLD_THRUST_ESCAPE_MS = 1000;
 const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
 const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 5000;
+const GUIDED_MATERIALIZE_MS = 500;
 
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
@@ -2417,6 +2418,17 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Track active level play time. Paused while frozen (menus/overlays/tutorial) or during wormhole.
       if (gameState === 'playing') {
         activeLevelTimeRef.current += gameDeltaMs;
+      }
+
+      // Guided tutorial: materializing waits 0.5s of active simulation so the
+      // ship materializes and the camera centers before the first hint appears.
+      if (guidedTutorialStep === 'materializing' && guidedActionFiredRef.current !== 'materializing') {
+        guidedActiveSimMsRef.current += gameDeltaMs;
+        if (guidedActiveSimMsRef.current >= GUIDED_MATERIALIZE_MS) {
+          guidedActionFiredRef.current = 'materializing';
+          console.log('[TUTORIAL_GUIDE] materialize delay elapsed, advancing to shieldAction');
+          if (onGuidedTutorialAction) onGuidedTutorialAction('materializing');
+        }
       }
 
       // Guided tutorial: playingBeforeBrakingHint counts only active simulation
