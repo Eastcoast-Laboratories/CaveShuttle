@@ -4,7 +4,7 @@ import { HighScoreManager } from '../game/high-score-manager.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { multiplayerTranslations } from '../i18n/multiplayer.js'
 import { networkStatusTranslations } from '../i18n/networkStatus.js'
-import { Capacitor } from '@capacitor/core'
+import { capacitorManager } from '../capacitor/capacitor-manager.js'
 import './cave-theme.css'
 
 const buttonBase = {
@@ -40,9 +40,7 @@ const inputStyle = {
   boxSizing: 'border-box',
 }
 
-const isCapacitorNative = typeof window !== 'undefined'
-  && typeof Capacitor !== 'undefined'
-  && Capacitor.isNativePlatform?.()
+const isCapacitorNative = capacitorManager.isNativePlatform()
 
 const PRODUCTION_SERVER_URL = 'https://caveshuttle.z11.de'
 

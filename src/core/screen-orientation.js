@@ -1,8 +1,8 @@
 import { ScreenOrientation } from '@capacitor/screen-orientation';
-import { Capacitor } from '@capacitor/core';
+import { capacitorManager } from '../capacitor/capacitor-manager.js';
 
 // Log platform info once at module load
-console.log('[SCREEN_ORIENTATION] Platform:', Capacitor.getPlatform(), '| Native:', Capacitor.isNativePlatform());
+console.log('[SCREEN_ORIENTATION] Platform:', capacitorManager.getPlatform(), '| Native:', capacitorManager.isNativePlatform());
 
 // Apply the desired orientation lock based on the app's orientationMode setting.
 // 'landscape' -> lock to landscape, 'portrait' -> lock to portrait, 'auto' -> unlock (follow device sensor).
@@ -10,9 +10,9 @@ console.log('[SCREEN_ORIENTATION] Platform:', Capacitor.getPlatform(), '| Native
 // rotates the OS-level activity (unlike the Web Screen Orientation API, which Android
 // WebViews largely ignore outside of fullscreen contexts).
 export async function applyOrientationLock(orientationMode) {
-  console.log('[SCREEN_ORIENTATION] applyOrientationLock called with mode:', orientationMode, '| native:', Capacitor.isNativePlatform());
+  console.log('[SCREEN_ORIENTATION] applyOrientationLock called with mode:', orientationMode, '| native:', capacitorManager.isNativePlatform());
 
-  if (Capacitor.isNativePlatform()) {
+  if (capacitorManager.isNativePlatform()) {
     try {
       if (orientationMode === 'auto') {
         await ScreenOrientation.unlock();

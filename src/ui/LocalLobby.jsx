@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning'
-import { Capacitor } from '@capacitor/core'
+import { capacitorManager } from '../capacitor/capacitor-manager.js'
 import { useNetwork } from '../network/NetworkContext.jsx'
 import { localLobbyTranslations } from '../i18n/localLobby.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
@@ -67,7 +67,7 @@ export default function LocalLobby({ onBack }) {
   const [webScanMode, setWebScanMode] = useState(null)
 
   const t = localLobbyTranslations[language]
-  const isNative = Capacitor.isNativePlatform()
+  const isNative = capacitorManager.isNativePlatform()
 
   const localIp = state.localOffer ? extractLocalIp(state.localOffer) : null
 

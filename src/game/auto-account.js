@@ -4,7 +4,7 @@
 
 import { storageKey } from '../core/storage-keys.js';
 import { HighScoreManager } from './high-score-manager.js';
-import { Capacitor } from '@capacitor/core';
+import { capacitorManager } from '../capacitor/capacitor-manager.js';
 import { Device } from '@capacitor/device';
 import { APP_VERSION } from '../version.js';
 
@@ -12,9 +12,7 @@ const AUTH_STATUS_KEY = storageKey('authSyncStatus');
 const AUTH_TOKEN_KEY = storageKey('authToken');
 const AUTH_USER_KEY = storageKey('authUser');
 
-const isCapacitorNative = typeof window !== 'undefined'
-  && typeof Capacitor !== 'undefined'
-  && Capacitor.isNativePlatform?.();
+const isCapacitorNative = capacitorManager.isNativePlatform();
 
 const isLocalDev = typeof window !== 'undefined' && import.meta.env?.DEV === true;
 

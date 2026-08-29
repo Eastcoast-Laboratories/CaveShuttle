@@ -1,4 +1,9 @@
 // Capacitor integration manager
+// Also serves as the single source of truth for platform detection (DRY).
+
+// Play Store URL for the Android app, used by Menu and browser-level-limit.
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=de.z11.caveshuttle';
+
 export class CapacitorManager {
   constructor(capacitor = null) {
     this.Capacitor = capacitor || (typeof window !== 'undefined' && window.Capacitor) || {
@@ -99,3 +104,6 @@ export class CapacitorManager {
     return null;
   }
 }
+
+// Singleton instance — lightweight, reads window.Capacitor once at import time.
+export const capacitorManager = new CapacitorManager();

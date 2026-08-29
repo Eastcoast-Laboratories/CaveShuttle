@@ -1,8 +1,8 @@
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
-import { Capacitor } from '@capacitor/core';
+import { capacitorManager } from '../capacitor/capacitor-manager.js';
 
 // Log platform info once at module load
-console.log('[VIBRATE] Platform:', Capacitor.getPlatform(), '| Native:', Capacitor.isNativePlatform());
+console.log('[VIBRATE] Platform:', capacitorManager.getPlatform(), '| Native:', capacitorManager.isNativePlatform());
 
 // Vibrate the device.
 // For short single-value patterns (button feedback): use navigator.vibrate() on ALL platforms.
@@ -14,14 +14,14 @@ console.log('[VIBRATE] Platform:', Capacitor.getPlatform(), '| Native:', Capacit
 //   vibration with proper timing, navigator.vibrate on web.
 // pattern: number | number[] — duration in ms, or array of [on, off, on, ...] durations
 export async function vibrate(pattern) {
-  console.log('[VIBRATE] Called with pattern:', pattern, '| platform:', Capacitor.getPlatform());
+  console.log('[VIBRATE] Called with pattern:', pattern, '| platform:', capacitorManager.getPlatform());
 
   // Short single-value vibration: use navigator.vibrate everywhere for a clean single pulse
   if (typeof pattern === 'number') {
     if (navigator.vibrate) {
       navigator.vibrate(pattern);
       console.log('[VIBRATE] Vibrated via navigator.vibrate (single):', pattern);
-    } else if (Capacitor.isNativePlatform()) {
+    } else if (capacitorManager.isNativePlatform()) {
       try {
         await Haptics.vibrate({ duration: pattern });
         console.log('[VIBRATE] Fallback to Haptics.vibrate (single):', pattern);
@@ -35,7 +35,7 @@ export async function vibrate(pattern) {
   }
 
   // Array pattern (e.g. explosions): use Capacitor Haptics on native for sequential timing
-  if (Capacitor.isNativePlatform()) {
+  if (capacitorManager.isNativePlatform()) {
     try {
       for (let i = 0; i < pattern.length; i += 2) {
         const duration = pattern[i];

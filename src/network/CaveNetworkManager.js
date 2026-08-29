@@ -2,15 +2,12 @@ import { EventEmitter } from './event-emitter.js'
 import { GeckosAdapter } from './GeckosAdapter.js'
 import { WebRTCAdapter } from './WebRTCAdapter.js'
 import { networkStatusTranslations as tr } from '../i18n/networkStatus.js'
-import { Capacitor } from '@capacitor/core'
+import { capacitorManager } from '../capacitor/capacitor-manager.js'
 
 // On Capacitor native (mobile app), the WebView is served from https://localhost
 // but there is no Geckos server running there. Use the production server URL instead.
-// window.Capacitor exists even in web browsers (via @capacitor/core), so we must
-// use isNativePlatform() to distinguish native apps from web.
-const isCapacitorNative = typeof window !== 'undefined'
-  && typeof Capacitor !== 'undefined'
-  && Capacitor.isNativePlatform?.()
+// capacitorManager.isNativePlatform() distinguishes native apps from web.
+const isCapacitorNative = capacitorManager.isNativePlatform()
 
 const PRODUCTION_SERVER_URL = 'https://caveshuttle.z11.de'
 

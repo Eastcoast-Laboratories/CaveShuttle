@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Capacitor } from '@capacitor/core';
 import Impressum from './Impressum';
 import Datenschutz from './Datenschutz';
 import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
+import { capacitorManager, PLAY_STORE_URL } from '../capacitor/capacitor-manager.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { useSettings } from '../i18n/SettingsContext.jsx';
 import { getMenuTranslations } from '../i18n/menu.js';
 import './cave-theme.css';
 
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=de.z11.caveshuttle';
-const isNativeApp = typeof window !== 'undefined'
-  && typeof Capacitor !== 'undefined'
-  && Capacitor.isNativePlatform?.();
-const isWebBrowser = typeof window !== 'undefined'
-  && !isNativeApp;
+const isNativeApp = capacitorManager.isNativePlatform();
+const isWebBrowser = capacitorManager.isWeb();
 
 console.log('[MENU_PLAY_STORE] isNativeApp:', isNativeApp, '| isWebBrowser:', isWebBrowser, '| UA:', typeof window !== 'undefined' ? navigator.userAgent : 'no-window');
 
