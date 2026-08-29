@@ -7,11 +7,13 @@ import { autoAccountManager } from '../game/auto-account.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { useSettings } from '../i18n/SettingsContext.jsx';
 import { getHighscoreTranslations } from '../i18n/highscores.js';
+import { getGlobalTranslations } from '../i18n/global.js';
 
 // Standalone highscores page linked from the main menu.
 export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) {
   const { language } = useLanguage();
   const t = getHighscoreTranslations(language);
+  const g = getGlobalTranslations(language);
   const { currentPackId, twoPlayer, onlineSyncEnabled } = useSettings();
   const [activeTab, setActiveTab] = useState('runs');
   const [selectedPackId, setSelectedPackId] = useState(currentPackId || (installedPacks[0]?.id || 'default'));
@@ -223,9 +225,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
                   <tr>
                     <th className="solid-col edge-img edge-tl"></th>
                     <th className="rank-col"></th>
-                    <th className="level-col">{t.rank}</th>
+                    <th className="level-col">{g.rank}</th>
                     <th className="text-right">{t.score}</th>
-                    {activeTab === 'levels' && <th className="level-col">{t.level}</th>}
+                    {activeTab === 'levels' && <th className="level-col">{g.level}</th>}
                     <th>{t.name}</th>
                     <th className="solid-col edge-img edge-tr"></th>
                   </tr>
@@ -263,9 +265,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
                   <tr>
                     <th className="solid-col edge-img edge-tl"></th>
                     <th className="rank-col"></th>
-                    <th className="level-col">{t.rank}</th>
+                    <th className="level-col">{g.rank}</th>
                     <th className="text-right">{t.score}</th>
-                    <th className="level-col">{t.level}</th>
+                    <th className="level-col">{g.level}</th>
                     <th>{t.name}</th>
                     <th className="solid-col edge-img edge-tr"></th>
                   </tr>
@@ -313,7 +315,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
               <thead>
                 <tr>
                   <th className="solid-col"><span className="edge-img edge-tl"></span></th>
-                  <th className="level-col">{t.level}</th>
+                  <th className="level-col">{g.level}</th>
                   <th className="text-right">{t.score}</th>
                   <th>{t.name}</th>
                   <th className="solid-col"><span className="edge-img edge-tr"></span></th>
@@ -387,9 +389,9 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
                   return (
                     <div key={r.attemptId} className="popup-level-row">
                       <div className="popup-level-header">
-                        <span>{t.level} {r.level}{r.pass > 1 ? ` (${t.stageLabel.replace('{n}', r.pass)})` : ''}{r.completed ? '' : t.levelFailed}</span>
+                        <span>{g.level} {r.level}{r.pass > 1 ? ` (${t.stageLabel.replace('{n}', r.pass)})` : ''}{r.completed ? '' : t.levelFailed}</span>
                         <span className="popup-level-score">
-                          <span>{r.score} {t.points}</span>
+                          <span>{r.score} {g.points}</span>
                           {breakdown.time > 0 && breakdown.timeBonus > 0 && (
                             <span>{breakdown.time}s</span>
                           )}
@@ -414,7 +416,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
       {levelDetail && (
         <div className="popup-overlay" onClick={(e) => { if (e.target === e.currentTarget) setLevelDetail(null); }}>
           <div className="popup-content">
-            <h2>{t.level} {levelDetail.level}</h2>
+            <h2>{g.level} {levelDetail.level}</h2>
             {levelDetail.records.length === 0 ? (
               <p>{t.noEntriesYet}</p>
             ) : (
@@ -422,7 +424,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
                 <thead>
                   <tr>
                     <th className="solid-col"></th>
-                    <th className="rank-col">{t.rank}</th>
+                    <th className="rank-col">{g.rank}</th>
                     <th>{t.name}</th>
                     <th>{t.stage}</th>
                     <th className="text-right">{t.score}</th>

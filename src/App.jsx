@@ -23,14 +23,16 @@ import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './co
 import { getAllPacks, ensurePackMetaLoaded, BUILTIN_PACKS, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
 import { useLanguage } from './i18n/LanguageContext.jsx';
 import { useSettings } from './i18n/SettingsContext.jsx';
-import { getHighscoreTranslations } from './i18n/highscores.js';
+import { getGameScreenTranslations } from './i18n/gameScreen.js';
+import { getGlobalTranslations } from './i18n/global.js';
 
 // Guided tutorial: delay before re-showing a step after death (explosion + respawn).
 const GUIDED_REPEAT_AFTER_DEATH_MS = 3000;
 
 function App() {
   const { language, setLanguage } = useLanguage();
-  const t = getHighscoreTranslations(language);
+  const t = getGameScreenTranslations(language);
+  const g = getGlobalTranslations(language);
   const {
     isMobile, setIsMobile,
     showTouchButtons, setShowTouchButtons,
@@ -812,7 +814,7 @@ function App() {
   };
 
   const scoreBreakdown = useMemo(() => [
-    { key: 'time', label: t.time, value: levelScoreBreakdown.time > 0 ? levelScoreBreakdown.time + t.seconds : 0 }, // use just 0 instead of 0s  so the filter below works for 0 time on game over too
+    { key: 'time', label: t.time, value: levelScoreBreakdown.time > 0 ? levelScoreBreakdown.time + g.seconds : 0 }, // use just 0 instead of 0s  so the filter below works for 0 time on game over too
     { key: 'bunker', label: levelScoreBreakdown.bunker > SCORE_BUNKER_DESTROYED ? t.bunkerDestroyedPlural : t.bunkerDestroyed, value: levelScoreBreakdown.bunker },
     { key: 'button', label: t.buttonActivated, value: levelScoreBreakdown.button },
     { key: 'pod', label: t.podConnected, value: levelScoreBreakdown.pod },

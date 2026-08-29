@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import PlayerNameInput from './PlayerNameInput.jsx';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { useSettings } from '../i18n/SettingsContext.jsx';
-import { getHighscoreTranslations } from '../i18n/highscores.js';
+import { getGameScreenTranslations } from '../i18n/gameScreen.js';
+import { getGlobalTranslations } from '../i18n/global.js';
 import './EndOverlay.css';
 
 const ROW_DURATION = 500; // ms each row counts up
@@ -11,7 +12,8 @@ const TOTAL_FLASH_DURATION = 600; // ms the total flashes
 
 export default function EndOverlay({ title, breakdown, total, totalLabel, buttons, onPlayerNameChange, onPlayer2NameChange, newHighscore, levelNumber, networkRole, hsName, hsPlayer2Name, onShowHighscores }) {
   const { language } = useLanguage();
-  const t = getHighscoreTranslations(language);
+  const t = getGameScreenTranslations(language);
+  const g = getGlobalTranslations(language);
   const { twoPlayer, playerName, player2Name } = useSettings();
   const [visibleRow, setVisibleRow] = useState(-1);
   const [displayedValues, setDisplayedValues] = useState(() => breakdown.map(() => 0));
@@ -127,8 +129,8 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
 
   const subRankLabel = secondaryRank != null
     ? (secondaryType === 'level'
-        ? `${t.level} ${levelNumber}: ${t.rank} ${secondaryRank}`
-        : `${t.run}: ${t.rank} ${secondaryRank}`)
+        ? `${g.level} ${levelNumber}: ${g.rank} ${secondaryRank}`
+        : `${t.run}: ${g.rank} ${secondaryRank}`)
     : null;
 
   return (
@@ -152,7 +154,7 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
               </span> {'\u2605'}
             </span>
             <div className="end-overlay-highscore-detail">
-              {newHighscore.level && <span>{t.level} {levelNumber}</span>}
+              {newHighscore.level && <span>{g.level} {levelNumber}</span>}
               {newHighscore.level && newHighscore.run && <span>&</span>}
               {newHighscore.run && <span>{t.run}</span>}
             </div>
@@ -186,7 +188,7 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
 
         {showTotal && (bestRank === null || bestRank > 10) && (
           <div className={`end-overlay-score-box${flash ? ' flash' : ''}`}>
-            <span>{totalLabel}: {total}{bestRank != null && <span className="end-overlay-score-rank"> ({t.rank} {bestRank})</span>}</span>
+            <span>{totalLabel}: {total}{bestRank != null && <span className="end-overlay-score-rank"> ({g.rank} {bestRank})</span>}</span>
             {subRankLabel && (
               <div className="end-overlay-sub-rank">{subRankLabel}</div>
             )}
