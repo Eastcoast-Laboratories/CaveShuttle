@@ -46,16 +46,24 @@ import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons
 import { vibrate } from '../core/haptics.js';
 import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
 
-// Guided tutorial hold durations (ms). Action steps require unbroken input;
-// releasing resets the progress. The confirmation window for the combined
-// tractor+thrust step stays well under one second to avoid accidental skips.
-const GUIDED_HOLD_SHIELD_MS = 1000;
-const GUIDED_HOLD_THRUST_ESCAPE_MS = 1000;
-const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
-const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
-const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1000;
+// Guided tutorial durations (ms), in the order the steps appear in the flow.
+// Hold durations require unbroken input; releasing resets the progress.
+// Active-sim durations let the simulation run between paused hint steps.
+// Step 1: materializing — let ship materialize and camera center
 const GUIDED_MATERIALIZE_MS = 500;
+// Step 2: shieldAction — hold shield/tractor button
+const GUIDED_HOLD_SHIELD_MS = 1000;
+// Step 3: playingBeforeBrakingHint — active sim before braking challenge
+const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1000;
+// Step 4: brakingInfo — hold rotate-right button
+const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
+// Step 5: playingBeforeTractorAndThrust — active sim so ship rotates slightly
 const GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS = 500;
+// Step 6: tractorAndThrustAction — hold tractor+thrust together (short confirmation)
+const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
+// Step 7: playingUntilDocked — no duration, waits for onPodDockedChange(true)
+// Step 8: escapeThrustAction — hold thrust button
+const GUIDED_HOLD_THRUST_ESCAPE_MS = 1000;
 
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
