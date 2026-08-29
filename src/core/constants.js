@@ -156,6 +156,10 @@ export const MULTI_SHOT_COLOR = 'rgba(255, 128, 53, 0.55)'; // Orange aura aroun
 // Level editor
 export const ENABLE_LEVEL_EDITOR = true; // Enable/disable level editor button
 
+// Browser level limit: web players can only play up to this level, then see
+// a download CTA. Native app has no limit.
+export const BROWSER_MAX_LEVEL = 2;
+
 // Game settings
 export const INITIAL_LIVES = 3; // Starting number of lives
 export const FUEL_EMPTY_DESTROY_DELAY_MS = 11000; // Delay before ship explodes after fuel runs out

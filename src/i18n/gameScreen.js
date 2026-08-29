@@ -32,6 +32,12 @@ export const gameScreenTranslations = {
     levelCompleteLabel: 'Level abgeschlossen',
     reactorEscape: 'Reaktor-Flucht',
     timeBonus: 'Zeit-Bonus',
+
+    // Browser level limit (shown in EndOverlay when web player reaches BROWSER_MAX_LEVEL)
+    browserLimitTitle: 'Du hast Level {n} geschafft!',
+    browserLimitText: 'Lade dir die App herunter, um alle {total} Level zu spielen.',
+    iosComingSoon: 'iOS coming soon',
+    replay: 'Nochmal',
   },
   en: {
     // Buttons
@@ -65,6 +71,12 @@ export const gameScreenTranslations = {
     levelCompleteLabel: 'Level complete',
     reactorEscape: 'Reactor escape',
     timeBonus: 'Time Bonus',
+
+    // Browser level limit (shown in EndOverlay when web player reaches BROWSER_MAX_LEVEL)
+    browserLimitTitle: 'You beat Level {n}!',
+    browserLimitText: 'Download the app to play all {total} levels.',
+    iosComingSoon: 'iOS coming soon',
+    replay: 'Replay',
   },
 };
 

@@ -13,7 +13,8 @@ import OnlineLobby from './ui/OnlineLobby';
 import LobbyRoom from './ui/LobbyRoom';
 import HighscoresPage from './ui/HighscoresPage';
 import { useNetwork } from './network/NetworkContext.jsx';
-import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS } from './core/constants.js';
+import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS, BROWSER_MAX_LEVEL } from './core/constants.js';
+import { capacitorManager, PLAY_STORE_URL } from './capacitor/capacitor-manager.js';
 import { ScoringSystem } from './game/scoring.js';
 import { HighScoreManager } from './game/high-score-manager.js';
 import { autoAccountManager } from './game/auto-account.js';
@@ -1280,9 +1281,45 @@ function App() {
                   onPlayerNameChange={handlePlayerNameChange}
                   onPlayer2NameChange={handlePlayer2NameChange}
                   buttons={
-                    <button onClick={handleNextLevel} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
-                      {t.nextLevel}
-                    </button>
+                    capacitorManager.isWeb() && level >= BROWSER_MAX_LEVEL ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                        <p style={{ fontSize: '18px', fontWeight: '600', color: '#ffcc44', margin: 0 }}>
+                          {t.browserLimitTitle.replace('{n}', level)}
+                        </p>
+                        <p style={{ fontSize: '14px', color: '#ccc', margin: 0 }}>
+                          {t.browserLimitText.replace('{total}', (installedPacks.find(p => p.id === currentPackId)?.meta?.levelCount || 6))}
+                        </p>
+                        <a
+                          href={PLAY_STORE_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ display: 'inline-block' }}
+                        >
+                          <img
+                            src="/images/get_on_playstore.png"
+                            alt="Get it on Google Play"
+                            style={{ height: '70px', width: 'auto' }}
+                          />
+                        </a>
+                        {capacitorManager.isAppleBrowser() && (
+                          <p style={{ fontSize: '13px', color: '#999', margin: 0 }}>
+                            {t.iosComingSoon}
+                          </p>
+                        )}
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                          <button onClick={() => setGameState('menu')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: '#fff', background: '#444', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
+                            {t.backToMenu}
+                          </button>
+                          <button onClick={handlePlayAgain} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '10px', cursor: 'pointer' }}>
+                            {t.replay}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={handleNextLevel} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
+                        {t.nextLevel}
+                      </button>
+                    )
                   }
                 />
               )}
