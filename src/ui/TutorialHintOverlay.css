@@ -43,14 +43,15 @@
 
 .tutorial-hint-overlay__nav-btn {
   position: absolute;
-  top: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  top: 4px;
+  background: rgba(255, 255, 255, 0.08);
   border: none;
   color: #888;
-  font-size: 12px;
+  font-size: 9px;
+  font-weight: 400;
   line-height: 1;
-  padding: 4px 6px;
-  border-radius: 6px;
+  padding: 2px 4px;
+  border-radius: 4px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
   z-index: 1;
@@ -64,11 +65,11 @@
 }
 
 .tutorial-hint-overlay__step-back {
-  left: 6px;
+  left: 4px;
 }
 
 .tutorial-hint-overlay__skip {
-  right: 6px;
+  right: 4px;
 }
 
 .tutorial-hint-overlay--blocking .tutorial-hint-overlay__card {

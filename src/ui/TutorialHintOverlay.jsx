@@ -54,7 +54,7 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
             title={isLastStep ? hints.finish : hints.skip}
             aria-label={isLastStep ? hints.finish : hints.skip}
           >
-            {isLastStep ? `${hints.finish} ▶|` : `${hints.skip} ▶|`}
+            {isLastStep ? `${hints.finish} \u2715` : `${hints.skip} \u23ED`}
           </button>
         )}
         <span className="tutorial-hint-overlay__step">{hints.stepIndicator(stepIndex, totalSteps)}</span>
