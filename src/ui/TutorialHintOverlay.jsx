@@ -44,7 +44,7 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
             title={hints.stepBack}
             aria-label={hints.stepBack}
           >
-            ◀
+            &nbsp;◀&nbsp;&nbsp;
           </button>
         )}
         {onSkip && (
@@ -67,7 +67,6 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
             max={holdTargetMs}
             aria-label={hints.holdProgress(holdMs, holdTargetMs)}
           />
-          <span className="tutorial-hint-overlay__hold-ms">{hints.holdProgress(holdMs, holdTargetMs)}</span>
         </div>
       </div>
     </div>
