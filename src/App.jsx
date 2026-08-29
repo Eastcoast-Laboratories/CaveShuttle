@@ -325,6 +325,12 @@ function App() {
     runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: levelNum, mode: twoPlayer ? 'two' : 'single' });
     levelRecordIdsRef.current = [];
     gameOverSavedRef.current = false;
+    // Guided tutorial: if a pending guided tutorial exists, restart from step 1
+    // so the player gets the full tutorial flow on a fresh level start.
+    if (guidedTutorialPending) {
+      setGuidedTutorialStep('materializing');
+      setGuidedHoldProgress({ ms: 0, target: 0 });
+    }
   };
 
   const handleStartLevelNetworked = (levelNum) => {
