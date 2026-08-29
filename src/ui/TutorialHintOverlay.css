@@ -38,6 +38,37 @@
   max-width: 460px;
   width: 100%;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.tutorial-hint-overlay__nav-btn {
+  position: absolute;
+  top: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #888;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  z-index: 1;
+}
+
+.tutorial-hint-overlay__nav-btn:hover,
+.tutorial-hint-overlay__nav-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  outline: none;
+}
+
+.tutorial-hint-overlay__step-back {
+  left: 6px;
+}
+
+.tutorial-hint-overlay__skip {
+  right: 6px;
 }
 
 .tutorial-hint-overlay--blocking .tutorial-hint-overlay__card {

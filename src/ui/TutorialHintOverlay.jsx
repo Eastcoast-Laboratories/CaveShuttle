@@ -17,7 +17,7 @@ const VISIBLE_STEPS = ['shieldAction', 'brakingInfo', 'tractorAndThrustAction', 
 //
 // State, progress and actions come from App/GameCanvas; this component has no
 // game-state logic of its own.
-export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTargetMs = 0, onContinue }) {
+export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTargetMs = 0, onSkip, onStepBack }) {
   const { language } = useLanguage();
   const t = tutorialTranslations[language] || tutorialTranslations.en;
   const hints = t.guidedHints;
@@ -29,13 +29,33 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
   const hint = hints[step];
   if (!hint) return null;
 
-  const isActionStep = step !== 'brakingInfo';
   const holdMs = Math.min(holdProgressMs, holdTargetMs);
+  const canStepBack = stepIndex > 1;
 
   // Action steps: small card, pointer events pass through outside the card.
   return (
     <div className="tutorial-hint-overlay tutorial-hint-overlay--pass-through" aria-live="polite">
       <div className="tutorial-hint-overlay__card" role="status" aria-label={hint.text}>
+        {canStepBack && onStepBack && (
+          <button
+            className="tutorial-hint-overlay__nav-btn tutorial-hint-overlay__step-back"
+            onClick={onStepBack}
+            title={hints.stepBack}
+            aria-label={hints.stepBack}
+          >
+            ◀
+          </button>
+        )}
+        {onSkip && (
+          <button
+            className="tutorial-hint-overlay__nav-btn tutorial-hint-overlay__skip"
+            onClick={onSkip}
+            title={hints.skip}
+            aria-label={hints.skip}
+          >
+            ▶|
+          </button>
+        )}
         <span className="tutorial-hint-overlay__step">{hints.stepIndicator(stepIndex, totalSteps)}</span>
         <p className="tutorial-hint-overlay__text">{hint.text}</p>
         <div className="tutorial-hint-overlay__hold-row">

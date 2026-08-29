@@ -35,6 +35,8 @@ describe('tutorialTranslations guidedHints', () => {
       const h = tutorialTranslations[lang].guidedHints;
       expect(h.cancel).toBeTruthy();
       expect(h.restartLevel1).toBeTruthy();
+      expect(h.skip).toBeTruthy();
+      expect(h.stepBack).toBeTruthy();
       expect(typeof h.stepIndicator).toBe('function');
       expect(h.stepIndicator(1, 4)).toContain('1');
       expect(h.stepIndicator(1, 4)).toContain('4');

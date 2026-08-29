@@ -418,6 +418,40 @@ function App() {
     setGuidedHoldProgress({ ms, target });
   };
 
+  // Skip the current visible step and advance to the next visible step.
+  // For the last visible step, skip ends the guided tutorial.
+  const VISIBLE_GUIDED_STEPS = ['shieldAction', 'brakingInfo', 'tractorAndThrustAction', 'escapeThrustAction'];
+  const handleGuidedTutorialSkip = () => {
+    const idx = VISIBLE_GUIDED_STEPS.indexOf(guidedTutorialStep);
+    if (idx < 0) return;
+    if (idx >= VISIBLE_GUIDED_STEPS.length - 1) {
+      // Last step: end guided tutorial.
+      setGuidedTutorialStep(null);
+      setGuidedTutorialPending(false);
+      localStorage.removeItem(storageKey('guidedTutorialPending'));
+    } else {
+      // Advance to the next visible step, inserting the intermediate
+      // invisible sim phase where the flow normally has one.
+      const next = VISIBLE_GUIDED_STEPS[idx + 1];
+      if (next === 'brakingInfo') {
+        setGuidedTutorialStep('brakingInfo');
+      } else if (next === 'tractorAndThrustAction') {
+        setGuidedTutorialStep('tractorAndThrustAction');
+      } else if (next === 'escapeThrustAction') {
+        setGuidedTutorialStep('escapeThrustAction');
+      }
+    }
+  };
+
+  // Go back to the previous visible step so the player can re-read it.
+  const handleGuidedTutorialStepBack = () => {
+    const idx = VISIBLE_GUIDED_STEPS.indexOf(guidedTutorialStep);
+    if (idx <= 0) return;
+    const prev = VISIBLE_GUIDED_STEPS[idx - 1];
+    setGuidedTutorialStep(null);
+    setTimeout(() => setGuidedTutorialStep(prev), 0);
+  };
+
   // Wrap onPodDockedChange so the guided tutorial can react to docking.
   const handlePodDockedChange = (docked) => {
     setPodDocked(docked);
@@ -1267,6 +1301,8 @@ function App() {
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}
           holdTargetMs={guidedHoldProgress.target}
+          onSkip={handleGuidedTutorialSkip}
+          onStepBack={handleGuidedTutorialStepBack}
         />
       )}
     </div>

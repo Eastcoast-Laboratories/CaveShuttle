@@ -51,6 +51,8 @@ export const tutorialTranslations = {
     guidedHints: {
       cancel: 'Abbrechen',
       restartLevel1: 'Level 1 neu starten',
+      skip: 'Überspringen',
+      stepBack: 'Vorherigen Schritt anzeigen',
       stepIndicator: (n, total) => `Schritt ${n}/${total}`,
       shieldAction: {
         text: 'Benutze den Schild, um die ankommenden Schüsse der Bunker abzuwehren.',
@@ -117,6 +119,8 @@ export const tutorialTranslations = {
     guidedHints: {
       cancel: 'Cancel',
       restartLevel1: 'Restart Level 1',
+      skip: 'Skip',
+      stepBack: 'Show previous step',
       stepIndicator: (n, total) => `Step ${n}/${total}`,
       shieldAction: {
         text: 'Use the shield to deflect the incoming bunker shots.',
