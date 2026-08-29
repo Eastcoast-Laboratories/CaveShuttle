@@ -1670,7 +1670,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         if (['tractorAndThrustAction', 'playingUntilDocked'].includes(guidedTutorialStep)) {
           console.log('[TUTORIAL_GUIDE] ship destroyed before docking, repeating step 3');
           onGuidedTutorialAction('repeatTractorAndThrust');
-        } else if (guidedTutorialStep === 'escapeThrustAction') {
+        } else if (['escapeThrustAction', 'playingUntilWormhole'].includes(guidedTutorialStep)) {
           console.log('[TUTORIAL_GUIDE] ship destroyed after docking, repeating step 4');
           onGuidedTutorialAction('repeatEscapeThrust');
         }

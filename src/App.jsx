@@ -117,7 +117,7 @@ function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   // Guided tutorial state machine. Steps:
   // shieldAction -> playingBeforeBrakingHint -> brakingInfo -> tractorAndThrustAction
-  // -> playingUntilDocked -> escapeThrustAction -> inactive
+  // -> playingUntilDocked -> escapeThrustAction -> playingUntilWormhole -> inactive
   const [guidedTutorialStep, setGuidedTutorialStep] = useState(null);
   const [guidedHoldProgress, setGuidedHoldProgress] = useState({ ms: 0, target: 0 });
   // Remember whether a continueable playing level exists behind the big tutorial.
@@ -400,10 +400,8 @@ function App() {
         setGuidedTutorialStep('escapeThrustAction');
       }
     } else if (action === 'escapeThrustAction') {
-      // Guided tutorial complete: clear persistence and step.
-      setGuidedTutorialStep(null);
-      setGuidedTutorialPending(false);
-      localStorage.removeItem(storageKey('guidedTutorialPending'));
+      // Hold completed: wait for the player to actually reach the wormhole.
+      setGuidedTutorialStep('playingUntilWormhole');
     } else if (action === 'repeatTractorAndThrust') {
       // Ship destroyed before docking: repeat step 3 after respawn.
       // Clear immediately so GameCanvas resets its hold refs, then wait 2s
@@ -465,6 +463,14 @@ function App() {
 
   const handleLevelComplete = (completedLevel, levelTimeMs, levelWidth, levelHeight, networkData) => {
     setPodDocked(false);
+
+    // Guided tutorial: reaching the wormhole completes the tutorial.
+    if (guidedTutorialStep === 'playingUntilWormhole') {
+      console.log('[TUTORIAL_GUIDE] wormhole reached, guided tutorial complete');
+      setGuidedTutorialStep(null);
+      setGuidedTutorialPending(false);
+      localStorage.removeItem(storageKey('guidedTutorialPending'));
+    }
 
     // Client mode: use the host's calculated data directly
     if (networkData && networkRole === 'client') {
@@ -1299,7 +1305,7 @@ function App() {
         />
       )}
 
-      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingBeforeTractorAndThrust' && guidedTutorialStep !== 'playingUntilDocked' && (
+      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingBeforeTractorAndThrust' && guidedTutorialStep !== 'playingUntilDocked' && guidedTutorialStep !== 'playingUntilWormhole' && (
         <TutorialHintOverlay
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}
