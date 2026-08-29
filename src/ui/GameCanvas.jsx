@@ -58,12 +58,12 @@ const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1000;
 // Step 4: brakingInfo — hold rotate-right button
 const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
 // Step 5: playingBeforeTractorAndThrust — active sim so ship rotates slightly
-const GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS = 500;
+const GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS = 200;
 // Step 6: tractorAndThrustAction — hold tractor+thrust together (short confirmation)
 const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
 // Step 7: playingUntilDocked — no duration, waits for onPodDockedChange(true)
 // Step 8: escapeThrustAction — hold thrust button
-const GUIDED_HOLD_THRUST_ESCAPE_MS = 1000;
+const GUIDED_HOLD_THRUST_ESCAPE_MS = 2000;
 
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
@@ -1516,8 +1516,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Only align the pod to the ship when it is first attached; after that
         // player 2 must keep independent control over the pod rotation.
         pod.setAngle(ship.angle);
-        if (onPodDockedChange) onPodDockedChange(true);
       }
+      if (!wasAlreadyTowed && onPodDockedChange) onPodDockedChange(true);
       if (!podConnectScoreGivenRef.current) {
         podConnectScoreGivenRef.current = true;
         if (onScoreChange) onScoreChange({ points: SCORE_POD_CONNECT, type: 'pod' });
