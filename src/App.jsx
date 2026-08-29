@@ -54,6 +54,8 @@ function App() {
     collectSettings,
   } = useSettings();
   const [gameState, setGameState] = useState('menu'); // Start with menu screen
+  const gameStateRef = useRef('menu');
+  useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   const previousGameStateRef = useRef(null);
   const [score, setScore] = useState(0);
   const [levelScore, setLevelScore] = useState(0);
@@ -410,14 +412,18 @@ function App() {
       setGuidedTutorialStep('playingUntilWormhole');
     } else if (action === 'repeatTractorAndThrust') {
       // Ship destroyed before docking: repeat step 3 after respawn.
-      // Clear immediately so GameCanvas resets its hold refs, then wait 2s
+      // Clear immediately so GameCanvas resets its hold refs, then wait
       // for the explosion animation and respawn to play before re-showing.
       setGuidedTutorialStep(null);
-      setTimeout(() => setGuidedTutorialStep('tractorAndThrustAction'), GUIDED_REPEAT_AFTER_DEATH_MS);
+      setTimeout(() => {
+        if (gameStateRef.current === 'playing') setGuidedTutorialStep('tractorAndThrustAction');
+      }, GUIDED_REPEAT_AFTER_DEATH_MS);
     } else if (action === 'repeatEscapeThrust') {
       // Ship destroyed after docking: repeat step 4 after respawn.
       setGuidedTutorialStep(null);
-      setTimeout(() => setGuidedTutorialStep('escapeThrustAction'), GUIDED_REPEAT_AFTER_DEATH_MS);
+      setTimeout(() => {
+        if (gameStateRef.current === 'playing') setGuidedTutorialStep('escapeThrustAction');
+      }, GUIDED_REPEAT_AFTER_DEATH_MS);
     }
   };
 
@@ -1311,7 +1317,7 @@ function App() {
         />
       )}
 
-      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingBeforeTractorAndThrust' && guidedTutorialStep !== 'playingUntilDocked' && guidedTutorialStep !== 'playingUntilWormhole' && (
+      {gameState === 'playing' && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingBeforeTractorAndThrust' && guidedTutorialStep !== 'playingUntilDocked' && guidedTutorialStep !== 'playingUntilWormhole' && (
         <TutorialHintOverlay
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}
