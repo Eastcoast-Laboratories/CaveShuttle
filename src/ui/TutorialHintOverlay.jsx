@@ -32,30 +32,6 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
   const isActionStep = step !== 'brakingInfo';
   const holdMs = Math.min(holdProgressMs, holdTargetMs);
 
-  // brakingInfo: full-screen backdrop blocks input and shows a Continue button.
-  if (!isActionStep) {
-    return (
-      <div
-        className="tutorial-hint-overlay tutorial-hint-overlay--blocking"
-        role="dialog"
-        aria-modal="true"
-        aria-label={hint.text}
-      >
-        <div className="tutorial-hint-overlay__card">
-          <span className="tutorial-hint-overlay__step">{hints.stepIndicator(stepIndex, totalSteps)}</span>
-          <p className="tutorial-hint-overlay__text">{hint.text}</p>
-          <button
-            className="tutorial-hint-overlay__continue"
-            onClick={onContinue}
-            autoFocus
-          >
-            {hint.continue}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Action steps: small card, pointer events pass through outside the card.
   return (
     <div className="tutorial-hint-overlay tutorial-hint-overlay--pass-through" aria-live="polite">

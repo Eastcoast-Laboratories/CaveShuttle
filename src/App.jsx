@@ -385,7 +385,9 @@ function App() {
       setGuidedTutorialStep('playingBeforeBrakingHint');
     } else if (action === 'playingBeforeBrakingHint') {
       setGuidedTutorialStep('brakingInfo');
-    } else if (action === 'brakingInfoContinue') {
+    } else if (action === 'brakingInfo') {
+      setGuidedTutorialStep('playingBeforeTractorAndThrust');
+    } else if (action === 'playingBeforeTractorAndThrust') {
       setGuidedTutorialStep('tractorAndThrustAction');
     } else if (action === 'tractorAndThrustAction') {
       setGuidedTutorialStep('playingUntilDocked');
@@ -1250,12 +1252,11 @@ function App() {
         />
       )}
 
-      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingUntilDocked' && (
+      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingBeforeTractorAndThrust' && guidedTutorialStep !== 'playingUntilDocked' && (
         <TutorialHintOverlay
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}
           holdTargetMs={guidedHoldProgress.target}
-          onContinue={() => handleGuidedTutorialAction('brakingInfoContinue')}
         />
       )}
     </div>

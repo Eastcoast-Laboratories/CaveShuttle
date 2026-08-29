@@ -52,8 +52,10 @@ import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/r
 const GUIDED_HOLD_SHIELD_MS = 1000;
 const GUIDED_HOLD_THRUST_ESCAPE_MS = 1000;
 const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
-const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 5000;
+const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
+const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1000;
 const GUIDED_MATERIALIZE_MS = 500;
+const GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS = 500;
 
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
@@ -1880,10 +1882,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const shieldSignal = !!tractorBeamActive;
       const thrustSignal = !!(keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
       const combinedSignal = shieldSignal && thrustSignal;
+      const rotateRightSignal = !!(keys['ArrowRight'] || ((!twoPlayer || networkRole === 'host') && (keys['d'] || keys['D'])) || rotateRightActive || (tiltSteering && tiltRotateRightRef.current));
 
       let activeSignal = false;
       let holdTarget = 0;
       if (guidedTutorialStep === 'shieldAction') { activeSignal = shieldSignal; holdTarget = GUIDED_HOLD_SHIELD_MS; }
+      else if (guidedTutorialStep === 'brakingInfo') { activeSignal = rotateRightSignal; holdTarget = GUIDED_HOLD_ROTATE_RIGHT_MS; }
       else if (guidedTutorialStep === 'tractorAndThrustAction') { activeSignal = combinedSignal; holdTarget = GUIDED_HOLD_TRACTOR_THRUST_MS; }
       else if (guidedTutorialStep === 'escapeThrustAction') { activeSignal = thrustSignal; holdTarget = GUIDED_HOLD_THRUST_ESCAPE_MS; }
 
@@ -2440,6 +2444,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           guidedActionFiredRef.current = 'playingBeforeBrakingHint';
           console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to brakingInfo');
           if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeBrakingHint');
+        }
+      }
+
+      // Guided tutorial: playingBeforeTractorAndThrust lets the ship rotate
+      // slightly (0.5s active sim) after the brakingInfo challenge, then
+      // advances to tractorAndThrustAction (which pauses the simulation).
+      if (guidedTutorialStep === 'playingBeforeTractorAndThrust' && guidedActionFiredRef.current !== 'playingBeforeTractorAndThrust') {
+        guidedActiveSimMsRef.current += gameDeltaMs;
+        if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS) {
+          guidedActionFiredRef.current = 'playingBeforeTractorAndThrust';
+          console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to tractorAndThrustAction');
+          if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeTractorAndThrust');
         }
       }
 

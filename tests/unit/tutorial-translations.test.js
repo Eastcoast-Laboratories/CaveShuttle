@@ -20,7 +20,7 @@ describe('tutorialTranslations guidedHints', () => {
       expect(h.shieldAction.hold).toBeTruthy();
       expect(h.brakingInfo).toBeDefined();
       expect(h.brakingInfo.text).toBeTruthy();
-      expect(h.brakingInfo.continue).toBeTruthy();
+      expect(h.brakingInfo.hold).toBeTruthy();
       expect(h.tractorAndThrustAction).toBeDefined();
       expect(h.tractorAndThrustAction.text).toBeTruthy();
       expect(h.tractorAndThrustAction.hold).toBeTruthy();

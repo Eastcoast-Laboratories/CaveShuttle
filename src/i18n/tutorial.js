@@ -57,8 +57,8 @@ export const tutorialTranslations = {
         hold: 'Halte den Schild/Traktor-Button',
       },
       brakingInfo: {
-        text: 'Drehe die Nase des Raumschiffs nach oben und benutze den Schub zum Bremsen, damit du langsam über dem runden Pod schwebst.',
-        continue: 'Weiter',
+        text: 'Drehe das Raumschiff ganz leicht nach rechts und gebe Schub um dich in Richtung de runden Pods zu bewegen, dann drehe die Nase des Raumschiffs wieder nach oben und benutze den Schub zum Bremsen damit du langsam über dem runden Pod schwebst.',
+        hold: 'Halte den Rechts-Dreh-Button',
       },
       tractorAndThrustAction: {
         text: 'Aktiviere den Traktorstrahl und den Schub gleichzeitig, damit du nach dem Andocken nicht gleich abstürzt.',
@@ -123,8 +123,8 @@ export const tutorialTranslations = {
         hold: 'Hold the shield/tractor button',
       },
       brakingInfo: {
-        text: 'Point the nose of your ship upward and use thrust to brake, so you hover slowly over the round pod.',
-        continue: 'Continue',
+        text: 'Rotate the ship slightly to the right and thrust to move towards the round pod, then point the nose upward again and use thrust to brake so you hover slowly over the round pod.',
+        hold: 'Hold the rotate-right button',
       },
       tractorAndThrustAction: {
         text: 'Activate the tractor beam and thrust at the same time, so you don\'t crash right after docking.',

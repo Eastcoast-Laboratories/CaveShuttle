@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import TutorialHintOverlay from '../../src/ui/TutorialHintOverlay.jsx';
 
 // Mock the language context so the overlay uses English translations.
@@ -39,20 +39,18 @@ describe('TutorialHintOverlay', () => {
     expect(screen.getByRole('status')).toBeTruthy();
   });
 
-  it('renders brakingInfo with a Continue button and blocking backdrop', () => {
-    const onContinue = vi.fn();
+  it('renders brakingInfo as an action step with hold progress (no Continue button)', () => {
     render(
       <TutorialHintOverlay
         step="brakingInfo"
-        onContinue={onContinue}
+        holdProgressMs={200}
+        holdTargetMs={500}
       />
     );
     expect(screen.getByText(/Step 2\/4/)).toBeTruthy();
-    expect(screen.getByText(/brake/)).toBeTruthy();
-    const btn = screen.getByRole('button');
-    expect(btn).toBeTruthy();
-    fireEvent.click(btn);
-    expect(onContinue).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/rotate-right button/)).toBeTruthy();
+    // No Continue button — it's an action step now.
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('renders escapeThrustAction as step 4/4', () => {
