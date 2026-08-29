@@ -1,5 +1,10 @@
 // Translations for the one-time tutorial overlay.
 // New languages can be added here without touching the component.
+//
+// guidedHints: texts for the in-game guided tutorial state machine.
+// Each hint has a `text` (the instruction), an optional `hold` label used
+// for action steps that require holding an input, and a `continue` label
+// used only for the single step that has a Continue button.
 export const tutorialTranslations = {
   de: {
     title: 'Willkommen bei Cave Shuttle',
@@ -42,6 +47,28 @@ export const tutorialTranslations = {
       thrust: 'Handy vor/zurück kippen = Schub (relativ zur kalibrierten Position)',
       fire: 'Tippen irgendwo auf dem Bildschirm = Feuern',
       pod: 'Touch-Button für Traktorstrahl & Pod-Docking',
+    },
+    guidedHints: {
+      cancel: 'Abbrechen',
+      restartLevel1: 'Level 1 neu starten',
+      stepIndicator: (n, total) => `Schritt ${n}/${total}`,
+      shieldAction: {
+        text: 'Benutze den Schild, um die ankommenden Schüsse der Bunker abzuwehren.',
+        hold: 'Halte den Schild/Traktor-Button',
+      },
+      brakingInfo: {
+        text: 'Drehe die Nase des Raumschiffs nach oben und benutze den Schub zum Bremsen, damit du langsam über dem runden Pod schwebst.',
+        continue: 'Weiter',
+      },
+      tractorAndThrustAction: {
+        text: 'Aktiviere den Traktorstrahl und den Schub gleichzeitig, damit du nach dem Andocken nicht gleich abstürzt.',
+        hold: 'Halte Traktorstrahl und Schub gleichzeitig',
+      },
+      escapeThrustAction: {
+        text: 'Halte den Schub und fliege in den Himmel bis zum Wurmloch.',
+        hold: 'Halte den Schub',
+      },
+      holdProgress: (ms, target) => `${Math.max(0, Math.round(ms))} / ${target} ms`,
     },
   },
   en: {
@@ -86,6 +113,28 @@ export const tutorialTranslations = {
       thrust: 'Tilt phone forward/back = thrust (relative to calibrated neutral position)',
       fire: 'Tap anywhere on screen = fire',
       pod: 'Touch button for Tractor Beam / Pod docking',
+    },
+    guidedHints: {
+      cancel: 'Cancel',
+      restartLevel1: 'Restart Level 1',
+      stepIndicator: (n, total) => `Step ${n}/${total}`,
+      shieldAction: {
+        text: 'Use the shield to deflect the incoming bunker shots.',
+        hold: 'Hold the shield/tractor button',
+      },
+      brakingInfo: {
+        text: 'Point the nose of your ship upward and use thrust to brake, so you hover slowly over the round pod.',
+        continue: 'Continue',
+      },
+      tractorAndThrustAction: {
+        text: 'Activate the tractor beam and thrust at the same time, so you don\'t crash right after docking.',
+        hold: 'Hold tractor beam and thrust together',
+      },
+      escapeThrustAction: {
+        text: 'Hold thrust and fly up into the sky to the wormhole.',
+        hold: 'Hold thrust',
+      },
+      holdProgress: (ms, target) => `${Math.max(0, Math.round(ms))} / ${target} ms`,
     },
   },
 };

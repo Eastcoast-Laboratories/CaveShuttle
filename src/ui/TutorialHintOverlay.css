@@ -1,0 +1,137 @@
+/* Tutorial hint overlay: compact in-game hints for the guided tutorial. */
+
+.tutorial-hint-overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2500;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+/* brakingInfo: full backdrop blocks input and shows a Continue button. */
+.tutorial-hint-overlay--blocking {
+  background: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  pointer-events: auto;
+}
+
+/* Action steps: pass-through so touch buttons outside the card stay usable. */
+.tutorial-hint-overlay--pass-through {
+  pointer-events: none;
+}
+
+.tutorial-hint-overlay__card {
+  pointer-events: auto;
+  background: #1a1a1a;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+.tutorial-hint-overlay--blocking .tutorial-hint-overlay__card {
+  max-width: 520px;
+  text-align: center;
+}
+
+.tutorial-hint-overlay__step {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #00ff88;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tutorial-hint-overlay__text {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #ddd;
+}
+
+.tutorial-hint-overlay__hold-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tutorial-hint-overlay__hold-label {
+  font-size: 12px;
+  color: #aaa;
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+.tutorial-hint-overlay__progress {
+  flex: 0 0 80px;
+  height: 8px;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.15);
+}
+.tutorial-hint-overlay__progress::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.tutorial-hint-overlay__progress::-webkit-progress-value {
+  background: #00ff88;
+  border-radius: 4px;
+}
+.tutorial-hint-overlay__progress::-moz-progress-bar {
+  background: #00ff88;
+  border-radius: 4px;
+}
+
+.tutorial-hint-overlay__hold-ms {
+  font-size: 11px;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+.tutorial-hint-overlay__continue {
+  margin-top: 14px;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.tutorial-hint-overlay__continue:hover,
+.tutorial-hint-overlay__continue:focus-visible {
+  transform: translateY(-2px);
+  outline: 2px solid #00ff88;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .tutorial-hint-overlay {
+    padding: 8px;
+  }
+  .tutorial-hint-overlay__card {
+    padding: 10px 14px;
+  }
+  .tutorial-hint-overlay__text {
+    font-size: 13px;
+  }
+}

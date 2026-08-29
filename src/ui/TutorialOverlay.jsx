@@ -68,13 +68,14 @@ function TouchButtonPreview({ buttonTypes, podIcon, crosshairIcon, label }) {
   );
 }
 
-export default function TutorialOverlay({ onDismiss }) {
+export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel, onStartGuidedLevel }) {
   const { language } = useLanguage();
   const { isMobile } = useSettings();
   const [podIcon, setPodIcon] = useState(null);
   const [crosshairIcon, setCrosshairIcon] = useState(null);
 
   const t = tutorialTranslations[language] || tutorialTranslations.en;
+  const guidedHints = t.guidedHints;
 
   // Load touch button icons once so each preview canvas can reuse them.
   useEffect(() => {
@@ -197,13 +198,21 @@ export default function TutorialOverlay({ onDismiss }) {
           <p>{t.menuText}</p>
         </section>
 
-        {/* Dismiss button */}
+        {/* Dismiss / Start button */}
         <button
-          onClick={onDismiss}
+          onClick={onStartGuidedLevel || onDismiss}
           className="tutorial-overlay__dismiss"
         >
-          {t.dismiss}
+          {canCancel ? guidedHints.restartLevel1 : t.dismiss}
         </button>
+        {canCancel && onCancel && (
+          <button
+            onClick={onCancel}
+            className="tutorial-overlay__cancel"
+          >
+            {guidedHints.cancel}
+          </button>
+        )}
         <br />
         <br />
         <br />

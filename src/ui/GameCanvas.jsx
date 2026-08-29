@@ -46,6 +46,14 @@ import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons
 import { vibrate } from '../core/haptics.js';
 import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
 
+// Guided tutorial hold durations (ms). Action steps require unbroken input;
+// releasing resets the progress. The confirmation window for the combined
+// tractor+thrust step stays well under one second to avoid accidental skips.
+const GUIDED_HOLD_SHIELD_MS = 1000;
+const GUIDED_HOLD_THRUST_ESCAPE_MS = 1000;
+const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
+const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 5000;
+
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
 // zero channels become 30 so black pods turn gray instead of green.
@@ -173,7 +181,7 @@ function pointerToCanvas(canvas, clientX, clientY, w, h) {
   };
 }
 
-export default function GameCanvas({ width: widthProp, height: heightProp, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange }) {
+export default function GameCanvas({ width: widthProp, height: heightProp, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange, guidedTutorialStep = null, onGuidedTutorialAction = null, onGuidedTutorialHoldProgress = null }) {
   const {
     showTouchButtons, joystickEnabled, isMobile,
     twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
@@ -331,6 +339,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const pendingLevelCompleteData = useRef(null);
   const activeLevelTimeRef = useRef(0); // active play time for the current level in ms
   const gameTimeRef = useRef(performance.now());
+  // Guided tutorial: hold-timer refs for action steps and the active-sim timer for
+  // the invisible playingBeforeBrakingHint phase. Hold timers use wall-clock time
+  // because the simulation is intentionally paused during action hints.
+  const guidedHoldStartRef = useRef(null);
+  const guidedHoldProgressRef = useRef(0);
+  const guidedActionFiredRef = useRef(null);
+  const guidedActiveSimMsRef = useRef(0);
   const replayLoggerRef = useRef(new ReplayLogger());
   const shipDestroyed = useRef(false);
   const deathAnim = useRef({ active: false, timeLeft: 0 });
@@ -348,6 +363,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const vibrateIfEnabled = (pattern) => { if (vibrationEnabledRef.current) vibrate(pattern); };
   const multiShotEnabledRef = useRef(multiShotEnabled);
   useEffect(() => { multiShotEnabledRef.current = multiShotEnabled; }, [multiShotEnabled]);
+  // Reset guided-tutorial hold refs whenever the step changes so each step
+  // starts fresh and the action-fired guard does not carry over.
+  useEffect(() => {
+    guidedHoldStartRef.current = null;
+    guidedHoldProgressRef.current = 0;
+    guidedActionFiredRef.current = null;
+    guidedActiveSimMsRef.current = 0;
+  }, [guidedTutorialStep]);
   const multiShotAuraEndTimeRef = useRef(0);
   const meltdownActiveRef = useRef(false);
   const meltdownStartTimeRef = useRef(0);
@@ -1847,6 +1870,49 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     let beamEndY = ship.y;
     let isRefueling = false;
 
+    // Guided tutorial: evaluate normalized input signals and hold durations.
+    // This runs BEFORE the !frozen guard so action steps can detect input even
+    // while the simulation is paused. Hold timers use wall-clock time because
+    // the gameplay clock is intentionally frozen during action hints.
+    if (guidedTutorialStep) {
+      const wallNow = performance.now();
+      const shieldSignal = !!tractorBeamActive;
+      const thrustSignal = !!(keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+      const combinedSignal = shieldSignal && thrustSignal;
+
+      let activeSignal = false;
+      let holdTarget = 0;
+      if (guidedTutorialStep === 'shieldAction') { activeSignal = shieldSignal; holdTarget = GUIDED_HOLD_SHIELD_MS; }
+      else if (guidedTutorialStep === 'tractorAndThrustAction') { activeSignal = combinedSignal; holdTarget = GUIDED_HOLD_TRACTOR_THRUST_MS; }
+      else if (guidedTutorialStep === 'escapeThrustAction') { activeSignal = thrustSignal; holdTarget = GUIDED_HOLD_THRUST_ESCAPE_MS; }
+
+      if (activeSignal && holdTarget > 0) {
+        if (guidedHoldStartRef.current === null) {
+          guidedHoldStartRef.current = wallNow;
+          guidedHoldProgressRef.current = 0;
+        }
+        guidedHoldProgressRef.current = wallNow - guidedHoldStartRef.current;
+        if (onGuidedTutorialHoldProgress) {
+          onGuidedTutorialHoldProgress(guidedHoldProgressRef.current, holdTarget);
+        }
+        if (guidedHoldProgressRef.current >= holdTarget && guidedActionFiredRef.current !== guidedTutorialStep) {
+          guidedActionFiredRef.current = guidedTutorialStep;
+          console.log('[TUTORIAL_GUIDE] action completed:', guidedTutorialStep);
+          if (onGuidedTutorialAction) onGuidedTutorialAction(guidedTutorialStep);
+        }
+      } else {
+        // Released (or wrong combination): reset hold progress for this step.
+        if (guidedHoldStartRef.current !== null) {
+          guidedHoldStartRef.current = null;
+          guidedHoldProgressRef.current = 0;
+          if (onGuidedTutorialHoldProgress) onGuidedTutorialHoldProgress(0, holdTarget);
+        }
+      }
+
+      // playingBeforeBrakingHint: count active simulation time (only when not frozen).
+      // The active-sim timer is advanced below inside the !frozen block via gameDeltaMs.
+    }
+
     if (!frozen) {
     // Update god mode timer and log state changes
     if (godModeEndTimeRef.current > gameNow) {
@@ -2351,6 +2417,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Track active level play time. Paused while frozen (menus/overlays/tutorial) or during wormhole.
       if (gameState === 'playing') {
         activeLevelTimeRef.current += gameDeltaMs;
+      }
+
+      // Guided tutorial: playingBeforeBrakingHint counts only active simulation
+      // time. When the threshold is reached, fire the callback once to advance
+      // to the brakingInfo step (which pauses the simulation).
+      if (guidedTutorialStep === 'playingBeforeBrakingHint' && guidedActionFiredRef.current !== 'playingBeforeBrakingHint') {
+        guidedActiveSimMsRef.current += gameDeltaMs;
+        if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS) {
+          guidedActionFiredRef.current = 'playingBeforeBrakingHint';
+          console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to brakingInfo');
+          if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeBrakingHint');
+        }
       }
 
       // Skip all updates if frozen or during the wormhole level-complete animation

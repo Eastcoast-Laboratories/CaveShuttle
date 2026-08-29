@@ -5,6 +5,7 @@ import EndOverlay from './ui/EndOverlay';
 import HamburgerMenu from './ui/HamburgerMenu';
 import TopRightMenu from './ui/TopRightMenu';
 import TutorialOverlay from './ui/TutorialOverlay';
+import TutorialHintOverlay from './ui/TutorialHintOverlay';
 import LevelEditor from './ui/LevelEditor';
 import MultiplayerMenu from './ui/MultiplayerMenu';
 import LocalLobby from './ui/LocalLobby';
@@ -111,6 +112,18 @@ function App() {
     return stored === 'true';
   });
   const [showTutorial, setShowTutorial] = useState(false);
+  // Guided tutorial state machine. Steps:
+  // shieldAction -> playingBeforeBrakingHint -> brakingInfo -> tractorAndThrustAction
+  // -> playingUntilDocked -> escapeThrustAction -> inactive
+  const [guidedTutorialStep, setGuidedTutorialStep] = useState(null);
+  const [guidedHoldProgress, setGuidedHoldProgress] = useState({ ms: 0, target: 0 });
+  // Remember whether a continueable playing level exists behind the big tutorial.
+  const tutorialBackgroundRef = useRef(null);
+  // Persistence (Variant B): a pending guided tutorial survives reload.
+  const [guidedTutorialPending, setGuidedTutorialPending] = useState(() => {
+    const stored = localStorage.getItem(storageKey('guidedTutorialPending'));
+    return stored === 'true';
+  });
 
   // Remember the last played level across reloads.
   useEffect(() => {
@@ -279,7 +292,13 @@ function App() {
     runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: 1, mode });
     levelRecordIdsRef.current = [];
     gameOverSavedRef.current = false;
-    if (!tutorialDismissed) setShowTutorial(true);
+    if (guidedTutorialPending) {
+      // Resume a pending guided tutorial run from a previous session.
+      setGuidedTutorialStep('shieldAction');
+      setGuidedHoldProgress({ ms: 0, target: 0 });
+    } else if (!tutorialDismissed) {
+      setShowTutorial(true);
+    }
   };
 
   const handleStartLevel = (levelNum) => {
@@ -317,6 +336,80 @@ function App() {
       networkManager.sendEvent({ type: 'playagain', level });
     }
     handleStartLevel(level);
+  };
+
+  // Shared handler to open the big tutorial overlay from any entry point
+  // (menu, hamburger, end overlay, automatic first start). Remembers whether
+  // a continueable playing level exists in the background so the overlay can
+  // offer a Cancel button.
+  const openTutorial = (source) => {
+    console.log('[TUTORIAL_GUIDE] openTutorial from', source);
+    const hasBackground = gameState === 'playing';
+    tutorialBackgroundRef.current = hasBackground ? { gameState } : null;
+    setShowTutorial(true);
+  };
+
+  // Start a fresh local 1P guided Level 1 run. Marks the tutorial as seen,
+  // leaves any online session orderly, and sets the persistent pending flag.
+  const handleStartGuidedLevel = () => {
+    setShowTutorial(false);
+    setTutorialDismissed(true);
+    localStorage.setItem(storageKey('tutorialDismissed'), 'true');
+    setGuidedTutorialPending(true);
+    localStorage.setItem(storageKey('guidedTutorialPending'), 'true');
+    setGuidedTutorialStep('shieldAction');
+    setGuidedHoldProgress({ ms: 0, target: 0 });
+    tutorialBackgroundRef.current = null;
+    // Leave any online session before starting a local run.
+    if (networkRole && networkManager) {
+      networkManager.backToLobby();
+    }
+    handleStartGame(false, null);
+  };
+
+  // Cancel the big tutorial: close it and resume the background game if any.
+  const handleCancelTutorial = () => {
+    setShowTutorial(false);
+    tutorialBackgroundRef.current = null;
+  };
+
+  // Central state-machine advancement for the guided tutorial. Called by
+  // GameCanvas when an action step's hold requirement is met, or when the
+  // active-sim timer elapses, or when the pod docks.
+  const handleGuidedTutorialAction = (action) => {
+    console.log('[TUTORIAL_GUIDE] action:', action, '-> current step:', guidedTutorialStep);
+    setGuidedHoldProgress({ ms: 0, target: 0 });
+    if (action === 'shieldAction') {
+      setGuidedTutorialStep('playingBeforeBrakingHint');
+    } else if (action === 'playingBeforeBrakingHint') {
+      setGuidedTutorialStep('brakingInfo');
+    } else if (action === 'brakingInfoContinue') {
+      setGuidedTutorialStep('tractorAndThrustAction');
+    } else if (action === 'tractorAndThrustAction') {
+      setGuidedTutorialStep('playingUntilDocked');
+    } else if (action === 'podDocked') {
+      // Only react while waiting for docking.
+      if (guidedTutorialStep === 'playingUntilDocked') {
+        setGuidedTutorialStep('escapeThrustAction');
+      }
+    } else if (action === 'escapeThrustAction') {
+      // Guided tutorial complete: clear persistence and step.
+      setGuidedTutorialStep(null);
+      setGuidedTutorialPending(false);
+      localStorage.removeItem(storageKey('guidedTutorialPending'));
+    }
+  };
+
+  const handleGuidedTutorialHoldProgress = (ms, target) => {
+    setGuidedHoldProgress({ ms, target });
+  };
+
+  // Wrap onPodDockedChange so the guided tutorial can react to docking.
+  const handlePodDockedChange = (docked) => {
+    setPodDocked(docked);
+    if (docked && guidedTutorialStep === 'playingUntilDocked') {
+      handleGuidedTutorialAction('podDocked');
+    }
   };
 
   const handleLevelComplete = (completedLevel, levelTimeMs, levelWidth, levelHeight, networkData) => {
@@ -851,6 +944,17 @@ function App() {
 
   const isGameScreen = gameState === 'playing' || gameState === 'gameover' || gameState === 'levelcomplete';
 
+  // DRY pause condition: a single value drives the frozen prop.
+  // Visible guided-tutorial hints pause the simulation; invisible waiting
+  // states (playingBeforeBrakingHint, playingUntilDocked) do not.
+  const guidedPauseSteps = ['shieldAction', 'brakingInfo', 'tractorAndThrustAction', 'escapeThrustAction'];
+  const isGameplayPaused =
+    gameState === 'gameover' ||
+    gameState === 'levelcomplete' ||
+    showTutorial ||
+    showMobileMenu ||
+    guidedPauseSteps.includes(guidedTutorialStep);
+
   return (
     <div className={`app${isGameScreen ? ' game-screen' : ''}`} id="app" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100vw', height: '100vh', backgroundColor: '#000', color: '#fff', position: 'relative', overflow: 'hidden', touchAction: 'none' }}>
       {(gameState === 'menu' || gameState === 'highscores') && (
@@ -860,7 +964,7 @@ function App() {
           onOpenLevelEditor={() => setGameState('editor')}
           makeLevelButtons={generateLevelButtons}
           onBackToMenu={() => setGameState('menu')}
-          onShowTutorial={() => setShowTutorial(true)}
+          onShowTutorial={() => openTutorial('menu')}
           hamburgerProps={hamburgerSettingsProps}
         />
       )}
@@ -1045,16 +1149,19 @@ function App() {
                 level={level}
                 packBaseUrl={getCurrentPackBaseUrl()}
                 gravityMultiplier={gravityMultiplier}
-                frozen={gameState === 'gameover' || gameState === 'levelcomplete' || showTutorial || showMobileMenu}
+                frozen={isGameplayPaused}
                 isEditorTestMode={isEditorTestMode}
                 editorLevelData={editorLevelData}
                 editorWallColor={editorWallColor}
                 initialLives={lives}
                 networkRole={networkRole}
-                onPodDockedChange={setPodDocked}
+                onPodDockedChange={handlePodDockedChange}
                 bonusLifePopup={bonusLifePopup}
                 multiShotEnabled={multiShotEnabled}
                 onMultiShotChange={setMultiShotEnabled}
+                guidedTutorialStep={guidedTutorialStep}
+                onGuidedTutorialAction={handleGuidedTutorialAction}
+                onGuidedTutorialHoldProgress={handleGuidedTutorialHoldProgress}
               />
 
               {/* Game over overlay - centered over canvas */}
@@ -1072,7 +1179,7 @@ function App() {
                   onPlayerNameChange={handlePlayerNameChange}
                   onPlayer2NameChange={handlePlayer2NameChange}
                   podDocked={podDocked}
-                  onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
+                  onShowTutorial={() => { openTutorial('endOverlay'); setShowMobileMenu(false); }}
                   buttons={
                     <>
                       <button onClick={() => handlePlayAgain()} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
@@ -1121,7 +1228,7 @@ function App() {
           levelButtons={generateLevelButtons(() => setShowMobileMenu(false))}
           onBackToMenu={() => { setGameState('menu'); setShowMobileMenu(false); }}
           onOpenLevelEditor={() => { setGameState('editor'); setShowMobileMenu(false); }}
-          onShowTutorial={() => { setShowTutorial(true); setShowMobileMenu(false); }}
+          onShowTutorial={() => { openTutorial('hamburger'); setShowMobileMenu(false); }}
           podDocked={podDocked}
           networkRole={networkRole}
           {...hamburgerSettingsProps}
@@ -1130,11 +1237,23 @@ function App() {
 
       {showTutorial && (
         <TutorialOverlay
+          canCancel={!!tutorialBackgroundRef.current}
+          onCancel={handleCancelTutorial}
+          onStartGuidedLevel={handleStartGuidedLevel}
           onDismiss={() => {
             setShowTutorial(false);
             setTutorialDismissed(true);
             localStorage.setItem(storageKey('tutorialDismissed'), 'true');
           }}
+        />
+      )}
+
+      {isGameScreen && guidedTutorialStep && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingUntilDocked' && (
+        <TutorialHintOverlay
+          step={guidedTutorialStep}
+          holdProgressMs={guidedHoldProgress.ms}
+          holdTargetMs={guidedHoldProgress.target}
+          onContinue={() => handleGuidedTutorialAction('brakingInfoContinue')}
         />
       )}
     </div>
