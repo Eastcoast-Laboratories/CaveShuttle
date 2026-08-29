@@ -452,62 +452,18 @@ class LevelEditor {
     }
 
     // Wall color picker with RGB display popup
-    const wallColorBtn = document.getElementById('wallColorBtn');
-    const wallColorPopup = document.getElementById('wallColorPopup');
-    const wallColorPicker = document.getElementById('wallColorPicker');
-    const wallColorCopy = document.getElementById('wallColorCopy');
-    const wallColorWrapper = document.getElementById('wallColorWrapper');
-
-    if (wallColorBtn && wallColorPopup) {
-      wallColorBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.hapticFeedback();
-        const isOpen = wallColorPopup.style.display === 'block';
-        wallColorPopup.style.display = isOpen ? 'none' : 'block';
-        wallColorBtn.setAttribute('aria-expanded', String(!isOpen));
-      });
-    }
-
-    if (wallColorPicker) {
-      wallColorPicker.addEventListener('input', () => {
-        this.updateWallColorDisplay(wallColorPicker.value);
-        localStorage.setItem('editorWallColor', wallColorPicker.value);
-      });
-    }
-
-    if (wallColorCopy) {
-      wallColorCopy.addEventListener('click', () => {
-        this.hapticFeedback();
-        const rgbInput = document.getElementById('wallColorRgb');
-        if (rgbInput && rgbInput.value) {
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(rgbInput.value).then(() => {
-              wallColorCopy.textContent = window.editorI18n.t('copied');
-              setTimeout(() => wallColorCopy.textContent = window.editorI18n.t('copyRgb'), 1500);
-            }).catch(() => {
-              rgbInput.select();
-              document.execCommand('copy');
-            });
-          } else {
-            rgbInput.select();
-            document.execCommand('copy');
-          }
-        }
-      });
-    }
-
-    if (wallColorWrapper) {
-      document.addEventListener('click', (e) => {
-        if (!wallColorWrapper.contains(e.target)) {
-          wallColorPopup.style.display = 'none';
-          if (wallColorBtn) wallColorBtn.setAttribute('aria-expanded', 'false');
-        }
-      });
-    }
+    this.setupColorPicker('wallColor', '#ff0000', (hex) => this.updateWallColorDisplay(hex));
 
     // Load wall color from localStorage and initialize the UI
     const savedWallColor = localStorage.getItem('editorWallColor');
     this.updateWallColorDisplay(savedWallColor || '#ff0000');
+
+    // Pod color picker with RGB display popup
+    this.setupColorPicker('podColor', '#00a400', (hex) => this.updatePodColorDisplay(hex));
+
+    // Load pod color from localStorage and initialize the UI
+    const savedPodColor = localStorage.getItem('editorpodColorColor');
+    this.updatePodColorDisplay(savedPodColor || '#00a400');
 
     // Parameter inputs
     document.querySelectorAll('.param-input').forEach(input => {
@@ -642,6 +598,89 @@ class LevelEditor {
 
     const wallColorRgb = document.getElementById('wallColorRgb');
     if (wallColorRgb) wallColorRgb.value = `${r} ${g} ${b}`;
+  }
+
+  // Generic color picker setup: wires up button toggle, picker input, copy
+  // button, and outside-click-to-close for any color picker following the
+  // wall-color pattern. Returns the updateDisplay callback for external use.
+  setupColorPicker(prefix, defaultHex, onPick) {
+    const btn = document.getElementById(`${prefix}Btn`);
+    const popup = document.getElementById(`${prefix}Popup`);
+    const picker = document.getElementById(`${prefix}Picker`);
+    const copyBtn = document.getElementById(`${prefix}Copy`);
+    const wrapper = document.getElementById(`${prefix}Wrapper`);
+
+    if (btn && popup) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.hapticFeedback();
+        const isOpen = popup.style.display === 'block';
+        popup.style.display = isOpen ? 'none' : 'block';
+        btn.setAttribute('aria-expanded', String(!isOpen));
+      });
+    }
+
+    if (picker) {
+      picker.addEventListener('input', () => {
+        onPick(picker.value);
+        localStorage.setItem(`editor${prefix}Color`, picker.value);
+      });
+    }
+
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        this.hapticFeedback();
+        const rgbInput = document.getElementById(`${prefix}Rgb`);
+        if (rgbInput && rgbInput.value) {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(rgbInput.value).then(() => {
+              copyBtn.textContent = window.editorI18n.t('copied');
+              setTimeout(() => copyBtn.textContent = window.editorI18n.t('copyRgb'), 1500);
+            }).catch(() => {
+              rgbInput.select();
+              document.execCommand('copy');
+            });
+          } else {
+            rgbInput.select();
+            document.execCommand('copy');
+          }
+        }
+      });
+    }
+
+    if (wrapper) {
+      document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+          popup.style.display = 'none';
+          if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+  }
+
+  // Update the pod color picker UI from a hex value and sync to level data.
+  updatePodColorDisplay(hex) {
+    const normalized = (typeof hex === 'string' && /^#[0-9A-Fa-f]{6}$/.test(hex)) ? hex.toLowerCase() : '#00a400';
+    const r = parseInt(normalized.substring(1, 3), 16);
+    const g = parseInt(normalized.substring(3, 5), 16);
+    const b = parseInt(normalized.substring(5, 7), 16);
+
+    if (this.levelData && this.levelData.header) {
+      if (!this.levelData.header.colors) this.levelData.header.colors = {};
+      this.levelData.header.colors.pod = [r, g, b];
+    }
+
+    const hiddenInput = document.getElementById('podColorInput');
+    if (hiddenInput) hiddenInput.value = normalized;
+
+    const podColorBtn = document.getElementById('podColorBtn');
+    if (podColorBtn) podColorBtn.style.backgroundColor = normalized;
+
+    const podColorPicker = document.getElementById('podColorPicker');
+    if (podColorPicker) podColorPicker.value = normalized;
+
+    const podColorRgb = document.getElementById('podColorRgb');
+    if (podColorRgb) podColorRgb.value = `${r} ${g} ${b}`;
   }
 
   // Convert RGB integers (0-255) to a hex color string.
@@ -2087,9 +2126,7 @@ class LevelEditor {
     document.getElementById('paramBunkerChance').value = this.genBunkerChance === null ? '' : this.genBunkerChance;
     document.getElementById('paramFuelChance').value = this.genFuelChance === null ? '' : this.genFuelChance;
     const pod = h.colors.pod || [0, 164, 0];
-    document.getElementById('paramPodR').value = pod[0];
-    document.getElementById('paramPodG').value = pod[1];
-    document.getElementById('paramPodB').value = pod[2];
+    this.updatePodColorDisplay(this.rgbToHex(pod[0], pod[1], pod[2]));
     
     console.log('[LEVEL_EDITOR_PARAMS] Updated parameter inputs - width:', h.width, 'height:', h.height);
   }
@@ -2118,11 +2155,7 @@ class LevelEditor {
     const fChance = document.getElementById('paramFuelChance').value;
     this.genBunkerChance = bChance === '' ? null : parseFloat(bChance);
     this.genFuelChance = fChance === '' ? null : parseFloat(fChance);
-    h.colors.pod = [
-      parseInt(document.getElementById('paramPodR').value) || 0,
-      parseInt(document.getElementById('paramPodG').value) || 0,
-      parseInt(document.getElementById('paramPodB').value) || 0
-    ];
+    // Pod color is controlled by the color picker, not by the parameter inputs.
 
     // Wall color is controlled by the color picker, not by the parameter inputs.
 

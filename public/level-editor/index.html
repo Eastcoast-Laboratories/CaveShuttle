@@ -102,12 +102,16 @@
             </div>
             <input type="number" id="paramBedrock" class="param-input" value="25" min="5" max="100">
           </div>
-          <div class="param-group pod-color-group">
-            <label data-i18n="podColor">Cargo Pod Color:</label>
-            <div class="color-rgb-inputs">
-              <input type="number" id="paramPodR" class="param-input color-input" value="0" min="0" max="255" title="Pod R">
-              <input type="number" id="paramPodG" class="param-input color-input" value="164" min="0" max="255" title="Pod G">
-              <input type="number" id="paramPodB" class="param-input color-input" value="0" min="0" max="255" title="Pod B">
+          <div class="color-picker-wrapper" id="podColorWrapper">
+            <input type="hidden" id="podColorInput" value="#00a400">
+            <button type="button" id="podColorBtn" class="wall-color-btn" data-i18n-title="podColor" aria-haspopup="true" aria-expanded="false"></button>
+            <div id="podColorPopup" class="color-popup" style="display: none;" role="dialog" data-i18n-aria-label="podColorPicker" aria-label="Cargo Pod color picker">
+              <input type="color" id="podColorPicker" class="control-input color-picker-input" value="#00a400">
+              <div class="color-rgb-display">
+                <label for="podColorRgb" data-i18n="rgbValues">RGB values:</label>
+                <input type="text" id="podColorRgb" class="control-input" value="0 164 0" readonly>
+              </div>
+              <button type="button" id="podColorCopy" class="btn btn-secondary color-copy-btn" data-i18n="copyRgb">Copy RGB</button>
             </div>
           </div>
           
