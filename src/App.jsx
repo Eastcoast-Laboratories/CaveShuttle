@@ -403,14 +403,14 @@ function App() {
       localStorage.removeItem(storageKey('guidedTutorialPending'));
     } else if (action === 'repeatTractorAndThrust') {
       // Ship destroyed before docking: repeat step 3 after respawn.
-      // Briefly clear the step so GameCanvas resets its hold refs via useEffect,
-      // then re-enter the action step on the next tick.
+      // Clear immediately so GameCanvas resets its hold refs, then wait 2s
+      // for the explosion animation and respawn to play before re-showing.
       setGuidedTutorialStep(null);
-      setTimeout(() => setGuidedTutorialStep('tractorAndThrustAction'), 0);
+      setTimeout(() => setGuidedTutorialStep('tractorAndThrustAction'), 2000);
     } else if (action === 'repeatEscapeThrust') {
       // Ship destroyed after docking: repeat step 4 after respawn.
       setGuidedTutorialStep(null);
-      setTimeout(() => setGuidedTutorialStep('escapeThrustAction'), 0);
+      setTimeout(() => setGuidedTutorialStep('escapeThrustAction'), 2000);
     }
   };
 
