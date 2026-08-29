@@ -1706,6 +1706,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const px = tileX * tileSize + tileSize / 2;
       const py = tileY * tileSize + tileSize / 2;
       particleSystem.current.spawnPowerupBurst(px, py, '#ffd700');
+      if (soundManager.current) soundManager.current.playOnce('powerupGodMode');
       console.log('[GOD_MODE] Power-up collected at tile', tileX, tileY, '| ends in', GOD_MODE_DURATION_MS, 'ms');
     };
 
@@ -1724,6 +1725,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const px = tileX * tileSize + tileSize / 2;
       const py = tileY * tileSize + tileSize / 2;
       particleSystem.current.spawnPowerupBurst(px, py, '#ff8035');
+      if (soundManager.current) soundManager.current.playOnce('powerupMultiShot');
       console.log('[MULTI_SHOT] Power-up collected at tile', tileX, tileY);
     };
 

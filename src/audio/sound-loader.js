@@ -18,6 +18,8 @@ export const SOUND_FILES = {
   wormholeComplete: 'wormhole_complete.wav',
   noFuel: 'no-fuel.mp3',
   respawn: 'respawn.mp3',
+  powerupGodMode: 'powerup_godmode.mp3',
+  powerupMultiShot: 'powerup_multishot.mp3',
 };
 
 // Fetch and decode every sound file. Errors are logged with a unique tag and

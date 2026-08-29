@@ -17,6 +17,8 @@ const SOUND_VOLUMES = {
   wormholeComplete: 0.7,
   noFuel: 0.6,
   respawn: 0.6,
+  powerupGodMode: 0.6,
+  powerupMultiShot: 0.6,
 };
 
 export class SoundManager {
