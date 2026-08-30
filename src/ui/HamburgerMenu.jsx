@@ -76,6 +76,9 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [showOrientation, setShowOrientation] = useState(false);
   const [showVibration, setShowVibration] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [showSound, setShowSound] = useState(false);
+  const [showLevelPacks, setShowLevelPacks] = useState(false);
+  const [showDataTransfer, setShowDataTransfer] = useState(false);
 
   useEffect(() => {
     if (!isOpen) { setShowControls(false); setShowPrivacyOnline(false); setShowOrientation(false); }
@@ -437,7 +440,15 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       )}
 
       <hr />
-      <h3 className="hamburger-section-title">{t.sound}</h3>
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowSound(!showSound)}
+      >
+        {showSound ? '▼' : '▶'} {t.sound}
+      </h3>
+      {showSound && (
       <div className="hamburger-settings-group">
         <SettingsSlider
           label={t.soundVolume}
@@ -445,6 +456,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           onChange={(e) => setSoundVolume && setSoundVolume(sliderToVolume(parseInt(e.target.value, 10)))}
         />
       </div>
+      )}
 
       <hr />
       <h3
@@ -518,7 +530,15 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       )}
 
       <hr />
-      <h3 className="hamburger-section-title">{t.levelPacks}</h3>
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowLevelPacks(!showLevelPacks)}
+      >
+        {showLevelPacks ? '▼' : '▶'} {t.levelPacks}
+      </h3>
+      {showLevelPacks && (
       <div className="hamburger-pack-list">
         {(() => {
           // Find duplicate names
@@ -635,9 +655,19 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           </div>
         )}
       </div>
+      )}
 
       <hr />
-      <h3 className="hamburger-section-title">{t.dataTransfer}</h3>
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowDataTransfer(!showDataTransfer)}
+      >
+        {showDataTransfer ? '▼' : '▶'} {t.dataTransfer}
+      </h3>
+      {showDataTransfer && (
+      <>
       <div className="hamburger-settings-group">
         <div className="hamburger-data-transfer-row">
           <button
@@ -699,6 +729,8 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           {t.resetAllData}
         </button>
       </div>
+      </>
+      )}
 
       <hr />
       <h3
