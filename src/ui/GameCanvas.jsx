@@ -1168,7 +1168,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               state: 'closed',
               filledCols: door.filledCols,
               timer: 0,
-              slideAccum: 0
+              slideAccum: 0,
+              scored: false
             });
           }
         }
@@ -2797,13 +2798,20 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 const dy = bullet.y - button.y;
                 if (dx * dx + dy * dy < 225) { // 15^2
                   console.log('[BUTTON_HIT] Button hit:', button.type, 'tag:', button.tag, 'door:', button.door ? 'yes' : 'no');
-                  // Trigger door opening if button has an assigned door
-                  if (button.door && button.door.state === 'closed') {
-                    console.log('[DOOR] Opening door, state:', button.door.state);
-                    button.door.state = 'opening';
-                    if (onScoreChange) onScoreChange({ points: SCORE_BUTTON_SLIDER, type: 'button' });
-                  } else if (button.door) {
-                    console.log('[DOOR] Door not closed, state:', button.door.state);
+                  if (button.door) {
+                    if (button.door.state === 'closed') {
+                      // Open the door and award points only on first activation
+                      console.log('[DOOR] Opening door, state:', button.door.state);
+                      button.door.state = 'opening';
+                      if (!button.door.scored) {
+                        button.door.scored = true;
+                        if (onScoreChange) onScoreChange({ points: SCORE_BUTTON_SLIDER, type: 'button' });
+                      }
+                    } else if (button.door.state === 'open') {
+                      // Door is already open: close immediately and reset timer (no extra points)
+                      console.log('[DOOR] Closing door immediately (re-shot while open)');
+                      button.door.state = 'closing';
+                    }
                   } else {
                     console.log('[DOOR] No door assigned to button');
                   }
