@@ -1,0 +1,6 @@
+- New guided in-game tutorial with interactive, action-based hints
+- Joystick now has Four-finger tab for firing without the shield
+- More sound effects
+- Screen orientation options: portrait, landscape, or automatic
+- Faster rotation after 0.5s, instantly on double-tap
+- High-score filtering by level-pack

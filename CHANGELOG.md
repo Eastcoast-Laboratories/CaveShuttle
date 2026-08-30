@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.5 — August 30, 2026
+
+- New guided in-game tutorial with interactive, action-based hints
+- Joystick now has Four-finger tab for firing without the shield
+- More sound effects
+- Screen orientation options: portrait, landscape, or automatic
+- Faster rotation after 0.5s, instantly on double-tap
+- High-score filtering by level-pack
+
+
 ## 4.4 — August 26, 2026
 
 - Multi-shot power-up (6-way spread fire) in Level 6

@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.5 — August 30, 2026
+
+- In-Game-Tutorial mit interaktiven, actionsbasierten Hinweisen
+- Joystick hat nun einen 4-Finger-Tab für das Feuern ohne Schild
+- Mehr Sound-Effekte
+- Bildschirm-Orientierung: Hochformat, Querformat oder automatisch
+- Schnelleres Drehen nach 0.5s, sofort bei Doppel-Tap
+- High-Score filtern nach Level-Pack
+
+
 ## 4.4 — August 26, 2026
 
 - Multi-Shot-Powerup (6-fach Streuschuss) in Level 6

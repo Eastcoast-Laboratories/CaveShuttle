@@ -1,0 +1,18 @@
+# Play Store Changelogs für Version 4.5
+
+<en-GB>
+- New guided in-game tutorial with interactive, action-based hints
+- Joystick now has Four-finger tab for firing without the shield
+- More sound effects
+- Screen orientation options: portrait, landscape, or automatic
+- Faster rotation after 0.5s, instantly on double-tap
+- High-score filtering by level-pack
+</en-GB>
+<de-DE>
+- In-Game-Tutorial mit interaktiven, actionsbasierten Hinweisen
+- Joystick hat nun einen 4-Finger-Tab für das Feuern ohne Schild
+- Mehr Sound-Effekte
+- Bildschirm-Orientierung: Hochformat, Querformat oder automatisch
+- Schnelleres Drehen nach 0.5s, sofort bei Doppel-Tap
+- High-Score filtern nach Level-Pack
+</de-DE>

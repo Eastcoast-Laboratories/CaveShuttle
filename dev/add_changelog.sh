@@ -52,25 +52,23 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Multi-Shot-Powerup (6-fach Streuschuss) in Level 6
-- Zufallsgenerator für Level im Editor
-- Online-Leaderboard
-- WLAN-Multiplayer
-- Haptisches Feedback bei allen Steuerungs-Buttons
-- Absturz-Reporter mit automatischer Fehlerübermittlung
-- Kein Treibstoffverbrauch beim Tanken überm Fuel-Depot
+- In-Game-Tutorial mit interaktiven, actionsbasierten Hinweisen
+- Joystick hat nun einen 4-Finger-Tab für das Feuern ohne Schild
+- Mehr Sound-Effekte
+- Bildschirm-Orientierung: Hochformat, Querformat oder automatisch
+- Schnelleres Drehen nach 0.5s, sofort bei Doppel-Tap
+- High-Score filtern nach Level-Pack
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Multi-shot power-up (6-way spread fire) in Level 6
-- Random level generator in editor
-- Online leaderboard
-- WLAN multiplayer
-- Haptic feedback for all control buttons
-- Crash reporter with automatic error reporting
-- No fuel consumption while refueling at fuel depot
+- New guided in-game tutorial with interactive, action-based hints
+- Joystick now has Four-finger tab for firing without the shield
+- More sound effects
+- Screen orientation options: portrait, landscape, or automatic
+- Faster rotation after 0.5s, instantly on double-tap
+- High-score filtering by level-pack
 EOF
 )
 
