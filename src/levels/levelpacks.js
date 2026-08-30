@@ -6,7 +6,7 @@ import { getInstalledPacks, addInstalledPack, saveInstalledPacks } from '../core
 export const BUILTIN_PACKS = [
   {
     id: 'default',
-    name: 'CaveShuttle Levels',
+    name: 'Standard',
     source: 'bundled',
     baseUrl: '/levelpacks/default',
   },

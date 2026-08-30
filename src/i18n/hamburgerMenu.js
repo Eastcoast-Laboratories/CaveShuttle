@@ -11,7 +11,7 @@ export const hamburgerMenuTranslations = {
     sound: 'Sound',
     vibration: 'Vibration',
     levelPacks: 'Level-Packs',
-    dataTransfer: 'Datenübertragung',
+    dataTransfer: 'Spielstand',
     account: 'Konto',
     privacyOnline: 'Privatsphäre',
 
@@ -47,7 +47,7 @@ export const hamburgerMenuTranslations = {
 
     // Hints
     tapAnywhereToFire: 'Tippe überall zum Schießen.',
-    holdSwipeToSteer: 'Halten und wischen zum Steuern und Beschleunigen. Kurzes Tippen zum Schießen. Mit zwei Fingern tippen für Schild. Drei Finger zum Schießen. Vier Finger: Schießen ohne aktiven Schild',
+    holdSwipeToSteer: `Halten und wischen zum Steuern und Beschleunigen.<ul><li>Kurzes Tippen zum Schießen.</li><li>Mit zwei Fingern tippen für Schild.</li><li>Drei Finger zum Schießen.</li><li>Vier Finger: Schießen ohne aktiven Schild</li></ul>`,
     tiltHint: 'Nach links/rechts neigen zum Drehen, zurück neigen zum Beschleunigen. Tippe überall zum Schießen.',
     vibrationHint: 'Stelle sicher, dass Vibration auch in den Geräteeinstellungen aktiviert ist.',
     analyticsHintBefore: 'Wenn aktiviert, werden anonyme Fehler- und ',
@@ -104,7 +104,7 @@ export const hamburgerMenuTranslations = {
     sound: 'SOUND',
     vibration: 'VIBRATION',
     levelPacks: 'LEVEL PACKS',
-    dataTransfer: 'DATA TRANSFER',
+    dataTransfer: 'Save Data',
     account: 'ACCOUNT',
     privacyOnline: 'Privacy & Online',
 
@@ -140,7 +140,7 @@ export const hamburgerMenuTranslations = {
 
     // Hints
     tapAnywhereToFire: 'Tap anywhere to fire.',
-    holdSwipeToSteer: 'Hold and swipe to steer and thrust.<br>Quick tap to fire.<br>Two finger tap for shield.<br>Three finger tap to fire.<br>Four fingers: fire without active shield',
+    holdSwipeToSteer: `Hold and swipe to steer and thrust.<ul><li>Quick tap to fire.</li><li>Two finger tap for shield.</li><li>Three finger tap to fire.</li><li>Four fingers: fire without active shield</li></ul>`,
     tiltHint: 'Tilt left/right to rotate, tilt back to thrust. Tap anywhere to fire.',
     vibrationHint: 'Make sure vibration is also enabled in your device settings.',
     analyticsHintBefore: 'When enabled, anonymous error and ',
