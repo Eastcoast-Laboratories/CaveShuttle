@@ -3127,19 +3127,37 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const wx = wormholeRef.current.x;
         const wy = wormholeRef.current.y;
 
+        const WORMHOLE_MASS = 3; // temporary mass for wormhole animation
+
         // Capture ship/pod start state on the first frame
         if (!wormholeRef.current.started) {
           wormholeRef.current.started = true;
           wormholeRef.current.shipStart = { x: ship.x, y: ship.y, vx: ship.vx, vy: ship.vy, angle: ship.angle };
           if (pod && pod.active) {
             wormholeRef.current.savedPodMass = pod.mass;
-            pod.mass = 4;
+            pod.mass = WORMHOLE_MASS;
           }
+          // Side kick direction depends on pod position relative to ship:
+          // pod to the right -> kick left, pod to the left -> kick right.
+          // If no pod, default to left.
+          const podOffsetX = (pod && pod.active) ? (pod.x - ship.x) : 0;
+          const kickDir = podOffsetX > 0 ? -1 : 1;
+          const kickSpeed = 1.25;
+          ship.vx += kickDir * kickSpeed;
+          // Schedule the second kick stage 20ms later
+          wormholeRef.current.secondKickTime = gameNow + 20;
+          wormholeRef.current.kickDir = kickDir;
+          wormholeRef.current.kickSpeed = kickSpeed;
+        }
+
+        // Second kick stage
+        if (wormholeRef.current.secondKickTime && gameNow >= wormholeRef.current.secondKickTime) {
+          ship.vx += wormholeRef.current.kickDir * wormholeRef.current.kickSpeed;
+          wormholeRef.current.secondKickTime = null;
         }
 
         const start = wormholeRef.current.shipStart;
         const drag = Math.pow(0.97, deltaTime);
-        const WORMHOLE_MASS = 4;
 
         const shipDx = wx - ship.x;
         const shipDy = wy - ship.y;
