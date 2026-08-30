@@ -3097,7 +3097,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 sm.startLoop('wormholeAmbient');
               }
             }
-          } else if (!godModeActiveRef.current) {
+          } else if (godModeActiveRef.current) {
+            // In god mode without pod: bounce off the sky boundary like a wall.
+            ship.y = skyThreshold;
+            ship.vy = Math.abs(ship.vy) * 0.5;
+          } else {
             // Flying into sky without pod = explosion then respawn
             destroyShip();
           }
