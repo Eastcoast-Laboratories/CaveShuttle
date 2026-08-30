@@ -1,8 +1,13 @@
+.hamburger-hint {
+  text-align: left;
+}
+
 .hamburger-hint ul {
   display: block;
   margin: 4px 0 0 0;
-  padding-left: 20px;
+  padding-left: 31px;
   list-style: disc;
+  text-align: left;
 }
 
 .hamburger-menu {
