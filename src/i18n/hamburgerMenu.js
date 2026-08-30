@@ -104,7 +104,7 @@ export const hamburgerMenuTranslations = {
     sound: 'SOUND',
     vibration: 'VIBRATION',
     levelPacks: 'LEVEL PACKS',
-    dataTransfer: 'Save Data',
+    dataTransfer: 'Data Management',
     account: 'ACCOUNT',
     privacyOnline: 'Privacy & Online',
 

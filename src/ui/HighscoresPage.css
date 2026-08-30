@@ -102,9 +102,8 @@ button.tab-button:nth-child(2) {
 }
 
 .filter-group .filter-select:last-child {
-  margin-right: 8px;
-  border-top-left-radius: 0; 
-  border-top-right-radius: 0; 
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 button.tab-button:nth-child(5) {
