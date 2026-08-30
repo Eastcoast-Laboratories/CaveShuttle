@@ -74,18 +74,8 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [showControls, setShowControls] = useState(false);
   const [showPrivacyOnline, setShowPrivacyOnline] = useState(false);
   const [showOrientation, setShowOrientation] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(
-    typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : true
-  );
-  useEffect(() => {
-    const handleResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, []);
+  const [showVibration, setShowVibration] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
 
   useEffect(() => {
     if (!isOpen) { setShowControls(false); setShowPrivacyOnline(false); setShowOrientation(false); }
@@ -457,7 +447,15 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">{t.vibration}</h3>
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowVibration(!showVibration)}
+      >
+        {showVibration ? '▼' : '▶'} {t.vibration}
+      </h3>
+      {showVibration && (
       <div className="hamburger-settings-group">
         <div className="hamburger-toggle-row">
           <span className="toggle-label">{t.enabled}</span>
@@ -473,6 +471,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           <p className="hamburger-hint">{t.vibrationHint}</p>
         )}
       </div>
+      )}
 
       <hr />
       <h3
@@ -510,7 +509,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               </button>
             ))}
           </div>
-          {!isLandscape && (
+          {orientationMode !== 'landscape' && (
             <p className="hamburger-hint" style={{ color: '#ffaa44', fontWeight: '600', marginTop: '8px' }}>
               {t.orientationHint}
             </p>
@@ -702,7 +701,15 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
       </div>
 
       <hr />
-      <h3 className="hamburger-section-title">{t.account}</h3>
+      <h3
+        className="hamburger-section-title"
+        style={{ cursor: 'pointer', userSelect: 'none' }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={() => setShowAccount(!showAccount)}
+      >
+        {showAccount ? '▼' : '▶'} {t.account}
+      </h3>
+      {showAccount && (
       <div className="hamburger-settings-group">
         {(() => {
           const authUser = autoAccountManager.getAuthUser();
@@ -742,6 +749,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
           );
         })()}
       </div>
+      )}
 
       <hr />
       <h3
