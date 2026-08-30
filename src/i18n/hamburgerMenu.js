@@ -47,7 +47,7 @@ export const hamburgerMenuTranslations = {
 
     // Hints
     tapAnywhereToFire: 'Tippe überall zum Schießen.',
-    holdSwipeToSteer: 'Halten und wischen zum Steuern und Beschleunigen. Kurzes Tippen zum Schießen. Mit zwei Fingern tippen für Schild. Drei Finger zum Schießen. Vier Finger: Schießen ohne aktiven Schild',
+    holdSwipeToSteer: 'Halten und wischen zum Steuern und Beschleunigen.<br>Kurzes Tippen zum Schießen.<br>Mit zwei Fingern tippen für Schild.<br>Drei Finger zum Schießen.<br>Vier Finger: Schießen ohne aktiven Schild',
     tiltHint: 'Nach links/rechts neigen zum Drehen, zurück neigen zum Beschleunigen. Tippe überall zum Schießen.',
     vibrationHint: 'Stelle sicher, dass Vibration auch in den Geräteeinstellungen aktiviert ist.',
     analyticsHintBefore: 'Wenn aktiviert, werden anonyme Fehler- und ',

@@ -352,7 +352,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               </p>
             )}
             {joystickEnabled && (
-              <p className="hamburger-hint">{t.holdSwipeToSteer}</p>
+              <p className="hamburger-hint" dangerouslySetInnerHTML={{ __html: t.holdSwipeToSteer }} />
             )}
           </div>
 
