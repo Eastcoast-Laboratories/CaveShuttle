@@ -69,10 +69,11 @@
 }
 
 .hamburger-section-title {
-  margin: 0 0 10px 0;
+  margin: 0 0 10px 30px;
   color: #fff;
   font-weight: 600;
   font-size: 14px;
+  text-align: left;
 }
 
 .hamburger-section-title.with-margin {
