@@ -5,7 +5,7 @@
 .hamburger-hint ul {
   display: block;
   margin: 4px 0 0 0;
-  padding-left: 31px;
+  padding-left: 11px;
   list-style: disc;
   text-align: left;
 }
@@ -69,7 +69,7 @@
 }
 
 .hamburger-section-title {
-  margin: 0 0 10px 30px;
+  margin: 0 0 10px 5px;
   color: #fff;
   font-weight: 600;
   font-size: 14px;

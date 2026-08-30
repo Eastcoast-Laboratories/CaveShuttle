@@ -76,7 +76,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [showOrientation, setShowOrientation] = useState(false);
   const [showVibration, setShowVibration] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
-  const [showSound, setShowSound] = useState(false);
+  const [showSound, setShowSound] = useState(true);
   const [showLevelPacks, setShowLevelPacks] = useState(false);
   const [showDataTransfer, setShowDataTransfer] = useState(false);
 
