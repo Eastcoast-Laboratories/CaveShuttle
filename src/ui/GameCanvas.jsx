@@ -763,12 +763,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       } else {
         // Multi-finger taps while joystick is in use:
-        // 2nd finger → shield, 3rd finger → fire
+        // 2nd finger → shield, 3rd finger → fire, 4th finger → fire without shield
         const joystickInUse = joystickActive || (joystickTapTimerRef.current !== null);
         if (joystickInUse && joystickPointerId.current !== e.pointerId && (!twoPlayer || networkRole)) {
-          const shieldAlreadyActive = Array.from(pointerButtonMap.current.values()).includes('shield');
+          const assignedButtons = Array.from(pointerButtonMap.current.values());
+          const shieldAlreadyActive = assignedButtons.includes('shield');
+          const fireAlreadyActive = assignedButtons.includes('fire');
           e.preventDefault();
-          if (shieldAlreadyActive) {
+          if (shieldAlreadyActive && fireAlreadyActive) {
+            // 4th finger: fire without shield — deactivate shield, keep fire
+            setShieldAndBeamActive(false);
+            pointerButtonMap.current.forEach((btn, pid) => {
+              if (btn === 'shield') pointerButtonMap.current.delete(pid);
+            });
+            multiTouchFireRef.current = true;
+            fireTapRef.current = true;
+            pointerButtonMap.current.set(e.pointerId, 'fire');
+          } else if (shieldAlreadyActive) {
             setFireActive(true);
             multiTouchFireRef.current = true;
             fireTapRef.current = true;
@@ -905,11 +916,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         if (buttonType) {
           pointerButtonMap.current.delete(e.pointerId);
           buttonPointerIds.current.delete(e.pointerId);
+          // Check if another finger is still holding the same button type
+          const stillHasButton = Array.from(pointerButtonMap.current.values()).includes(buttonType);
           switch (buttonType) {
             case 'pod': setTouchActive(false); setShieldAndBeamActive(false); break;
             case 'shield': setShieldAndBeamActive(false); break;
             case 'accelerate': setAccelerateActive(false); break;
-            case 'fire': setFireActive(false); multiTouchFireRef.current = false; break;
+            case 'fire':
+              if (!stillHasButton) {
+                setFireActive(false);
+                multiTouchFireRef.current = false;
+              }
+              break;
             case 'rotateLeft': setRotateLeftActive(false); touchRotateFastRef.current = false; break;
             case 'rotateRight': setRotateRightActive(false); touchRotateFastRef.current = false; break;
             case 'p2RotateLeft': setP2RotateLeftActive(false); break;
