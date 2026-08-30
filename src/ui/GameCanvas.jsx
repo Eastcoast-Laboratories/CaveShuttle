@@ -3131,25 +3131,28 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         if (!wormholeRef.current.started) {
           wormholeRef.current.started = true;
           wormholeRef.current.shipStart = { x: ship.x, y: ship.y, vx: ship.vx, vy: ship.vy, angle: ship.angle };
+          if (pod && pod.active) {
+            wormholeRef.current.savedPodMass = pod.mass;
+            pod.mass = 4;
+          }
         }
 
         const start = wormholeRef.current.shipStart;
         const drag = Math.pow(0.97, deltaTime);
+        const WORMHOLE_MASS = 4;
 
-        // Pull ship toward the wormhole with strong gravity while it keeps flying
         const shipDx = wx - ship.x;
         const shipDy = wy - ship.y;
         const shipDist = Math.hypot(shipDx, shipDy) || 1;
-        const shipPull = WORMHOLE_GRAVITY * deltaTime;
+        const shipPull = (WORMHOLE_GRAVITY / WORMHOLE_MASS) * deltaTime;
         ship.vx += (shipDx / shipDist) * shipPull;
         ship.vy += (shipDy / shipDist) * shipPull;
         ship.vx *= drag;
         ship.vy *= drag;
         ship.x += ship.vx * deltaTime;
         ship.y += ship.vy * deltaTime;
-        ship.angle = start.angle; // keep original orientation, no forced rotation
+        ship.angle = start.angle;
 
-        // Pull pod with the same strong wormhole gravity
         if (pod && pod.active) {
           const podDx = wx - pod.x;
           const podDy = wy - pod.y;
@@ -3175,6 +3178,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
         if (progress >= 1) {
           wormholeRef.current.active = false;
+          // Restore pod mass after the wormhole animation
+          if (pod && pod.active && wormholeRef.current.savedPodMass !== undefined) {
+            pod.mass = wormholeRef.current.savedPodMass;
+          }
           setGameState('levelcomplete');
           // [SOUND] End the ambient loop and play the level-complete sound.
           if (soundManager.current) {
