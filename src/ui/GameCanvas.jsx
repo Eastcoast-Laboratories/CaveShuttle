@@ -1638,9 +1638,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     };
 
     // Destroy the ship: start ~1s explosion animation, then game over or respawn (DRY helper)
-    const destroyShip = () => {
+    const destroyShip = (opts = {}) => {
       if (shipDestroyed.current) return;
-      if (godModeActiveRef.current) return;
+      // Fuel-empty timeout can destroy the ship even in god mode.
+      // All other damage sources (bullets, mines, collisions) are blocked by god mode.
+      if (godModeActiveRef.current && !opts.fuelEmpty) return;
       if (gameTimeRef.current < respawnImmunityTimeRef.current) {
         console.log('[RESPAWN_IMMUNITY] destroyShip blocked by respawn immunity');
         return;
@@ -3026,8 +3028,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const elapsed = gameNow - fuelEmptyTimeRef.current;
         if (elapsed >= FUEL_EMPTY_DESTROY_DELAY_MS) {
           fuelEmptyTimeRef.current = null;
-          console.log('[FUEL_EMPTY] Delay expired, destroying ship');
-          destroyShip();
+          console.log('[FUEL_EMPTY] Delay expired, destroying ship (bypasses god mode)');
+          destroyShip({ fuelEmpty: true });
         }
       }
 
