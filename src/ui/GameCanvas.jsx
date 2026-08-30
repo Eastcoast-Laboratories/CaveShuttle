@@ -3151,7 +3151,16 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ship.vy *= drag;
         ship.x += ship.vx * deltaTime;
         ship.y += ship.vy * deltaTime;
-        ship.angle = start.angle;
+        // Rotate the ship nose toward the flight direction (velocity vector),
+        // as if the player were steering. Smoothly interpolate to avoid snapping.
+        const speed = Math.hypot(ship.vx, ship.vy);
+        if (speed > 0.1) {
+          const targetAngle = Math.atan2(ship.vx, -ship.vy);
+          let diff = targetAngle - ship.angle;
+          while (diff > Math.PI) diff -= 2 * Math.PI;
+          while (diff < -Math.PI) diff += 2 * Math.PI;
+          ship.angle += diff * Math.min(1, deltaTime * 0.15);
+        }
 
         if (pod && pod.active) {
           const podDx = wx - pod.x;
