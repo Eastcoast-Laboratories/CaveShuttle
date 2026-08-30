@@ -47,7 +47,7 @@ export const hamburgerMenuTranslations = {
 
     // Hints
     tapAnywhereToFire: 'Tippe überall zum Schießen.',
-    holdSwipeToSteer: 'Halten und wischen zum Steuern und Beschleunigen. Kurzes Tippen zum Schießen.',
+    holdSwipeToSteer: 'Halten und wischen zum Steuern und Beschleunigen. Kurzes Tippen zum Schießen. Ein Finger tippen für Schild. Drei Finger tippen zum Schießen.',
     tiltHint: 'Nach links/rechts neigen zum Drehen, zurück neigen zum Beschleunigen. Tippe überall zum Schießen.',
     vibrationHint: 'Stelle sicher, dass Vibration auch in den Geräteeinstellungen aktiviert ist.',
     analyticsHintBefore: 'Wenn aktiviert, werden anonyme Fehler- und ',
@@ -140,7 +140,7 @@ export const hamburgerMenuTranslations = {
 
     // Hints
     tapAnywhereToFire: 'Tap anywhere to fire.',
-    holdSwipeToSteer: 'Hold and swipe to steer and thrust. Quick tap to fire.',
+    holdSwipeToSteer: 'Hold and swipe to steer and thrust. Quick tap to fire. One finger tap for shield. Three finger tap to fire.',
     tiltHint: 'Tilt left/right to rotate, tilt back to thrust. Tap anywhere to fire.',
     vibrationHint: 'Make sure vibration is also enabled in your device settings.',
     analyticsHintBefore: 'When enabled, anonymous error and ',
