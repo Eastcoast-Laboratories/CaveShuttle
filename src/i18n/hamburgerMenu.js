@@ -11,7 +11,7 @@ export const hamburgerMenuTranslations = {
     sound: 'Sound',
     vibration: 'Vibration',
     levelPacks: 'Level-Packs',
-    dataTransfer: 'Datenübertragung',
+    dataTransfer: 'Spielstand',
     account: 'Konto',
     privacyOnline: 'Privatsphäre',
 
@@ -104,7 +104,7 @@ export const hamburgerMenuTranslations = {
     sound: 'SOUND',
     vibration: 'VIBRATION',
     levelPacks: 'LEVEL PACKS',
-    dataTransfer: 'DATA TRANSFER',
+    dataTransfer: 'Save Data',
     account: 'ACCOUNT',
     privacyOnline: 'Privacy & Online',
 

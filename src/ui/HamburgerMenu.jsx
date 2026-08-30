@@ -74,6 +74,18 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [showControls, setShowControls] = useState(false);
   const [showPrivacyOnline, setShowPrivacyOnline] = useState(false);
   const [showOrientation, setShowOrientation] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(
+    typeof window !== 'undefined' ? window.innerWidth > window.innerHeight : true
+  );
+  useEffect(() => {
+    const handleResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isOpen) { setShowControls(false); setShowPrivacyOnline(false); setShowOrientation(false); }
@@ -498,9 +510,11 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               </button>
             ))}
           </div>
-          <p className="hamburger-hint" style={{ color: '#ffaa44', fontWeight: '600', marginTop: '8px' }}>
-            {t.orientationHint}
-          </p>
+          {!isLandscape && (
+            <p className="hamburger-hint" style={{ color: '#ffaa44', fontWeight: '600', marginTop: '8px' }}>
+              {t.orientationHint}
+            </p>
+          )}
         </div>
       )}
 
