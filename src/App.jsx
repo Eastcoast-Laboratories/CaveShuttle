@@ -969,6 +969,11 @@ function App() {
         }
       } else if (gameState === 'levelcomplete') {
         if (e.key === ' ' || e.key === 'Space' || e.key === 'Enter') {
+          // Block next-level shortcut when browser level limit is reached
+          if (capacitorManager.isWeb() && level >= BROWSER_MAX_LEVEL) {
+            e.preventDefault();
+            return;
+          }
           e.preventDefault();
           handleNextLevel();
         }
