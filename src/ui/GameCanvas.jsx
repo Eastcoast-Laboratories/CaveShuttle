@@ -339,6 +339,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const [lives, setLives] = useState(initialLives);
   const livesRef = useRef(lives);
   livesRef.current = lives;
+  // Sync internal lives when the parent prop changes (e.g. shortcut sets 999)
+  useEffect(() => {
+    if (initialLives !== livesRef.current) {
+      setLives(initialLives);
+      livesRef.current = initialLives;
+    }
+  }, [initialLives]);
   const [bonusLifeDisplay, setBonusLifeDisplay] = useState(null); // { threshold } shown briefly
   const [currentLevel, setCurrentLevel] = useState(levelProp || 1);
   const [gameState, setGameState] = useState('playing'); // playing, wormhole, levelcomplete, gameover
