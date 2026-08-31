@@ -1391,6 +1391,7 @@ class LevelEditor {
 
       const horizontalDirections = this.getHillDirectionArray(steps, sumX, this.hillSeed);
 
+      const initialHorizontalDirection = horizontalDirections.find(direction => direction !== 0) || 1;
       let leftX = startX - (horizontalDirections[0] < 0 ? 1 : 0);
       let y = startY;
       let previousHorizontalDirection = 0;
@@ -1404,8 +1405,11 @@ class LevelEditor {
           : horizontalDirection;
         if (y < 0 || y >= height || leftX < -1 || leftX >= width) break;
 
-        const slopeType = this.getSlopePair(surface, effectiveHorizontal, verticalDirection);
-        console.log('[HILL] vertical step', { i, surface, horizontalDirection, effectiveHorizontal, verticalDirection, slopeType });
+        const stepSurface = effectiveHorizontal !== 0 && effectiveHorizontal !== initialHorizontalDirection
+          ? (surface === 'floor' ? 'ceiling' : surface === 'ceiling' ? 'floor' : surface)
+          : surface;
+        const slopeType = this.getSlopePair(stepSurface, effectiveHorizontal, verticalDirection);
+        console.log('[HILL] vertical step', { i, surface, stepSurface, horizontalDirection, effectiveHorizontal, verticalDirection, slopeType });
         const x1 = effectiveHorizontal >= 0 ? leftX : leftX + 1;
         const x2 = effectiveHorizontal >= 0 ? leftX + 1 : leftX;
 
@@ -1530,7 +1534,7 @@ class LevelEditor {
     } else if (surface === 'ceiling') {
       // Ceiling hill hangs downward: descending (v>0) vs ascending (v<0).
       if (v > 0) pair = h > 0 ? ['w', 'x'] : ['v', 'u'];
-      else       pair = h > 0 ? ['u', 'v'] : ['w', 'x'];
+      else       pair = h > 0 ? ['u', 'v'] : ['x', 'w'];
     } else if (surface === 'wallRight') {
       // Walls bulge horizontally; vertical direction is the loop axis, not relevant here.
       pair = h > 0 ? ['w', 'x'] : ['x', 'w'];

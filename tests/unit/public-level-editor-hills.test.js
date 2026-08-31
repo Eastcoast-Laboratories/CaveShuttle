@@ -36,7 +36,7 @@ function loadPublicLevelEditor() {
         };
       }
     },
-    window: {},
+    window: { addEventListener() {}, removeEventListener() {} },
     navigator: {},
     localStorage: { getItem() { return null; }, setItem() {} },
     alert() {},
@@ -188,5 +188,59 @@ describe('Public Level Editor hill directions', () => {
     // A single up step must start at the floor, so it is drawn one row above.
     expect(find(8, 10)).toBe('s');
     expect(find(9, 10)).toBe('t');
+  });
+
+  it('uses traversal-order slope pairs for all floor and ceiling directions', () => {
+    const cases = [
+      ['floor', 1, 1, ['q', 'r']],
+      ['floor', -1, 1, ['t', 's']],
+      ['floor', 1, -1, ['s', 't']],
+      ['floor', -1, -1, ['r', 'q']],
+      ['ceiling', 1, 1, ['w', 'x']],
+      ['ceiling', -1, 1, ['v', 'u']],
+      ['ceiling', 1, -1, ['u', 'v']],
+      ['ceiling', -1, -1, ['x', 'w']]
+    ];
+
+    for (const [surface, horizontal, vertical, expected] of cases) {
+      expect(LevelEditor.prototype.getSlopePair.call(editor, surface, horizontal, vertical)).toEqual(expected);
+    }
+  });
+
+  it('switches between floor and ceiling slopes after a lateral turn in every vertical direction', () => {
+    const cases = [
+      { surface: 'floor', vertical: 1, directions: [1, -1], first: ['q', 'r'], second: ['u', 'v'] },
+      { surface: 'floor', vertical: 1, directions: [-1, 1], first: ['s', 't'], second: ['w', 'x'] },
+      { surface: 'floor', vertical: -1, directions: [1, -1], first: ['s', 't'], second: ['w', 'x'] },
+      { surface: 'floor', vertical: -1, directions: [-1, 1], first: ['q', 'r'], second: ['u', 'v'] },
+      { surface: 'ceiling', vertical: 1, directions: [1, -1], first: ['w', 'x'], second: ['s', 't'] },
+      { surface: 'ceiling', vertical: 1, directions: [-1, 1], first: ['u', 'v'], second: ['q', 'r'] },
+      { surface: 'ceiling', vertical: -1, directions: [1, -1], first: ['u', 'v'], second: ['q', 'r'] },
+      { surface: 'ceiling', vertical: -1, directions: [-1, 1], first: ['w', 'x'], second: ['s', 't'] }
+    ];
+
+    for (const { surface, vertical, directions, first, second } of cases) {
+      const testEditor = Object.create(LevelEditor.prototype);
+      testEditor.levelData = {
+        header: { width: 30, height: 30 },
+        grid: Array.from({ length: 30 }, () => Array(30).fill(' '))
+      };
+      testEditor.hillStart = { x: 10, y: 10 };
+      testEditor.hillSeed = 1;
+      testEditor.render = () => {};
+      testEditor.renderPreview = () => {};
+      testEditor.detectSurface = () => surface;
+      testEditor.getHillDirectionArray = () => directions;
+
+      testEditor.updateHillPreview(10, 10 + vertical * 2);
+
+      const rows = [...new Set(testEditor.hillPreview.map(tile => tile.y))].sort((a, b) => vertical > 0 ? a - b : b - a);
+      const pairAt = (row) => testEditor.hillPreview
+        .filter(tile => tile.y === row)
+        .sort((a, b) => a.x - b.x)
+        .map(tile => tile.char);
+      expect(pairAt(rows[0])).toEqual(first);
+      expect(pairAt(rows[1])).toEqual(second);
+    }
   });
 });
