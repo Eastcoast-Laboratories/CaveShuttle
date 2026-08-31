@@ -29,7 +29,9 @@ export class Pod {
 
     // Gravity always applies once the pod has left the holder (towed or free-falling).
     // The tow tether forces are applied separately (see applyTether) before this update.
-    this.vy += gravity * dt;
+    // Halve gravity in the sky (above level top) so the pod doesn't drag the ship down.
+    const effectiveGravity = this.y < 32 ? gravity * 0.5 : gravity;
+    this.vy += effectiveGravity * dt;
 
     if (this.accelerate > 0) {
       this.vx += Math.sin(this.angle) * POD_THRUST * dt;
