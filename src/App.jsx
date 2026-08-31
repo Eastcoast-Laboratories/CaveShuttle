@@ -976,6 +976,12 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState]);
 
+  // Expose cheat functions for console debugging
+  useEffect(() => {
+    window.setLives = (n) => { setLives(n); console.log('[CHEAT] Lives set to', n); };
+    return () => { delete window.setLives; };
+  }, []);
+
   // Shared hamburger menu props: only App-level handlers and data that are NOT
   // available from useSettings() context. Settings values come from context.
   const hamburgerSettingsProps = {

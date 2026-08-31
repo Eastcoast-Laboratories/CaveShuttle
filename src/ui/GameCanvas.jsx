@@ -34,6 +34,7 @@ import {
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
   BULLET_SPEED, SHOOT_COOLDOWN_MS,
+  BUNKER_ALL_TILES,
   BULLET_IMPACT_EXPAND_PX, BULLET_IMPACT_DURATION_MS,
   RESPAWN_IMMUNITY_MS,
   REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS,
@@ -2864,6 +2865,30 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               if (wallCollision.collided) {
                 if (REACTOR_TILES.includes(wallCollision.tile)) {
                   registerReactorHit(wallCollision.point, wallCollision.tile);
+                }
+                // If the hit tile is part of a bunker, destroy the nearest
+                // active bunker (covers decorative bunker tiles Q,R,S,V,T,W,etc.)
+                if (BUNKER_ALL_TILES.includes(wallCollision.tile)) {
+                  const scaledSize = tileRenderer.current.getScaledTileSize();
+                  const hitTileX = Math.floor(bullet.x / scaledSize) * scaledSize + scaledSize / 2;
+                  const hitTileY = Math.floor(bullet.y / scaledSize) * scaledSize + scaledSize / 2;
+                  let nearestBunker = null;
+                  let nearestDist = Infinity;
+                  for (let bi = 0; bi < bunkers.length; bi++) {
+                    const b = bunkers[bi];
+                    if (!b.active) continue;
+                    const bd = (b.x - hitTileX) ** 2 + (b.y - hitTileY) ** 2;
+                    if (bd < nearestDist && bd < 6400) { // within 80px (4 tiles)
+                      nearestDist = bd;
+                      nearestBunker = b;
+                    }
+                  }
+                  if (nearestBunker) {
+                    nearestBunker.active = false;
+                    if (onScoreChange) onScoreChange({ points: SCORE_BUNKER_DESTROYED, type: 'bunker' });
+                    particleSystem.current.spawnExplosion(nearestBunker.x, nearestBunker.y, 20, '#ff6600');
+                    if (soundManager.current) soundManager.current.playOnce('explosion');
+                  }
                 }
                 // Register tile impact expansion effect
                 const scaledSize = tileRenderer.current.getScaledTileSize();

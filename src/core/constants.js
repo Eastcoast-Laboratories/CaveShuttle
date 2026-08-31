@@ -164,6 +164,11 @@ export const BROWSER_MAX_LEVEL = 2;
 export const INITIAL_LIVES = 3; // Starting number of lives
 export const FUEL_EMPTY_DESTROY_DELAY_MS = 11000; // Delay before ship explodes after fuel runs out
 
+// Bunker tiles: cannon tiles (P, U, [, \) fire at the ship; the other
+// tiles are decorative parts of the same 4-tile bunker structure.
+export const BUNKER_CANNON_TILES = ['P', 'U', '[', '\\'];
+export const BUNKER_ALL_TILES = ['P', 'Q', 'R', 'S', 'U', 'V', 'T', 'W', '\\', '^', '_', ']', '[', 'X', 'Y', 'Z'];
+
 // Reactor meltdown
 export const REACTOR_TILES = ['d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']; // Shootable reactor core tiles
 export const REACTOR_MELTDOWN_TRIGGER_MS = 1000; // Shoot the reactor this long to trigger meltdown
