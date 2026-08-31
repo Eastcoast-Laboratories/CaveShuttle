@@ -1,5 +1,5 @@
 // Ship class for player ship
-import { GRAVITY, ROTATION_SPEED, FUEL_CONSUMPTION, FRICTION, ACCELERATE_POWER, FUEL_MAX } from '../core/constants.js';
+import { GRAVITY, ROTATION_SPEED, FUEL_CONSUMPTION, FRICTION, ACCELERATE_POWER, FUEL_MAX, MAX_SPEED } from '../core/constants.js';
 
 export class Ship {
   constructor(x, y) {
@@ -33,6 +33,15 @@ export class Ship {
     const friction = Math.pow(FRICTION, dt * frictionMultiplier);
     this.vx *= friction;
     this.vy *= friction;
+
+    // Clamp speed: double the limit when in the sky (above level top, y < 0)
+    const maxSpeed = this.y < 0 ? MAX_SPEED * 2 : MAX_SPEED;
+    const speed = Math.hypot(this.vx, this.vy);
+    if (speed > maxSpeed) {
+      const scale = maxSpeed / speed;
+      this.vx *= scale;
+      this.vy *= scale;
+    }
 
     // Clamp fuel
     if (this.fuel < 0) this.fuel = 0;
