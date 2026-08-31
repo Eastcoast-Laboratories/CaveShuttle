@@ -159,6 +159,11 @@ export const ENABLE_LEVEL_EDITOR = true; // Enable/disable level editor button
 // Browser level limit: web players can only play up to this level, then see
 // a download CTA. Native app has no limit.
 export const BROWSER_MAX_LEVEL = 2;
+// Browser menu unlock limit: in the browser, levels above this number cannot
+// be unlocked via the level-select menu (even if the previous level was
+// completed). This keeps the final level as a native-app exclusive discovery.
+// Native app has no limit.
+export const BROWSER_MENU_MAX_LEVEL = 6;
 
 // Game settings
 export const INITIAL_LIVES = 3; // Starting number of lives

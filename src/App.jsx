@@ -13,7 +13,7 @@ import OnlineLobby from './ui/OnlineLobby';
 import LobbyRoom from './ui/LobbyRoom';
 import HighscoresPage from './ui/HighscoresPage';
 import { useNetwork } from './network/NetworkContext.jsx';
-import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS, BROWSER_MAX_LEVEL } from './core/constants.js';
+import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS, BROWSER_MAX_LEVEL, BROWSER_MENU_MAX_LEVEL } from './core/constants.js';
 import { capacitorManager, PLAY_STORE_URL } from './capacitor/capacitor-manager.js';
 import { ScoringSystem } from './game/scoring.js';
 import { HighScoreManager } from './game/high-score-manager.js';
@@ -832,6 +832,9 @@ function App() {
     const levelCount = currentPack?.meta?.levelCount || 6;
     for (let i = 1; i <= levelCount; i++) {
       const isUnlocked = i === 1 || completedLevels.has(i - 1) || completedLevels.has(i);
+      // In the browser, block the final level from being unlocked via menu
+      const isBrowserLevelBlocked = capacitorManager.isWeb() && i > BROWSER_MENU_MAX_LEVEL;
+      const effectivelyUnlocked = isUnlocked && !isBrowserLevelBlocked;
       buttons.push(
         <button
           key={i}
@@ -839,40 +842,40 @@ function App() {
             handleStartLevelNetworked(i);
             if (onClose) onClose();
           }}
-          disabled={!isUnlocked}
-          title={isUnlocked ? `Level ${i}` : 'Complete previous level to unlock'}
+          disabled={!effectivelyUnlocked}
+          title={effectivelyUnlocked ? `Level ${i}` : (isBrowserLevelBlocked ? 'Available in the full app' : 'Complete previous level to unlock')}
           style={{
             padding: '8px 4px',
-            cursor: isUnlocked ? 'pointer' : 'not-allowed',
+            cursor: effectivelyUnlocked ? 'pointer' : 'not-allowed',
             background: completedLevels.has(i)
               ? 'linear-gradient(135deg, #00ff88, #00cc66)'
-              : isUnlocked
+              : effectivelyUnlocked
               ? 'linear-gradient(135deg, #333, #444)'
               : 'linear-gradient(135deg, #1a1a1a, #2a2a2a)',
-            color: isUnlocked ? '#fff' : '#555',
+            color: effectivelyUnlocked ? '#fff' : '#555',
             border: completedLevels.has(i)
               ? '1px solid #00ff88'
-              : isUnlocked
+              : effectivelyUnlocked
               ? '1px solid #555'
               : '1px solid #333',
             borderRadius: '6px',
             fontWeight: '600',
             fontSize: '12px',
             transition: 'all 0.2s ease',
-            opacity: isUnlocked ? 1 : 0.5,
+            opacity: effectivelyUnlocked ? 1 : 0.5,
             boxShadow: completedLevels.has(i)
               ? '0 2px 10px rgba(0, 255, 136, 0.3)'
               : 'none',
           }}
           onMouseEnter={(e) => {
-            if (!isUnlocked) return;
+            if (!effectivelyUnlocked) return;
             e.target.style.transform = 'translateY(-2px)';
             e.target.style.boxShadow = completedLevels.has(i)
               ? '0 4px 15px rgba(0, 255, 136, 0.5)'
               : '0 4px 15px rgba(0, 0, 0, 0.3)';
           }}
           onMouseLeave={(e) => {
-            if (!isUnlocked) return;
+            if (!effectivelyUnlocked) return;
             e.target.style.transform = 'translateY(0)';
             e.target.style.boxShadow = completedLevels.has(i)
               ? '0 2px 10px rgba(0, 255, 136, 0.3)'
