@@ -62,6 +62,18 @@ export class ReplayLogger {
     this._active = false;
   }
 
+  // Record a special event (e.g. shortcut activation) with a timestamp.
+  // These events are flagged in the replay so the community server can
+  // display a warning when a score was achieved with shortcuts active.
+  recordEvent(type, data = {}) {
+    if (!this._active) return;
+    const t = Math.round(performance.now() - this._startTime);
+    this._entries.push({ t, e: type, ...data });
+    // Update last bitmasks so the next record() call doesn't skip
+    this._lastP1Bitmask = -1;
+    this._lastP2Bitmask = -1;
+  }
+
   reset() {
     this._entries = [];
     this._startTime = 0;

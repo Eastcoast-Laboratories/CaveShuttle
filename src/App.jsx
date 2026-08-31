@@ -976,34 +976,29 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState]);
 
-  // Cheat shortcuts: Ctrl+Alt+Shift+Super+L = 999 lives,
-  // Ctrl+Alt+Shift+Super+G = toggle gravity cheat (0 gravity)
+  // Shortcut: Ctrl+Alt+Shift+Super+L = 999 lives
   useEffect(() => {
-    const handleCheatKey = (e) => {
+    const handleShortcutKey = (e) => {
       const tag = e.target?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
       if (e.ctrlKey && e.altKey && e.shiftKey && e.metaKey) {
         if (e.key === 'l' || e.key === 'L') {
           e.preventDefault();
           setLives(999);
-          console.log('[CHEAT] Lives set to 999');
-        } else if (e.key === 'g' || e.key === 'G') {
-          e.preventDefault();
-          setGravityMultiplier(prev => {
-            const next = prev === 0 ? 1.0 : 0;
-            console.log('[CHEAT] Gravity multiplier set to', next);
-            return next;
-          });
+          console.log('[SHORTCUT] Lives set to 999');
         }
       }
     };
-    window.addEventListener('keydown', handleCheatKey);
-    return () => window.removeEventListener('keydown', handleCheatKey);
+    window.addEventListener('keydown', handleShortcutKey);
+    return () => window.removeEventListener('keydown', handleShortcutKey);
   }, []);
 
-  // Expose cheat functions for console debugging
+  // Expose console helper for setting lives
   useEffect(() => {
-    window.setLives = (n) => { setLives(n); console.log('[CHEAT] Lives set to', n); };
+    window.setLives = (n) => {
+      setLives(n);
+      console.log('[SHORTCUT] Lives set to', n, 'via console');
+    };
     return () => { delete window.setLives; };
   }, []);
 

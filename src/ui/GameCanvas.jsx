@@ -401,8 +401,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tileImpactsRef = useRef(new Map());
   // Respawn immunity: timestamp when immunity expires (0 = no immunity)
   const respawnImmunityTimeRef = useRef(0);
-  // Cheat: Ctrl+Alt+Shift+Win+G toggles zero gravity
-  const gravityCheatActiveRef = useRef(false);
+  // Ctrl+Alt+Shift+Win+G toggles zero gravity
+  const gravitZeroActiveRef = useRef(false);
 
   // [TILT] Listen to deviceorientation events and update sensor ref + tilt state
   useEffect(() => {
@@ -517,11 +517,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       setKeys(prev => ({ ...prev, [e.key]: true }));
 
-      // Cheat code: Ctrl+Alt+Shift+Win+G toggles zero gravity
+      // Ctrl+Alt+Shift+Win+G toggles zero gravity
       if (e.key === 'g' || e.key === 'G') {
         if (e.ctrlKey && e.altKey && e.shiftKey && e.metaKey) {
-          gravityCheatActiveRef.current = !gravityCheatActiveRef.current;
-          console.log('[CHEAT] Zero gravity:', gravityCheatActiveRef.current ? 'ON' : 'OFF');
+          gravitZeroActiveRef.current = !gravitZeroActiveRef.current;
+          console.log('[SHORTCUT] Zero gravity:', gravitZeroActiveRef.current ? 'ON' : 'OFF');
+          replayLoggerRef.current.recordEvent('shortcut', { key: 'G', action: gravitZeroActiveRef.current ? 'zeroGravityOn' : 'zeroGravityOff' });
           e.preventDefault();
           return;
         }
@@ -2510,7 +2511,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (networkRole !== 'client') {
       // Update ship (frozen while exploding)
       if (!isDying) {
-        ship.update(deltaTime, gravityCheatActiveRef.current ? 0 : GRAVITY, gravityMultiplier, gravityCheatActiveRef.current ? 5 : 1);
+        ship.update(deltaTime, gravitZeroActiveRef.current ? 0 : GRAVITY, gravityMultiplier, gravitZeroActiveRef.current ? 5 : 1);
 
         // Consume fuel when shield is active (but not while refueling at a fuel depot)
         if (shieldAndBeamActive && !isRefueling) {
