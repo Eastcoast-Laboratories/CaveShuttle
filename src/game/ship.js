@@ -14,8 +14,9 @@ export class Ship {
   }
 
   update(dt, gravity = GRAVITY, gravityMultiplier = 1.0, frictionMultiplier = 1.0) {
-    // Apply gravity (10% stronger, multiplied by difficulty multiplier)
-    this.vy += gravity * gravityMultiplier * dt;
+    // Apply gravity (halved in the sky for faster ascent, multiplied by difficulty multiplier)
+    const effectiveGravity = this.y < -10 * 16 ? gravity * 0.1 : gravity;
+    this.vy += effectiveGravity * gravityMultiplier * dt;
 
     // Apply acceleration
     if (this.accelerate > 0) {
