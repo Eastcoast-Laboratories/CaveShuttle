@@ -1,5 +1,5 @@
 // Ship class for player ship
-import { GRAVITY, ROTATION_SPEED, FUEL_CONSUMPTION, FRICTION, ACCELERATE_POWER, FUEL_MAX, MAX_SPEED } from '../core/constants.js';
+import { GRAVITY, ROTATION_SPEED, FUEL_CONSUMPTION, FRICTION, ACCELERATE_POWER, FUEL_MAX, MAX_SPEED, SKY_LOW_GRAVITY_THRESHOLD } from '../core/constants.js';
 
 export class Ship {
   constructor(x, y) {
@@ -14,8 +14,8 @@ export class Ship {
   }
 
   update(dt, gravity = GRAVITY, gravityMultiplier = 1.0, frictionMultiplier = 1.0) {
-    // Apply gravity (halved in the sky for faster ascent, multiplied by difficulty multiplier)
-    const effectiveGravity = this.y < -10 * 16 ? gravity * 0.1 : gravity;
+    // Apply gravity (reduced to 10% deep in the sky for faster ascent, multiplied by difficulty multiplier)
+    const effectiveGravity = this.y < -SKY_LOW_GRAVITY_THRESHOLD * 16 ? gravity * 0.1 : gravity;
     this.vy += effectiveGravity * gravityMultiplier * dt;
 
     // Apply acceleration

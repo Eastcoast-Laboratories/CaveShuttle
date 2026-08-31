@@ -1,5 +1,5 @@
 // Pod - The fuel canister that the ship must tow to the restart point
-import { POD_MASS_FACTOR, POD_GRAVITY, POD_TETHER_LENGTH, POD_TETHER_STIFFNESS, POD_TETHER_DAMPING, POD_THRUST, FRICTION, POD_FUEL_CONSUMPTION } from '../core/constants.js';
+import { POD_MASS_FACTOR, POD_GRAVITY, POD_TETHER_LENGTH, POD_TETHER_STIFFNESS, POD_TETHER_DAMPING, POD_THRUST, FRICTION, POD_FUEL_CONSUMPTION, SKY_LOW_GRAVITY_THRESHOLD } from '../core/constants.js';
 
 export class Pod {
   constructor(x, y) {
@@ -29,8 +29,8 @@ export class Pod {
 
     // Gravity always applies once the pod has left the holder (towed or free-falling).
     // The tow tether forces are applied separately (see applyTether) before this update.
-    // Halve gravity in the sky (above level top) so the pod doesn't drag the ship down.
-    const effectiveGravity = this.y < 32 ? gravity * 0.5 : gravity;
+    // Reduce gravity to 10% deep in the sky so the pod doesn't drag the ship down.
+    const effectiveGravity = this.y < -SKY_LOW_GRAVITY_THRESHOLD * 16 ? gravity * 0.1 : gravity;
     this.vy += effectiveGravity * dt;
 
     if (this.accelerate > 0) {
