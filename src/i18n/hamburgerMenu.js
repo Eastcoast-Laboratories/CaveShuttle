@@ -104,9 +104,9 @@ export const hamburgerMenuTranslations = {
     sound: 'SOUND',
     vibration: 'VIBRATION',
     levelPacks: 'LEVEL PACKS',
-    dataTransfer: 'Data Management',
+    dataTransfer: 'GAME DATA',
     account: 'ACCOUNT',
-    privacyOnline: 'Privacy & Online',
+    privacyOnline: 'PRIVACY',
 
     // Toggle labels
     touchButtons: 'Touch Buttons',
@@ -116,7 +116,7 @@ export const hamburgerMenuTranslations = {
     enabled: 'Enabled',
     sendCrashReports: 'Send crash reports',
     onlineSync: 'Sync highscores online',
-    orientation: 'Orientation',
+    orientation: 'ORIENTATION',
     orientationLandscape: 'Land',
     orientationPortrait: 'Port',
     orientationAuto: 'Auto',
