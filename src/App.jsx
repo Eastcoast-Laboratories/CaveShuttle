@@ -1202,12 +1202,14 @@ function App() {
             <div id="hud-stats" style={{ display: 'flex', flexDirection: 'row', gap: '16px', color: '#fff', alignItems: 'center', fontFamily: '"Commodore 64 Thin", "Courier New", monospace', fontSize: '12px' }}>
               <span className="hud-score-label" style={{ whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>SCORE </span>
               <span style={{ fontFamily: '"Commodore 64", "Courier New", monospace', fontWeight: '700', fontSize: '15px', whiteSpace: 'nowrap' }}>{score}</span>
+              {/* LIVES display: 0 shows "0", 1-10 show hearts, 11-100 show infinite symbol (∞),
+                  >100 show lives % 3 as hearts (for screen recording with valid-looking count) */}
               <span className="hud-score-label" style={{ whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>LIVES </span>
               <span style={{ whiteSpace: 'nowrap' }}>{lives === 0
                 ? (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)
                     ? ''
                     : <span style={{ fontFamily: '"Commodore 64", "Courier New", monospace', fontWeight: '700', fontSize: '15px' }}>0</span>)
-                : (lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives)))}</span>
+                : (lives > 100 ? '❤️'.repeat(Math.max(0, (lives % 3) + 1)) : lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives)))}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ whiteSpace: 'nowrap' }}>FUEL</span>
                 <div className={fuel <= 15 ? 'fuel-bar-critical' : ''} style={{ width: '80px', height: '12px', background: 'rgba(255, 255, 255, 0.2)', borderRadius: '6px', overflow: 'hidden' }}>
