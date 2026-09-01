@@ -204,8 +204,9 @@ export const VISIBLE_GUIDED_STEPS = ['shieldAction', 'brakingInfo', 'approachTra
 export const GUIDED_MATERIALIZE_MS = 500;
 // Step 2 (visible 1/6): shieldAction — hold shield/tractor button
 export const GUIDED_HOLD_SHIELD_MS = 1000;
-// Step 3 (invisible): active sim before braking challenge
-export const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1400;
+// Step 3 (invisible): let the ship sink this many pixels before braking challenge.
+// Position-based (not time-based) so the depth is identical on every device.
+export const GUIDED_SINK_DEPTH_BEFORE_BRAKING_PX = 70;
 // Step 4 (visible 2/6): brakingInfo — hold rotate-right button
 export const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
 // Step 5 (invisible): let the ship rotate right

@@ -45,7 +45,7 @@ import {
   STAR_FIELD_SEED,
   VISIBLE_GUIDED_STEPS,
   GUIDED_MATERIALIZE_MS, GUIDED_HOLD_SHIELD_MS,
-  GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS, GUIDED_HOLD_ROTATE_RIGHT_MS,
+  GUIDED_SINK_DEPTH_BEFORE_BRAKING_PX, GUIDED_HOLD_ROTATE_RIGHT_MS,
   GUIDED_ACTIVE_SIM_BEFORE_APPROACH_MS, GUIDED_HOLD_APPROACH_MS,
   GUIDED_ACTIVE_SIM_BEFORE_ROTATE_LEFT_MS, GUIDED_HOLD_ROTATE_LEFT_MS,
   GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS, GUIDED_HOLD_TRACTOR_THRUST_MS,
@@ -353,6 +353,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const guidedHoldProgressRef = useRef(0);
   const guidedActionFiredRef = useRef(null);
   const guidedActiveSimMsRef = useRef(0);
+  // Start Y of the ship when playingBeforeBrakingHint begins, used to measure
+  // the sunk depth positionally instead of by fixed time.
+  const guidedBrakingStartYRef = useRef(null);
   const replayLoggerRef = useRef(new ReplayLogger());
   const shipDestroyed = useRef(false);
   const deathAnim = useRef({ active: false, timeLeft: 0 });
@@ -377,6 +380,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     guidedHoldProgressRef.current = 0;
     guidedActionFiredRef.current = null;
     guidedActiveSimMsRef.current = 0;
+    // Record the ship's Y when the braking-hint phase begins so we can
+    // measure sunk depth positionally rather than by fixed time.
+    guidedBrakingStartYRef.current = guidedTutorialStep === 'playingBeforeBrakingHint' ? ship.y : null;
   }, [guidedTutorialStep]);
   const multiShotAuraEndTimeRef = useRef(0);
   const meltdownActiveRef = useRef(false);
@@ -2496,14 +2502,15 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
 
-      // Guided tutorial: playingBeforeBrakingHint counts only active simulation
-      // time. When the threshold is reached, fire the callback once to advance
-      // to the brakingInfo step (which pauses the simulation).
+      // Guided tutorial: playingBeforeBrakingHint waits until the ship has sunk
+      // a fixed pixel depth from its start position. Position-based (not time)
+      // so the depth is identical on every device regardless of frame rate.
       if (guidedTutorialStep === 'playingBeforeBrakingHint' && guidedActionFiredRef.current !== 'playingBeforeBrakingHint') {
-        guidedActiveSimMsRef.current += gameDeltaMs;
-        if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS) {
+        const startY = guidedBrakingStartYRef.current;
+        const sunkPx = startY !== null ? ship.y - startY : 0;
+        if (sunkPx >= GUIDED_SINK_DEPTH_BEFORE_BRAKING_PX) {
           guidedActionFiredRef.current = 'playingBeforeBrakingHint';
-          console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to brakingInfo');
+          console.log('[TUTORIAL_GUIDE] sink depth reached (' + sunkPx.toFixed(0) + 'px >= ' + GUIDED_SINK_DEPTH_BEFORE_BRAKING_PX + 'px), advancing to brakingInfo');
           if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeBrakingHint');
         }
       }
