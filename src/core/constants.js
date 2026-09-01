@@ -37,6 +37,10 @@ export const FUEL_DEPOT_REFUEL_RATE = 2.2; // Fuel transferred to ship per frame
 export const SKY_FULL_STAR_DENSITY = 700; // pixels above level top (y=0) where stars are rendered to full density
 export const SKY_DELIVERY_THRESHOLD = 100; // additional pixels above SKY_FULL_STAR_DENSITY to trigger sky delivery
 export const SKY_LOW_GRAVITY_THRESHOLD = 10; // tiles above level top (y < -threshold*16) where gravity is reduced to 10%
+// Star field seed base. The final seed combines this with the level dimensions
+// so each level has a unique but deterministic star field. Change this value
+// to regenerate all star fields across every level.
+export const STAR_FIELD_SEED = 1;
 
 export const WORMHOLE_GRAVITY = 1.4; // strong gravitational pull during the level-complete wormhole animation
 export const GAME_SPEED = 0.5; // Global game speed multiplier (1.0 = full speed, 0.5 = half speed)

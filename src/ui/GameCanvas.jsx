@@ -42,6 +42,7 @@ import {
   VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP,
   VIBRATE_FIRE, VIBRATE_POD,
   SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS,
+  STAR_FIELD_SEED,
   VISIBLE_GUIDED_STEPS,
   GUIDED_MATERIALIZE_MS, GUIDED_HOLD_SHIELD_MS,
   GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS, GUIDED_HOLD_ROTATE_RIGHT_MS,
@@ -1297,8 +1298,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Generate stars well above the delivery threshold, so the player flies through a
           // full-density star field until reaching skyThreshold.
           const yTop = -SKY_FULL_STAR_DENSITY;
-          // Seed from level dimensions so each level has a deterministic star field.
-          const seed = (lenx * 2654435761) ^ (layout.length * 40503);
+          // Seed from level dimensions and the configurable base seed so each
+          // level has a deterministic star field. Change STAR_FIELD_SEED to
+          // regenerate all star fields across every level.
+          const seed = ((STAR_FIELD_SEED * 2654435761) ^ (lenx * 40503) ^ (layout.length * 2246822519)) >>> 0;
           let rngState = seed >>> 0;
           const rng = () => {
             rngState = (rngState + 0x6D2B79F5) >>> 0;
