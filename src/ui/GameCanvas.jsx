@@ -1286,6 +1286,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // yFullDensity = -SKY_FULL_STAR_DENSITY. The density ramps linearly from 0 at
         // yBottom to 1 at yFullDensity, and stays at 1 above it.
         // Inside the level (y >= 0) stars are only kept in empty-space (' ') cells.
+        // Stars use a seeded PRNG (mulberry32) so the same level always produces
+        // the same star field — no flickering/regeneration on reload or respawn.
         const newStars = [];
         if (restartPos) {
           const levelWidthPx = lenx * 16;
@@ -1295,13 +1297,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Generate stars well above the delivery threshold, so the player flies through a
           // full-density star field until reaching skyThreshold.
           const yTop = -SKY_FULL_STAR_DENSITY;
+          // Seed from level dimensions so each level has a deterministic star field.
+          const seed = (lenx * 2654435761) ^ (layout.length * 40503);
+          let rngState = seed >>> 0;
+          const rng = () => {
+            rngState = (rngState + 0x6D2B79F5) >>> 0;
+            let t = rngState;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
           const makeStar = (x, y) => ({
             x,
             y,
-            size: Math.random() * 1.5 + 0.5,
-            brightness: Math.random() * 0.6 + 0.4, // 0.4 - 1.0 base brightness
-            flickerSpeed: Math.random() * 0.004 + 0.001,
-            flickerOffset: Math.random() * Math.PI * 2
+            size: rng() * 1.5 + 0.5,
+            brightness: rng() * 0.6 + 0.4, // 0.4 - 1.0 base brightness
+            flickerSpeed: rng() * 0.004 + 0.001,
+            flickerOffset: rng() * Math.PI * 2
           });
 
           const span = yBottom - yTop;
@@ -1309,12 +1321,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             // Density factor 0.004 gives a pleasing star density at full density.
             const candidateCount = Math.round(span * lenx * 0.004);
             for (let i = 0; i < candidateCount; i++) {
-              const y = yTop + Math.random() * span;
+              const y = yTop + rng() * span;
               // Linear density: 0 at yBottom, 1 at yFullDensity, clamped to [0,1].
               const density = y >= yBottom ? 0 : Math.max(0, Math.min(1, (yBottom - y) / (yBottom - yFullDensity)));
-              if (Math.random() > density) continue;
+              if (rng() > density) continue;
 
-              const x = Math.random() * levelWidthPx;
+              const x = rng() * levelWidthPx;
 
               // Inside the level: only place stars in empty-space cells.
               if (y >= 0) {
@@ -1681,13 +1693,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
       console.log('[RESPAWN_AREA] Ship destroyed at', ship.x.toFixed(0), ship.y.toFixed(0), '| podDocked:', podWasDockedRef.current);
       // Guided tutorial: if the player dies during the docking or escape phase,
-      // repeat the relevant action step after respawn. Before docking -> repeat
-      // tractorAndThrustAction (step 5); after docking -> repeat escapeThrustAction (step 6).
+      // repeat the relevant action step after respawn. Before docking -> restart
+      // from step 1 (shieldAction); after docking -> repeat escapeThrustAction.
+      const POST_DOCKING_STEPS = ['playingBeforeEscapeThrust', 'escapeThrustAction', 'playingUntilWormhole'];
       if (guidedTutorialStep && onGuidedTutorialAction) {
-        if (['tractorAndThrustAction', 'playingUntilDocked'].includes(guidedTutorialStep)) {
-          console.log('[TUTORIAL_GUIDE] ship destroyed before docking, repeating step 5');
-          onGuidedTutorialAction('repeatTractorAndThrust');
-        } else if (['escapeThrustAction', 'playingUntilWormhole'].includes(guidedTutorialStep)) {
+        if (!POST_DOCKING_STEPS.includes(guidedTutorialStep)) {
+          console.log('[TUTORIAL_GUIDE] ship destroyed before docking, restarting from step 1');
+          onGuidedTutorialAction('repeatFromStart');
+        } else {
           console.log('[TUTORIAL_GUIDE] ship destroyed after docking, repeating step 6');
           onGuidedTutorialAction('repeatEscapeThrust');
         }

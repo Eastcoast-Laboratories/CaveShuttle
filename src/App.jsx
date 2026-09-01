@@ -422,13 +422,13 @@ function App() {
     } else if (action === 'escapeThrustAction') {
       // Hold completed: wait for the player to actually reach the wormhole.
       setGuidedTutorialStep('playingUntilWormhole');
-    } else if (action === 'repeatTractorAndThrust') {
-      // Ship destroyed before docking: repeat step 5 after respawn.
+    } else if (action === 'repeatFromStart') {
+      // Ship destroyed before docking: restart from step 1 after respawn.
       // Clear immediately so GameCanvas resets its hold refs, then wait
       // for the explosion animation and respawn to play before re-showing.
       setGuidedTutorialStep(null);
       setTimeout(() => {
-        if (gameStateRef.current === 'playing') setGuidedTutorialStep('tractorAndThrustAction');
+        if (gameStateRef.current === 'playing') setGuidedTutorialStep('shieldAction');
       }, GUIDED_REPEAT_AFTER_DEATH_MS);
     } else if (action === 'repeatEscapeThrust') {
       // Ship destroyed after docking: repeat step 6 after respawn.
