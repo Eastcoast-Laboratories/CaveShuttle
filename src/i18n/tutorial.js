@@ -3,8 +3,7 @@
 //
 // guidedHints: texts for the in-game guided tutorial state machine.
 // Each hint has a `text` (the instruction), an optional `hold` label used
-// for action steps that require holding an input, and a `continue` label
-// used only for the single step that has a Continue button.
+// for action steps that require holding an input.
 export const tutorialTranslations = {
   de: {
     title: 'Willkommen bei Cave Shuttle',
@@ -60,8 +59,16 @@ export const tutorialTranslations = {
         hold: 'Halte den Schild/Traktor-Button',
       },
       brakingInfo: {
-        text: 'Drehe das Raumschiff ganz leicht nach rechts und gebe Schub um dich in Richtung der runden Frachtkugeln zu bewegen, dann drehe die Nase des Raumschiffs wieder nach oben und benutze den Schub zum Bremsen damit du langsam über der runden Frachtkugel schwebst.',
+        text: 'Drehe das Raumschiff leicht nach rechts, damit es sich in Richtung der runden Frachtkugel neigt.',
         hold: 'Halte den Rechts-Dreh-Button',
+      },
+      approachTractorAndThrustAction: {
+        text: 'Aktiviere den Schub um etwas nach rechts zu driften.',
+        hold: 'Halte den Schub',
+      },
+      rotateLeftAction: {
+        text: 'Drehe das Raumschiff wieder nach links, damit die Nase wieder etwas nach links zeigt um vorzubereiten den Rechtsdrift zu stoppen.',
+        hold: 'Halte den Links-Dreh-Button',
       },
       tractorAndThrustAction: {
         text: 'Aktiviere den Traktorstrahl und den Schub gleichzeitig, damit du nach dem Andocken nicht gleich abstürzt.',
@@ -129,8 +136,16 @@ export const tutorialTranslations = {
         hold: 'Hold the shield/tractor button',
       },
       brakingInfo: {
-        text: 'Rotate the ship slightly to the right and thrust to move towards the round cargo pod, then point the nose upward again and use thrust to brake so you hover slowly over the round cargo pod.',
+        text: 'Rotate the ship slightly to the right so it tilts towards the round cargo pod.',
         hold: 'Hold the rotate-right button',
+      },
+      approachTractorAndThrustAction: {
+        text: 'Activate thrust to drift slightly to the right.',
+        hold: 'Hold thrust',
+      },
+      rotateLeftAction: {
+        text: 'Rotate the ship back to the left so it prepares for the right drift to stop.',
+        hold: 'Hold the rotate-left button',
       },
       tractorAndThrustAction: {
         text: 'Activate the tractor beam and thrust at the same time, so you don\'t crash right after docking.',

@@ -13,7 +13,7 @@ import OnlineLobby from './ui/OnlineLobby';
 import LobbyRoom from './ui/LobbyRoom';
 import HighscoresPage from './ui/HighscoresPage';
 import { useNetwork } from './network/NetworkContext.jsx';
-import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS, BROWSER_MAX_LEVEL, BROWSER_MENU_MAX_LEVEL } from './core/constants.js';
+import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS, BROWSER_MAX_LEVEL, BROWSER_MENU_MAX_LEVEL, VISIBLE_GUIDED_STEPS, GUIDED_REPEAT_AFTER_DEATH_MS } from './core/constants.js';
 import { capacitorManager, PLAY_STORE_URL } from './capacitor/capacitor-manager.js';
 import { ScoringSystem } from './game/scoring.js';
 import { HighScoreManager } from './game/high-score-manager.js';
@@ -26,9 +26,6 @@ import { useLanguage } from './i18n/LanguageContext.jsx';
 import { useSettings } from './i18n/SettingsContext.jsx';
 import { getGameScreenTranslations } from './i18n/gameScreen.js';
 import { getGlobalTranslations } from './i18n/global.js';
-
-// Guided tutorial: delay before re-showing a step after death (explosion + respawn).
-const GUIDED_REPEAT_AFTER_DEATH_MS = 3000;
 
 function App() {
   const { language, setLanguage } = useLanguage();
@@ -121,8 +118,10 @@ function App() {
   });
   const [showTutorial, setShowTutorial] = useState(false);
   // Guided tutorial state machine. Steps:
-  // shieldAction -> playingBeforeBrakingHint -> brakingInfo -> tractorAndThrustAction
-  // -> playingUntilDocked -> escapeThrustAction -> playingUntilWormhole -> inactive
+  // shieldAction -> playingBeforeBrakingHint -> brakingInfo -> playingBeforeApproachAction
+  // -> approachTractorAndThrustAction -> playingBeforeRotateLeft -> rotateLeftAction
+  // -> playingBeforeTractorAndThrust -> tractorAndThrustAction -> playingUntilDocked
+  // -> playingBeforeEscapeThrust -> escapeThrustAction -> playingUntilWormhole -> inactive
   const [guidedTutorialStep, setGuidedTutorialStep] = useState(null);
   const [guidedHoldProgress, setGuidedHoldProgress] = useState({ ms: 0, target: 0 });
   // Remember whether a continueable playing level exists behind the big tutorial.
@@ -400,21 +399,31 @@ function App() {
     } else if (action === 'playingBeforeBrakingHint') {
       setGuidedTutorialStep('brakingInfo');
     } else if (action === 'brakingInfo') {
+      setGuidedTutorialStep('playingBeforeApproachAction');
+    } else if (action === 'playingBeforeApproachAction') {
+      setGuidedTutorialStep('approachTractorAndThrustAction');
+    } else if (action === 'approachTractorAndThrustAction') {
+      setGuidedTutorialStep('playingBeforeRotateLeft');
+    } else if (action === 'playingBeforeRotateLeft') {
+      setGuidedTutorialStep('rotateLeftAction');
+    } else if (action === 'rotateLeftAction') {
       setGuidedTutorialStep('playingBeforeTractorAndThrust');
     } else if (action === 'playingBeforeTractorAndThrust') {
       setGuidedTutorialStep('tractorAndThrustAction');
     } else if (action === 'tractorAndThrustAction') {
-      setGuidedTutorialStep('playingUntilDocked');
+      setGuidedTutorialStep(podDocked ? 'playingBeforeEscapeThrust' : 'playingUntilDocked');
     } else if (action === 'podDocked') {
       // Only react while waiting for docking.
       if (guidedTutorialStep === 'playingUntilDocked') {
-        setGuidedTutorialStep('escapeThrustAction');
+        setGuidedTutorialStep('playingBeforeEscapeThrust');
       }
+    } else if (action === 'playingBeforeEscapeThrust') {
+      setGuidedTutorialStep('escapeThrustAction');
     } else if (action === 'escapeThrustAction') {
       // Hold completed: wait for the player to actually reach the wormhole.
       setGuidedTutorialStep('playingUntilWormhole');
     } else if (action === 'repeatTractorAndThrust') {
-      // Ship destroyed before docking: repeat step 3 after respawn.
+      // Ship destroyed before docking: repeat step 5 after respawn.
       // Clear immediately so GameCanvas resets its hold refs, then wait
       // for the explosion animation and respawn to play before re-showing.
       setGuidedTutorialStep(null);
@@ -422,7 +431,7 @@ function App() {
         if (gameStateRef.current === 'playing') setGuidedTutorialStep('tractorAndThrustAction');
       }, GUIDED_REPEAT_AFTER_DEATH_MS);
     } else if (action === 'repeatEscapeThrust') {
-      // Ship destroyed after docking: repeat step 4 after respawn.
+      // Ship destroyed after docking: repeat step 6 after respawn.
       setGuidedTutorialStep(null);
       setTimeout(() => {
         if (gameStateRef.current === 'playing') setGuidedTutorialStep('escapeThrustAction');
@@ -436,7 +445,6 @@ function App() {
 
   // Skip the current visible step and advance to the next visible step.
   // For the last visible step, skip ends the guided tutorial.
-  const VISIBLE_GUIDED_STEPS = ['shieldAction', 'brakingInfo', 'tractorAndThrustAction', 'escapeThrustAction'];
   const handleGuidedTutorialSkip = () => {
     const idx = VISIBLE_GUIDED_STEPS.indexOf(guidedTutorialStep);
     if (idx < 0) return;
@@ -446,16 +454,7 @@ function App() {
       setGuidedTutorialPending(false);
       localStorage.removeItem(storageKey('guidedTutorialPending'));
     } else {
-      // Advance to the next visible step, inserting the intermediate
-      // invisible sim phase where the flow normally has one.
-      const next = VISIBLE_GUIDED_STEPS[idx + 1];
-      if (next === 'brakingInfo') {
-        setGuidedTutorialStep('brakingInfo');
-      } else if (next === 'tractorAndThrustAction') {
-        setGuidedTutorialStep('tractorAndThrustAction');
-      } else if (next === 'escapeThrustAction') {
-        setGuidedTutorialStep('escapeThrustAction');
-      }
+      setGuidedTutorialStep(VISIBLE_GUIDED_STEPS[idx + 1]);
     }
   };
 
@@ -1052,8 +1051,8 @@ function App() {
 
   // DRY pause condition: a single value drives the frozen prop.
   // Visible guided-tutorial hints pause the simulation; invisible waiting
-  // states (playingBeforeBrakingHint, playingUntilDocked) do not.
-  const guidedPauseSteps = ['shieldAction', 'brakingInfo', 'tractorAndThrustAction', 'escapeThrustAction'];
+  // states do not.
+  const guidedPauseSteps = VISIBLE_GUIDED_STEPS;
   const isGameplayPaused =
     gameState === 'gameover' ||
     gameState === 'levelcomplete' ||
@@ -1392,7 +1391,7 @@ function App() {
         />
       )}
 
-      {gameState === 'playing' && guidedTutorialStep && guidedTutorialStep !== 'materializing' && guidedTutorialStep !== 'playingBeforeBrakingHint' && guidedTutorialStep !== 'playingBeforeTractorAndThrust' && guidedTutorialStep !== 'playingUntilDocked' && guidedTutorialStep !== 'playingUntilWormhole' && (
+      {gameState === 'playing' && guidedTutorialStep && guidedPauseSteps.includes(guidedTutorialStep) && (
         <TutorialHintOverlay
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}

@@ -42,30 +42,17 @@ import {
   VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP,
   VIBRATE_FIRE, VIBRATE_POD,
   SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS,
+  VISIBLE_GUIDED_STEPS,
+  GUIDED_MATERIALIZE_MS, GUIDED_HOLD_SHIELD_MS,
+  GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS, GUIDED_HOLD_ROTATE_RIGHT_MS,
+  GUIDED_ACTIVE_SIM_BEFORE_APPROACH_MS, GUIDED_HOLD_APPROACH_MS,
+  GUIDED_ACTIVE_SIM_BEFORE_ROTATE_LEFT_MS, GUIDED_HOLD_ROTATE_LEFT_MS,
+  GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS, GUIDED_HOLD_TRACTOR_THRUST_MS,
+  GUIDED_HOLD_THRUST_ESCAPE_MS, GUIDED_ACTIVE_SIM_BEFORE_ESCAPE_MS,
 } from '../core/constants.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
-
-// Guided tutorial durations (ms), in the order the steps appear in the flow.
-// Hold durations require unbroken input; releasing resets the progress.
-// Active-sim durations let the simulation run between paused hint steps.
-// Step 1: materializing — let ship materialize and camera center
-const GUIDED_MATERIALIZE_MS = 500;
-// Step 2: shieldAction — hold shield/tractor button
-const GUIDED_HOLD_SHIELD_MS = 1000;
-// Step 3: playingBeforeBrakingHint — active sim before braking challenge
-const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1000;
-// Step 4: brakingInfo — hold rotate-right button
-const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
-// Step 5: playingBeforeTractorAndThrust — active sim so ship rotates slightly
-const GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS = 200;
-// Step 6: tractorAndThrustAction — hold tractor+thrust together (short confirmation)
-const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
-// Step 7: playingUntilDocked — no duration, waits for onPodDockedChange(true)
-// Step 8: escapeThrustAction — hold thrust button
-const GUIDED_HOLD_THRUST_ESCAPE_MS = 2000;
-
 
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
 // zero channels become 30 so black pods turn gray instead of green.
@@ -1695,13 +1682,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       console.log('[RESPAWN_AREA] Ship destroyed at', ship.x.toFixed(0), ship.y.toFixed(0), '| podDocked:', podWasDockedRef.current);
       // Guided tutorial: if the player dies during the docking or escape phase,
       // repeat the relevant action step after respawn. Before docking -> repeat
-      // tractorAndThrustAction (step 3); after docking -> repeat escapeThrustAction (step 4).
+      // tractorAndThrustAction (step 5); after docking -> repeat escapeThrustAction (step 6).
       if (guidedTutorialStep && onGuidedTutorialAction) {
         if (['tractorAndThrustAction', 'playingUntilDocked'].includes(guidedTutorialStep)) {
-          console.log('[TUTORIAL_GUIDE] ship destroyed before docking, repeating step 3');
+          console.log('[TUTORIAL_GUIDE] ship destroyed before docking, repeating step 5');
           onGuidedTutorialAction('repeatTractorAndThrust');
         } else if (['escapeThrustAction', 'playingUntilWormhole'].includes(guidedTutorialStep)) {
-          console.log('[TUTORIAL_GUIDE] ship destroyed after docking, repeating step 4');
+          console.log('[TUTORIAL_GUIDE] ship destroyed after docking, repeating step 6');
           onGuidedTutorialAction('repeatEscapeThrust');
         }
       }
@@ -1935,11 +1922,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const thrustSignal = !!(keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
       const combinedSignal = shieldSignal && thrustSignal;
       const rotateRightSignal = !!(keys['ArrowRight'] || ((!twoPlayer || networkRole === 'host') && (keys['d'] || keys['D'])) || rotateRightActive || (tiltSteering && tiltRotateRightRef.current));
+      const rotateLeftSignal = !!(keys['ArrowLeft'] || ((!twoPlayer || networkRole === 'host') && (keys['a'] || keys['A'])) || rotateLeftActive || (tiltSteering && tiltRotateLeftRef.current));
 
       let activeSignal = false;
       let holdTarget = 0;
       if (guidedTutorialStep === 'shieldAction') { activeSignal = shieldSignal; holdTarget = GUIDED_HOLD_SHIELD_MS; }
       else if (guidedTutorialStep === 'brakingInfo') { activeSignal = rotateRightSignal; holdTarget = GUIDED_HOLD_ROTATE_RIGHT_MS; }
+      else if (guidedTutorialStep === 'approachTractorAndThrustAction') { activeSignal = thrustSignal; holdTarget = GUIDED_HOLD_APPROACH_MS; }
+      else if (guidedTutorialStep === 'rotateLeftAction') { activeSignal = rotateLeftSignal; holdTarget = GUIDED_HOLD_ROTATE_LEFT_MS; }
       else if (guidedTutorialStep === 'tractorAndThrustAction') { activeSignal = combinedSignal; holdTarget = GUIDED_HOLD_TRACTOR_THRUST_MS; }
       else if (guidedTutorialStep === 'escapeThrustAction') { activeSignal = thrustSignal; holdTarget = GUIDED_HOLD_THRUST_ESCAPE_MS; }
 
@@ -2499,15 +2489,47 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
 
-      // Guided tutorial: playingBeforeTractorAndThrust lets the ship rotate
-      // slightly (0.5s active sim) after the brakingInfo challenge, then
-      // advances to tractorAndThrustAction (which pauses the simulation).
+      // Guided tutorial: let the ship rotate right for 0.4s before asking for
+      // tractor beam and thrust together.
+      if (guidedTutorialStep === 'playingBeforeApproachAction' && guidedActionFiredRef.current !== 'playingBeforeApproachAction') {
+        guidedActiveSimMsRef.current += gameDeltaMs;
+        if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_APPROACH_MS) {
+          guidedActionFiredRef.current = 'playingBeforeApproachAction';
+          console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to approachTractorAndThrustAction');
+          if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeApproachAction');
+        }
+      }
+
+      // Guided tutorial: continue tractor beam and thrust for 0.3s before
+      // asking the player to rotate left again.
+      if (guidedTutorialStep === 'playingBeforeRotateLeft' && guidedActionFiredRef.current !== 'playingBeforeRotateLeft') {
+        guidedActiveSimMsRef.current += gameDeltaMs;
+        if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_ROTATE_LEFT_MS) {
+          guidedActionFiredRef.current = 'playingBeforeRotateLeft';
+          console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to rotateLeftAction');
+          if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeRotateLeft');
+        }
+      }
+
+      // Guided tutorial: let the ship rotate left for 0.5s before advancing to
+      // tractorAndThrustAction (which pauses the simulation).
       if (guidedTutorialStep === 'playingBeforeTractorAndThrust' && guidedActionFiredRef.current !== 'playingBeforeTractorAndThrust') {
         guidedActiveSimMsRef.current += gameDeltaMs;
         if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS) {
           guidedActionFiredRef.current = 'playingBeforeTractorAndThrust';
           console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to tractorAndThrustAction');
           if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeTractorAndThrust');
+        }
+      }
+
+      // Guided tutorial: let the simulation run for 2s after docking before
+      // showing the escape thrust hint (which pauses the simulation).
+      if (guidedTutorialStep === 'playingBeforeEscapeThrust' && guidedActionFiredRef.current !== 'playingBeforeEscapeThrust') {
+        guidedActiveSimMsRef.current += gameDeltaMs;
+        if (guidedActiveSimMsRef.current >= GUIDED_ACTIVE_SIM_BEFORE_ESCAPE_MS) {
+          guidedActionFiredRef.current = 'playingBeforeEscapeThrust';
+          console.log('[TUTORIAL_GUIDE] active-sim threshold reached, advancing to escapeThrustAction');
+          if (onGuidedTutorialAction) onGuidedTutorialAction('playingBeforeEscapeThrust');
         }
       }
 

@@ -12,7 +12,7 @@ describe('tutorialTranslations guidedHints', () => {
     expect(tutorialTranslations.en.guidedHints).toBeDefined();
   });
 
-  it('has all four action/info step keys', () => {
+  it('has all six action/info step keys', () => {
     for (const lang of ['de', 'en']) {
       const h = tutorialTranslations[lang].guidedHints;
       expect(h.shieldAction).toBeDefined();
@@ -21,6 +21,12 @@ describe('tutorialTranslations guidedHints', () => {
       expect(h.brakingInfo).toBeDefined();
       expect(h.brakingInfo.text).toBeTruthy();
       expect(h.brakingInfo.hold).toBeTruthy();
+      expect(h.approachTractorAndThrustAction).toBeDefined();
+      expect(h.approachTractorAndThrustAction.text).toBeTruthy();
+      expect(h.approachTractorAndThrustAction.hold).toBeTruthy();
+      expect(h.rotateLeftAction).toBeDefined();
+      expect(h.rotateLeftAction.text).toBeTruthy();
+      expect(h.rotateLeftAction.hold).toBeTruthy();
       expect(h.tractorAndThrustAction).toBeDefined();
       expect(h.tractorAndThrustAction.text).toBeTruthy();
       expect(h.tractorAndThrustAction.hold).toBeTruthy();

@@ -189,3 +189,37 @@ export const VIBRATE_THRUST = 50;       // Thrust/accelerate start
 export const VIBRATE_THRUST_STOP = 40;   // Thrust stop (tilt only)
 export const VIBRATE_FIRE = 10;         // Each shot fired
 export const VIBRATE_POD = 80;          // Tractor beam / pod activation
+
+// Guided tutorial
+// Ordered list of visible action/info steps for the step indicator.
+// Invisible waiting states are not part of this list because they do not show an overlay.
+export const VISIBLE_GUIDED_STEPS = ['shieldAction', 'brakingInfo', 'approachTractorAndThrustAction', 'rotateLeftAction', 'tractorAndThrustAction', 'escapeThrustAction'];
+// Hold durations require unbroken input; releasing resets the progress.
+// Active-sim durations let the simulation run between paused hint steps.
+// Step 1 (invisible): materializing — let ship materialize and camera center
+export const GUIDED_MATERIALIZE_MS = 500;
+// Step 2 (visible 1/6): shieldAction — hold shield/tractor button
+export const GUIDED_HOLD_SHIELD_MS = 1000;
+// Step 3 (invisible): active sim before braking challenge
+export const GUIDED_ACTIVE_SIM_BEFORE_BRAKING_MS = 1400;
+// Step 4 (visible 2/6): brakingInfo — hold rotate-right button
+export const GUIDED_HOLD_ROTATE_RIGHT_MS = 500;
+// Step 5 (invisible): let the ship rotate right
+export const GUIDED_ACTIVE_SIM_BEFORE_APPROACH_MS = 200;
+// Step 6 (visible 3/6): approachTractorAndThrustAction — hold tractor+thrust together
+export const GUIDED_HOLD_APPROACH_MS = 200;
+// Step 7 (invisible): continue the combined input
+export const GUIDED_ACTIVE_SIM_BEFORE_ROTATE_LEFT_MS = 500;
+// Step 8 (visible 4/6): rotateLeftAction — hold rotate-left button
+export const GUIDED_HOLD_ROTATE_LEFT_MS = 200;
+// Step 9 (invisible): let the ship rotate left
+export const GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS = 300;
+// Step 10 (visible 5/6): tractorAndThrustAction — hold tractor+thrust together (short confirmation)
+export const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
+// Step 11 (invisible): playingUntilDocked — waits for onPodDockedChange(true)
+// Step 12 (invisible): active sim after docking before escape thrust hint
+export const GUIDED_ACTIVE_SIM_BEFORE_ESCAPE_MS = 2000;
+// Step 13 (visible 6/6): escapeThrustAction — hold thrust button
+export const GUIDED_HOLD_THRUST_ESCAPE_MS = 2000;
+// Delay before re-showing a step after death (explosion + respawn).
+export const GUIDED_REPEAT_AFTER_DEATH_MS = 3000;

@@ -1,19 +1,16 @@
 import React from 'react';
 import { tutorialTranslations } from '../i18n/tutorial.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { VISIBLE_GUIDED_STEPS } from '../core/constants.js';
 import './TutorialHintOverlay.css';
 
-// Ordered list of visible action/info steps for the step indicator (1/4 ... 4/4).
-// Invisible waiting states (playingBeforeBrakingHint, playingUntilDocked) are
-// not part of this list because they do not show an overlay.
-const VISIBLE_STEPS = ['shieldAction', 'brakingInfo', 'tractorAndThrustAction', 'escapeThrustAction'];
+// Re-export so existing imports keep working.
+export { VISIBLE_GUIDED_STEPS };
 
 // Compact in-game hint overlay for the guided tutorial.
 //
-// Action steps (shieldAction, tractorAndThrustAction, escapeThrustAction) render
-// only a small card that does NOT cover the full screen, so pointer events reach
-// the canvas/touch buttons outside the card. brakingInfo is the only step with a
-// Continue button and a full backdrop that blocks gameplay input while paused.
+// Action steps render only a small card that does NOT cover the full screen, so
+// pointer events reach the canvas and touch buttons outside the card.
 //
 // State, progress and actions come from App/GameCanvas; this component has no
 // game-state logic of its own.
@@ -22,10 +19,10 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
   const t = tutorialTranslations[language] || tutorialTranslations.en;
   const hints = t.guidedHints;
 
-  if (!step || !VISIBLE_STEPS.includes(step)) return null;
+  if (!step || !VISIBLE_GUIDED_STEPS.includes(step)) return null;
 
-  const stepIndex = VISIBLE_STEPS.indexOf(step) + 1;
-  const totalSteps = VISIBLE_STEPS.length;
+  const stepIndex = VISIBLE_GUIDED_STEPS.indexOf(step) + 1;
+  const totalSteps = VISIBLE_GUIDED_STEPS.length;
   const hint = hints[step];
   if (!hint) return null;
 

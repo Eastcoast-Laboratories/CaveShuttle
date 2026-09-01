@@ -31,7 +31,7 @@ describe('TutorialHintOverlay', () => {
         onContinue={() => {}}
       />
     );
-    expect(screen.getByText(/Step 1\/4/)).toBeTruthy();
+    expect(screen.getByText(/Step 1\/6/)).toBeTruthy();
     expect(screen.getByText(/deflect the incoming bunker shots/)).toBeTruthy();
     // Action steps have no Continue button.
     expect(screen.queryByRole('button')).toBeNull();
@@ -47,13 +47,37 @@ describe('TutorialHintOverlay', () => {
         holdTargetMs={500}
       />
     );
-    expect(screen.getByText(/Step 2\/4/)).toBeTruthy();
+    expect(screen.getByText(/Step 2\/6/)).toBeTruthy();
     expect(screen.getByText(/rotate-right button/)).toBeTruthy();
     // No Continue button — it's an action step now.
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('renders escapeThrustAction as step 4/4', () => {
+  it('renders approachTractorAndThrustAction as step 3/6', () => {
+    render(
+      <TutorialHintOverlay
+        step="approachTractorAndThrustAction"
+        holdProgressMs={100}
+        holdTargetMs={200}
+      />
+    );
+    expect(screen.getByText(/Step 3\/6/)).toBeTruthy();
+    expect(screen.getByText(/drift slightly to the right/)).toBeTruthy();
+  });
+
+  it('renders rotateLeftAction as step 4/6', () => {
+    render(
+      <TutorialHintOverlay
+        step="rotateLeftAction"
+        holdProgressMs={100}
+        holdTargetMs={200}
+      />
+    );
+    expect(screen.getByText(/Step 4\/6/)).toBeTruthy();
+    expect(screen.getByText(/rotate-left button/)).toBeTruthy();
+  });
+
+  it('renders escapeThrustAction as step 6/6', () => {
     render(
       <TutorialHintOverlay
         step="escapeThrustAction"
@@ -62,11 +86,11 @@ describe('TutorialHintOverlay', () => {
         onContinue={() => {}}
       />
     );
-    expect(screen.getByText(/Step 4\/4/)).toBeTruthy();
+    expect(screen.getByText(/Step 6\/6/)).toBeTruthy();
     expect(screen.getByText(/fly up into the sky/)).toBeTruthy();
   });
 
-  it('renders tractorAndThrustAction as step 3/4', () => {
+  it('renders tractorAndThrustAction as step 5/6', () => {
     render(
       <TutorialHintOverlay
         step="tractorAndThrustAction"
@@ -75,7 +99,7 @@ describe('TutorialHintOverlay', () => {
         onContinue={() => {}}
       />
     );
-    expect(screen.getByText(/Step 3\/4/)).toBeTruthy();
+    expect(screen.getByText(/Step 5\/6/)).toBeTruthy();
     expect(screen.getAllByText(/tractor beam and thrust/).length).toBeGreaterThan(0);
   });
 });
