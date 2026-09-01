@@ -1932,25 +1932,12 @@ class LevelEditor {
     }
   }
 
-  _invertDelta(delta) {
-    const inverted = {};
-    if (delta.header) {
-      inverted.header = { old: delta.header.new, new: delta.header.old };
-    }
-    if (delta.grid) {
-      inverted.grid = { old: delta.grid.new, new: delta.grid.old };
-    } else if (delta.cells) {
-      inverted.cells = delta.cells.map(c => ({ x: c.x, y: c.y, old: c.new, new: c.old }));
-    }
-    return inverted;
-  }
-
   undo() {
     if (this.undoStack.length === 0) return;
 
     const delta = this.undoStack.pop();
     this._applyDelta(delta, false);
-    this.redoStack.push(this._invertDelta(delta));
+    this.redoStack.push(delta);
     this._lastSnapshot = JSON.parse(JSON.stringify(this.levelData));
     this.render();
     this.updateParameterInputs();
@@ -1961,7 +1948,7 @@ class LevelEditor {
 
     const delta = this.redoStack.pop();
     this._applyDelta(delta, true);
-    this.undoStack.push(this._invertDelta(delta));
+    this.undoStack.push(delta);
     this._lastSnapshot = JSON.parse(JSON.stringify(this.levelData));
     this.render();
     this.updateParameterInputs();

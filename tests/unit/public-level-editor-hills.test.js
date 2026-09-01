@@ -221,6 +221,29 @@ describe('Public Level Editor hill directions', () => {
     }
   });
 
+  it('restores an undone grid change with redo', () => {
+    const testEditor = Object.create(LevelEditor.prototype);
+    testEditor.levelData = {
+      header: { width: 3, height: 3, wallColor: '#ff0000' },
+      grid: Array.from({ length: 3 }, () => Array(3).fill(' '))
+    };
+    testEditor.undoStack = [];
+    testEditor.redoStack = [];
+    testEditor._lastSnapshot = JSON.parse(JSON.stringify(testEditor.levelData));
+    testEditor.render = () => {};
+    testEditor.updateParameterInputs = () => {};
+
+    testEditor.levelData.grid[1][1] = 'p';
+    testEditor.saveState();
+    testEditor.undo();
+    expect(testEditor.levelData.grid[1][1]).toBe(' ');
+
+    testEditor.redo();
+    expect(testEditor.levelData.grid[1][1]).toBe('p');
+    expect(testEditor.undoStack).toHaveLength(1);
+    expect(testEditor.redoStack).toHaveLength(0);
+  });
+
   it('uses traversal-order slope pairs for all floor and ceiling directions', () => {
     const cases = [
       ['floor', 1, 1, ['q', 'r']],
