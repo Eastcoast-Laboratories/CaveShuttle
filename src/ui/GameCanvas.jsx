@@ -2744,6 +2744,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < es.radius + 12) {
               if (!godModeActiveRef.current && !isDying) {
+                // Destroy the ship and detonate the mine that caused it
+                es.active = false;
+                particleSystem.current.spawnExplosion(es.x, es.y, 25, '#ff3333');
                 destroyShip();
               }
             }
