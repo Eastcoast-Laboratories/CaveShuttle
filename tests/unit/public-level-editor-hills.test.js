@@ -190,6 +190,37 @@ describe('Public Level Editor hill directions', () => {
     expect(find(9, 10)).toBe('t');
   });
 
+  it('detects ceiling slopes across the full drag path in both downward diagonal directions', () => {
+    const cases = [
+      { start: { x: 4, y: 4 }, end: { x: 10, y: 7 }, expected: ['w', 'x'] },
+      { start: { x: 10, y: 4 }, end: { x: 4, y: 7 }, expected: ['v', 'u'] }
+    ];
+
+    for (const { start, end, expected } of cases) {
+      const testEditor = Object.create(LevelEditor.prototype);
+      testEditor.levelData = {
+        header: { width: 20, height: 20 },
+        grid: Array.from({ length: 20 }, () => Array(20).fill(' '))
+      };
+      for (let i = 0; i <= Math.abs(end.x - start.x); i++) {
+        const direction = end.x > start.x ? 1 : -1;
+        const x = start.x + i * direction;
+        const y = start.y + Math.floor(i / 2);
+        testEditor.levelData.grid[y - 1][x] = 'p';
+      }
+      // Reproduce an ambiguous corner at the drag start. The old implementation
+      // checked only this cell and incorrectly preferred the floor below it.
+      testEditor.levelData.grid[start.y + 1][start.x] = 'p';
+      testEditor.slopeStart = start;
+      testEditor.render = () => {};
+      testEditor.renderPreview = () => {};
+
+      testEditor.updateSlopePreview(end.x, end.y);
+
+      expect(testEditor.slopePreview.slice(0, 2).map(tile => tile.char)).toEqual(expected);
+    }
+  });
+
   it('uses traversal-order slope pairs for all floor and ceiling directions', () => {
     const cases = [
       ['floor', 1, 1, ['q', 'r']],

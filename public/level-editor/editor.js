@@ -1137,41 +1137,32 @@ class LevelEditor {
     // Determine slope type based on direction and wall context
     this.slopePreview = [];
     
-    // Check for wall context (p) to determine if this is a floor or ceiling slope
-    const checkWallBelow = (x, y) => {
-      if (y + 1 >= this.levelData.header.height) return false;
-      return this.levelData.grid[y + 1][x] === 'p';
-    };
-    
-    const checkWallAbove = (x, y) => {
-      if (y - 1 < 0) return false;
-      return this.levelData.grid[y - 1][x] === 'p';
-    };
-    
-    const hasWallBelow = checkWallBelow(startX, startY);
-    const hasWallAbove = checkWallAbove(startX, startY);
-    
     // Always use 2:1 pattern (2 horizontal, 1 vertical)
     const horizontalDirection = dx > 0 ? 1 : -1;
-    // Ceiling slopes always go downward, floor slopes follow mouse direction
-    const verticalDirection = hasWallAbove ? 1 : (dy > 0 ? 1 : -1);
-    
-    // Calculate length based on horizontal distance (primary direction)
+    const draggedVerticalDirection = dy > 0 ? 1 : -1;
     const length = Math.abs(dx);
-    
-    let slopeType;
-    
-    if (hasWallBelow) {
-      // Floor slope (wall below)
-      slopeType = this.getSlopePair('floor', horizontalDirection, verticalDirection);
-    } else if (hasWallAbove) {
-      // Ceiling slope (wall above)
-      // Ceiling down-right (w/x) or ceiling down-left (v/u)
-      slopeType = this.getSlopePair('ceiling', horizontalDirection, verticalDirection);
-    } else {
-      // Default to floor slope if no wall detected
-      slopeType = this.getSlopePair('floor', horizontalDirection, verticalDirection);
+
+    // Determine floor/ceiling from the solid context along the complete drag path.
+    // Looking only at the start cell is ambiguous at corners where solid tiles can
+    // exist both above and below the cursor.
+    let wallsAbove = 0;
+    let wallsBelow = 0;
+    const isSolidGround = (x, y) => {
+      if (x < 0 || x >= this.levelData.header.width || y < 0 || y >= this.levelData.header.height) return false;
+      return ['p', 'à'].includes(this.levelData.grid[y][x]);
+    };
+    for (let i = 0; i <= length; i++) {
+      const x = startX + i * horizontalDirection;
+      const y = startY + Math.floor(i / 2) * draggedVerticalDirection;
+      if (isSolidGround(x, y - 1)) wallsAbove++;
+      if (isSolidGround(x, y + 1)) wallsBelow++;
     }
+
+    const surface = wallsAbove > wallsBelow ? 'ceiling' : 'floor';
+    // Ceiling slopes always go downward; floor slopes follow the drag direction.
+    const verticalDirection = surface === 'ceiling' ? 1 : draggedVerticalDirection;
+    const slopeType = this.getSlopePair(surface, horizontalDirection, verticalDirection);
+    console.log('[SLOPE_SURFACE] detected', { surface, wallsAbove, wallsBelow, horizontalDirection, verticalDirection });
     
     // Generate slope with 2:1 pattern
     for (let i = 0; i <= length; i++) {

@@ -52,23 +52,17 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- In-Game-Tutorial mit interaktiven, actionsbasierten Hinweisen
-- Joystick hat nun einen 4-Finger-Tab für das Feuern ohne Schild
-- Mehr Sound-Effekte
-- Bildschirm-Orientierung: Hochformat, Querformat oder automatisch
-- Schnelleres Drehen nach 0.5s, sofort bei Doppel-Tap
-- High-Score filtern nach Level-Pack
+- Das geführte Tutorial wurde erweitert
+- Level 8 wurde neu gestaltet mit einem verzweigten, steilen Höhlennetz
+- Neue Schwerkraft-Region über den Höhlen in der Luft
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- New guided in-game tutorial with interactive, action-based hints
-- Joystick now has Four-finger tab for firing without the shield
-- More sound effects
-- Screen orientation options: portrait, landscape, or automatic
-- Faster rotation after 0.5s, instantly on double-tap
-- High-score filtering by level-pack
+- Improved the guided tutorial
+- Redesigned Level 8 with a branching, slope-heavy cave network
+- New low-gravity area above the caves in the sky
 EOF
 )
 
