@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.0 — September 01, 2026
+
+- Das geführte Tutorial wurde erweitert
+- Level 8 wurde neu gestaltet mit einem verzweigten, steilen Höhlennetz
+- Neue Schwerkraft-Region über den Höhlen in der Luft
+- Minen detonieren beim Kontakt
+- In der Highscore ist jetzt pro player name nur Eintrag
+
+
 ## 4.5 — August 30, 2026
 
 - In-Game-Tutorial mit interaktiven, actionsbasierten Hinweisen

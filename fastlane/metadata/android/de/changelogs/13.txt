@@ -1,0 +1,5 @@
+- Das geführte Tutorial wurde erweitert
+- Level 8 wurde neu gestaltet mit einem verzweigten, steilen Höhlennetz
+- Neue Schwerkraft-Region über den Höhlen in der Luft
+- Minen detonieren beim Kontakt
+- In der Highscore ist jetzt pro player name nur Eintrag

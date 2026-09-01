@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.0 — September 01, 2026
+
+- Improved the guided tutorial
+- Redesigned Level 8 with a branching, slope-heavy cave network
+- New low-gravity area above the caves in the sky
+- mines detonate on contact
+- In the Highscore, there is now only one entry per player name
+
+
 ## 4.5 — August 30, 2026
 
 - New guided in-game tutorial with interactive, action-based hints
