@@ -225,5 +225,3 @@ export const GUIDED_HOLD_TRACTOR_THRUST_MS = 200;
 export const GUIDED_ACTIVE_SIM_BEFORE_ESCAPE_MS = 2000;
 // Step 13 (visible 6/6): escapeThrustAction — hold thrust button
 export const GUIDED_HOLD_THRUST_ESCAPE_MS = 2000;
-// Delay before re-showing a step after death (explosion + respawn).
-export const GUIDED_REPEAT_AFTER_DEATH_MS = 3000;

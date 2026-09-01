@@ -13,7 +13,18 @@ import OnlineLobby from './ui/OnlineLobby';
 import LobbyRoom from './ui/LobbyRoom';
 import HighscoresPage from './ui/HighscoresPage';
 import { useNetwork } from './network/NetworkContext.jsx';
-import { SCORE_LEVEL_COMPLETE, SCORE_FUEL_REMAINING, SCORE_BUNKER_DESTROYED, ENABLE_LEVEL_EDITOR, INITIAL_LIVES, SCORING_VERSION, BONUS_LIFE_THRESHOLDS, BROWSER_MAX_LEVEL, BROWSER_MENU_MAX_LEVEL, VISIBLE_GUIDED_STEPS, GUIDED_REPEAT_AFTER_DEATH_MS } from './core/constants.js';
+import {
+  SCORE_LEVEL_COMPLETE,
+  SCORE_FUEL_REMAINING,
+  SCORE_BUNKER_DESTROYED,
+  ENABLE_LEVEL_EDITOR,
+  INITIAL_LIVES,
+  SCORING_VERSION,
+  BONUS_LIFE_THRESHOLDS,
+  BROWSER_MAX_LEVEL,
+  BROWSER_MENU_MAX_LEVEL,
+  VISIBLE_GUIDED_STEPS,
+} from './core/constants.js';
 import { capacitorManager, PLAY_STORE_URL } from './capacitor/capacitor-manager.js';
 import { ScoringSystem } from './game/scoring.js';
 import { HighScoreManager } from './game/high-score-manager.js';
@@ -126,6 +137,9 @@ function App() {
   const [guidedHoldProgress, setGuidedHoldProgress] = useState({ ms: 0, target: 0 });
   // Remember whether a continueable playing level exists behind the big tutorial.
   const tutorialBackgroundRef = useRef(null);
+  // Pending guided-tutorial restart type, set on death and consumed on respawn.
+  // 'fromStart' -> materializing (full restart); 'escapeThrust' -> escapeThrustAction.
+  const pendingGuidedRestartRef = useRef(null);
   // Persistence (Variant B): a pending guided tutorial survives reload.
   const [guidedTutorialPending, setGuidedTutorialPending] = useState(() => {
     const stored = localStorage.getItem(storageKey('guidedTutorialPending'));
@@ -423,24 +437,35 @@ function App() {
       // Hold completed: wait for the player to actually reach the wormhole.
       setGuidedTutorialStep('playingUntilWormhole');
     } else if (action === 'repeatFromStart') {
-      // Ship destroyed before docking: restart from step 1 after respawn.
-      // Clear immediately so GameCanvas resets its hold refs, then wait
-      // for the explosion animation and respawn to play before re-showing.
+      // Ship destroyed before docking: restart from materializing after respawn.
+      // Clear immediately so GameCanvas resets its hold refs; the actual step
+      // is set when onShipRespawned fires (after the explosion animation).
+      pendingGuidedRestartRef.current = 'fromStart';
       setGuidedTutorialStep(null);
-      setTimeout(() => {
-        if (gameStateRef.current === 'playing') setGuidedTutorialStep('shieldAction');
-      }, GUIDED_REPEAT_AFTER_DEATH_MS);
     } else if (action === 'repeatEscapeThrust') {
       // Ship destroyed after docking: repeat step 6 after respawn.
+      pendingGuidedRestartRef.current = 'escapeThrust';
       setGuidedTutorialStep(null);
-      setTimeout(() => {
-        if (gameStateRef.current === 'playing') setGuidedTutorialStep('escapeThrustAction');
-      }, GUIDED_REPEAT_AFTER_DEATH_MS);
     }
   };
 
   const handleGuidedTutorialHoldProgress = (ms, target) => {
     setGuidedHoldProgress({ ms, target });
+  };
+
+  // Called by GameCanvas when the ship actually respawns (after the explosion
+  // animation). Consumes a pending guided-tutorial restart so the step is set
+  // at the precise moment the ship is back in play — not on a fixed timer.
+  const handleShipRespawned = () => {
+    const pending = pendingGuidedRestartRef.current;
+    if (!pending) return;
+    pendingGuidedRestartRef.current = null;
+    if (gameStateRef.current !== 'playing') return;
+    if (pending === 'fromStart') {
+      setGuidedTutorialStep('materializing');
+    } else if (pending === 'escapeThrust') {
+      setGuidedTutorialStep('escapeThrustAction');
+    }
   };
 
   // Skip the current visible step and advance to the next visible step.
@@ -1269,6 +1294,7 @@ function App() {
                 guidedTutorialStep={guidedTutorialStep}
                 onGuidedTutorialAction={handleGuidedTutorialAction}
                 onGuidedTutorialHoldProgress={handleGuidedTutorialHoldProgress}
+                onShipRespawned={handleShipRespawned}
               />
 
               {/* Game over overlay - centered over canvas */}

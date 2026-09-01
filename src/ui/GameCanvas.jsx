@@ -181,7 +181,7 @@ function pointerToCanvas(canvas, clientX, clientY, w, h) {
   };
 }
 
-export default function GameCanvas({ width: widthProp, height: heightProp, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange, guidedTutorialStep = null, onGuidedTutorialAction = null, onGuidedTutorialHoldProgress = null }) {
+export default function GameCanvas({ width: widthProp, height: heightProp, onFuelChange, onLevelComplete, onGameOver, onScoreChange, onLivesChange, onPodDockedChange, level: levelProp, packBaseUrl = '/levelpacks/default', gravityMultiplier = 1.0, frozen = false, isEditorTestMode = false, editorLevelData = null, editorWallColor = '#ff0000', initialLives = 3, networkRole = null, bonusLifePopup = null, multiShotEnabled = false, onMultiShotChange, guidedTutorialStep = null, onGuidedTutorialAction = null, onGuidedTutorialHoldProgress = null, onShipRespawned = null }) {
   const {
     showTouchButtons, joystickEnabled, isMobile,
     twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
@@ -1644,6 +1644,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       podExplosionTimeRef.current = null;
       podDelayedExplosionRef.current = null;
       shipDestroyed.current = false;
+      // Notify the parent so the guided tutorial can restart from materializing
+      // exactly when the ship is back in play — not on a fixed timer from death.
+      if (onShipRespawned) onShipRespawned();
     };
 
     // Detonate the pod if it is in play. Returns true if the pod actually exploded.
