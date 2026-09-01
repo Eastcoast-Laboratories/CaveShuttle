@@ -30,7 +30,7 @@ export const REPLAY_P2_INPUT_BITS = {
 export class ReplayLogger {
   constructor() {
     this._entries = [];
-    this._startTime = 0;
+    this._durationMs = 0;
     this._lastP1Bitmask = -1;
     this._lastP2Bitmask = -1;
     this._active = false;
@@ -38,15 +38,15 @@ export class ReplayLogger {
 
   start() {
     this._entries = [];
-    this._startTime = performance.now();
+    this._durationMs = 0;
     this._lastP1Bitmask = -1;
     this._lastP2Bitmask = -1;
     this._active = true;
   }
 
-  record(p1Bitmask, p2Bitmask = 0) {
+  record(p1Bitmask, p2Bitmask, activeLevelTimeMs) {
     if (!this._active) return;
-    const t = Math.round(performance.now() - this._startTime);
+    const t = Math.round(activeLevelTimeMs);
     if (p1Bitmask !== this._lastP1Bitmask || p2Bitmask !== this._lastP2Bitmask) {
       const entry = { t, i: p1Bitmask };
       if (p2Bitmask !== 0) {
@@ -58,16 +58,17 @@ export class ReplayLogger {
     }
   }
 
-  stop() {
+  stop(activeLevelTimeMs) {
+    this._durationMs = Math.round(activeLevelTimeMs);
     this._active = false;
   }
 
   // Record a special event (e.g. shortcut activation) with a timestamp.
   // These events are flagged in the replay so the community server can
   // display a warning when a score was achieved with shortcuts active.
-  recordEvent(type, data = {}) {
+  recordEvent(type, data, activeLevelTimeMs) {
     if (!this._active) return;
-    const t = Math.round(performance.now() - this._startTime);
+    const t = Math.round(activeLevelTimeMs);
     this._entries.push({ t, e: type, ...data });
     // Update last bitmasks so the next record() call doesn't skip
     this._lastP1Bitmask = -1;
@@ -76,7 +77,7 @@ export class ReplayLogger {
 
   reset() {
     this._entries = [];
-    this._startTime = 0;
+    this._durationMs = 0;
     this._lastP1Bitmask = -1;
     this._lastP2Bitmask = -1;
     this._active = false;
@@ -85,10 +86,9 @@ export class ReplayLogger {
   getLog() {
     return {
       entries: this._entries,
-      durationMs: this._entries.length > 0
-        ? this._entries[this._entries.length - 1].t
-        : 0,
+      durationMs: this._durationMs,
       inputCount: this._entries.length,
+      timeBasis: 'activeLevel',
     };
   }
 

@@ -523,7 +523,11 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         if (e.ctrlKey && e.altKey && e.shiftKey && e.metaKey) {
           gravitZeroActiveRef.current = !gravitZeroActiveRef.current;
           console.log('[SHORTCUT] Zero gravity:', gravitZeroActiveRef.current ? 'ON' : 'OFF');
-          replayLoggerRef.current.recordEvent('shortcut', { key: 'G', action: gravitZeroActiveRef.current ? 'zeroGravityOn' : 'zeroGravityOff' });
+          replayLoggerRef.current.recordEvent(
+            'shortcut',
+            { key: 'G', action: gravitZeroActiveRef.current ? 'zeroGravityOn' : 'zeroGravityOff' },
+            activeLevelTimeRef.current
+          );
           e.preventDefault();
           return;
         }
@@ -2250,7 +2254,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           if (p2Fire) p2Bitmask |= REPLAY_P2_INPUT_BITS.FIRE;
         }
 
-        replayLoggerRef.current.record(inputBitmask, p2Bitmask);
+        replayLoggerRef.current.record(inputBitmask, p2Bitmask, activeLevelTimeRef.current);
       }
 
       // Tractor beam raycast: beam shoots straight down until it hits the first obstacle.
@@ -3181,7 +3185,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             // Flying into sky with pod = start wormhole level-complete animation
             if (!levelCompleteTriggered.current && !wormholeRef.current.active) {
               levelCompleteTriggered.current = true;
-              replayLoggerRef.current.stop();
+              replayLoggerRef.current.stop(activeLevelTimeRef.current);
               wormholeRef.current = {
                 active: true,
                 progress: 0,
