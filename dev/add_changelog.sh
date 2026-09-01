@@ -55,6 +55,8 @@ DE_CHANGES=$(cat << EOF
 - Das geführte Tutorial wurde erweitert
 - Level 8 wurde neu gestaltet mit einem verzweigten, steilen Höhlennetz
 - Neue Schwerkraft-Region über den Höhlen in der Luft
+- Minen detonieren beim Kontakt
+- In der Highscore ist jetzt pro player name nur Eintrag
 EOF
 )
 
@@ -63,6 +65,8 @@ EN_CHANGES=$(cat << EOF
 - Improved the guided tutorial
 - Redesigned Level 8 with a branching, slope-heavy cave network
 - New low-gravity area above the caves in the sky
+- mines detonate on contact
+- In the Highscore, there is now only one entry per player name
 EOF
 )
 
