@@ -373,8 +373,9 @@ export class AutoAccountManager {
     }
   }
 
-  async fetchLeaderboard({ packVersion, playerMode, level, recordType }) {
+  async fetchLeaderboard({ packId, packVersion, playerMode, level, recordType }) {
     const params = new URLSearchParams({
+      packId,
       packVersion,
       playerMode,
       recordType: recordType || 'level',

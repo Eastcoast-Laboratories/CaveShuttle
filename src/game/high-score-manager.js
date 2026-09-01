@@ -230,15 +230,17 @@ export class HighScoreManager {
     return null;
   }
 
-  static _hasCompletedLevel({ packId, packVersion, level, mode }) {
+  static _hasCompletedLevel(record) {
     const data = this._getHighscoreData();
+    const playerKey = this._playerKey(record);
     return data.levelRecords.some(
-      r =>
-        r.completed === true &&
-        r.packId === packId &&
-        r.packVersion === packVersion &&
-        r.level === level &&
-        r.mode === mode
+      candidate =>
+        candidate.completed === true &&
+        candidate.packId === record.packId &&
+        candidate.packVersion === record.packVersion &&
+        candidate.level === record.level &&
+        candidate.mode === record.mode &&
+        this._playerKey(candidate) === playerKey
     );
   }
 
@@ -253,10 +255,8 @@ export class HighScoreManager {
 
     const data = this._getHighscoreData();
 
-    if (!record.completed && !record.runId) {
-      if (this._hasCompletedLevel(record)) {
-        return { saved: false, reason: 'Completed level already exists for this combination' };
-      }
+    if (!record.completed && this._hasCompletedLevel(record)) {
+      return { saved: false, reason: 'Completed level already exists for this combination' };
     }
 
     const newRecord = {
@@ -314,6 +314,23 @@ export class HighScoreManager {
     return entries.slice(0, 10).map((entry, index) => ({ rank: index + 1, ...entry }));
   }
 
+  static _playerKey(record) {
+    const names = [record.name, record.player2Name]
+      .filter(name => typeof name === 'string' && name.trim())
+      .map(name => name.trim().toLocaleLowerCase('en-US'));
+    if (record.mode === 'two') names.sort();
+    return JSON.stringify([record.mode, names]);
+  }
+
+  static _bestPerPlayer(entries) {
+    const best = new Map();
+    for (const entry of this._sortEntries(entries)) {
+      const key = this._playerKey(entry);
+      if (!best.has(key)) best.set(key, entry);
+    }
+    return [...best.values()];
+  }
+
   static getLevelTop10({ packId, packVersion, level, mode }) {
     const data = this._getHighscoreData();
     const entries = data.levelRecords.filter(
@@ -325,7 +342,7 @@ export class HighScoreManager {
     );
     const completed = entries.filter(r => r.completed);
     const source = completed.length > 0 ? completed : entries;
-    return this._withRanks(this._sortEntries(source));
+    return this._withRanks(this._bestPerPlayer(source));
   }
 
   static getLevelRecords({ packId, packVersion, level, mode }) {
@@ -337,19 +354,26 @@ export class HighScoreManager {
         r.level === level &&
         r.mode === mode
     );
-    return this._sortEntries(entries).map((entry, index) => ({ rank: index + 1, ...entry }));
+    return this._bestPerPlayer(entries).map((entry, index) => ({ rank: index + 1, ...entry }));
   }
 
   static getRunTop10({ packId, packVersion, mode }) {
+    return this.getRunRecords({ packId, packVersion, mode }).slice(0, 10);
+  }
+
+  static getRunRecords({ packId, packVersion, mode }) {
     const data = this._getHighscoreData();
     const entries = data.runRecords.filter(
       r => r.packId === packId && r.packVersion === packVersion && r.mode === mode
     );
-    return this._withRanks(this._sortEntries(entries));
+    return this._bestPerPlayer(entries).map((entry, index) => ({ rank: index + 1, ...entry }));
   }
 
   static _matchesName(record, name) {
-    return record.name === name || record.player2Name === name;
+    const normalizedName = name.trim().toLocaleLowerCase('en-US');
+    return [record.name, record.player2Name].some(
+      candidate => typeof candidate === 'string' && candidate.trim().toLocaleLowerCase('en-US') === normalizedName
+    );
   }
 
   static getPersonalBestLevel({ packId, packVersion, level, mode, name }) {
@@ -397,7 +421,7 @@ export class HighScoreManager {
     const entries = data.runRecords.filter(
       r => r.packId === packId && r.packVersion === packVersion && r.mode === mode
     );
-    const sorted = this._sortEntries(entries);
+    const sorted = this._bestPerPlayer(entries);
     const index = sorted.findIndex(r => r.runId === runId);
     return index >= 0 ? index + 1 : null;
   }

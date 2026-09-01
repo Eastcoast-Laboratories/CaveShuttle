@@ -87,6 +87,17 @@ describe('HighScoreManager Phase 1', () => {
     expect(top[1].score).toBe(3000);
   });
 
+  it('returns only the best level score per player name, ignoring case', () => {
+    const firstRun = makeRun();
+    const secondRun = makeRun();
+    HighScoreManager.addLevelRecord(makeLevelRecord(firstRun, { score: 1000, name: 'Tester' }));
+    HighScoreManager.addLevelRecord(makeLevelRecord(secondRun, { score: 2500, name: 'tester' }));
+
+    const top = HighScoreManager.getLevelTop10({ packId: 'default', packVersion: '1', level: 1, mode: 'single' });
+    expect(top).toHaveLength(1);
+    expect(top[0].score).toBe(2500);
+  });
+
   it('does not save a failed level if a completed one already exists', () => {
     const run = makeRun();
     HighScoreManager.addLevelRecord(makeLevelRecord(run));
@@ -137,7 +148,7 @@ describe('HighScoreManager Phase 1', () => {
     expect(top[0].lastLevel).toBe(2);
   });
 
-  it('returns run top 10 sorted by totalScore descending', () => {
+  it('returns only the best run per player name, ignoring case', () => {
     for (let i = 0; i < 12; i++) {
       const run = makeRun();
       HighScoreManager.addRunRecord({
@@ -149,13 +160,56 @@ describe('HighScoreManager Phase 1', () => {
         lastLevel: 1,
         totalScore: i * 100,
         levelRecordIds: [],
-        name: 'Tester'
+        name: i % 2 === 0 ? 'Tester' : 'tester'
       });
     }
     const top = HighScoreManager.getRunTop10({ packId: 'default', packVersion: '1', mode: 'single' });
-    expect(top).toHaveLength(10);
+    expect(top).toHaveLength(1);
     expect(top[0].totalScore).toBe(1100);
-    expect(top[9].totalScore).toBe(200);
+  });
+
+  it('keeps different player names as separate local run scores', () => {
+    for (const [name, totalScore] of [['Alpha', 100], ['Beta', 200], ['Alpha', 300]]) {
+      const run = makeRun();
+      HighScoreManager.addRunRecord({
+        runId: run.runId,
+        packId: 'default',
+        packVersion: '1',
+        mode: 'single',
+        startLevel: 1,
+        lastLevel: 1,
+        totalScore,
+        levelRecordIds: [],
+        name
+      });
+    }
+    const top = HighScoreManager.getRunTop10({ packId: 'default', packVersion: '1', mode: 'single' });
+    expect(top.map(record => [record.name, record.totalScore])).toEqual([['Alpha', 300], ['Beta', 200]]);
+  });
+
+  it('uses an order-independent player pair for two-player scores', () => {
+    const scores = [
+      ['Alpha', 'Beta', 100],
+      ['beta', 'alpha', 300],
+      ['Alpha', 'Gamma', 200]
+    ];
+    for (const [name, player2Name, totalScore] of scores) {
+      const run = HighScoreManager.createRunContext({ packId: 'default', packVersion: '1', startLevel: 1, mode: 'two' });
+      HighScoreManager.addRunRecord({
+        runId: run.runId,
+        packId: run.packId,
+        packVersion: run.packVersion,
+        mode: run.mode,
+        startLevel: 1,
+        lastLevel: 1,
+        totalScore,
+        levelRecordIds: [],
+        name,
+        player2Name
+      });
+    }
+    const top = HighScoreManager.getRunTop10({ packId: 'default', packVersion: '1', mode: 'two' });
+    expect(top.map(record => record.totalScore)).toEqual([300, 200]);
   });
 
   it('resets all highscore and profile data', () => {

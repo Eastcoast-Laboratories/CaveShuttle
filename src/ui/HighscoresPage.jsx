@@ -33,7 +33,12 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
   const playerName = profile.name;
 
   const getDisplayName = (entry) => entry.player2Name ? `${entry.name} & ${entry.player2Name}` : entry.name;
-  const isOwnEntry = (entry) => entry.name === playerName || entry.player2Name === playerName;
+  const isOwnEntry = (entry) => {
+    const normalizedPlayerName = playerName.trim().toLocaleLowerCase('en-US');
+    return [entry.name, entry.player2Name].some(
+      name => typeof name === 'string' && name.trim().toLocaleLowerCase('en-US') === normalizedPlayerName
+    );
+  };
   const formatDateTime = (ts) => {
     if (!ts) return '';
     const d = new Date(ts);
@@ -74,9 +79,11 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
     if (!inTop10) {
       const ownAllRuns = [];
       for (const mode of modes) {
-        ownAllRuns.push(...HighScoreManager._getHighscoreData().runRecords.filter(
-          r => r.packId === selectedPackId && r.packVersion === pv && r.mode === mode
-        ));
+        ownAllRuns.push(...HighScoreManager.getRunRecords({
+          packId: selectedPackId,
+          packVersion: pv,
+          mode,
+        }));
       }
       const sortedOwn = HighScoreManager._sortEntries(ownAllRuns);
       const ownBest = sortedOwn.find(r => isOwnEntry(r));
@@ -105,6 +112,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
     const mode = selectedMode === 'all' ? 'single' : selectedMode;
     setOnlineLoading(true);
     autoAccountManager.fetchLeaderboard({
+      packId: selectedPackId,
       packVersion,
       playerMode: mode,
       recordType: activeTab === 'runs' ? 'run' : 'level',
@@ -116,7 +124,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
         setOnlineLeaderboard([]);
       }
     });
-  }, [effectiveShowOnline, packVersion, selectedMode, activeTab]);
+  }, [effectiveShowOnline, selectedPackId, packVersion, selectedMode, activeTab]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
