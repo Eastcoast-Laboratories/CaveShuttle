@@ -46,6 +46,26 @@ export class AutoAccountManager {
     this._registerPromise = null;
   }
 
+  // Detect common web crawlers and AI bots by user-agent string.
+  // Returns true if the user-agent looks like a bot.
+  _isBotUserAgent(ua) {
+    if (!ua || typeof ua !== 'string') return false;
+    const lower = ua.toLowerCase();
+    const botPatterns = [
+      'bot', 'crawler', 'spider', 'scraper', 'slurp',
+      'googlebot', 'bingbot', 'yandexbot', 'duckduckbot',
+      'baiduspider', 'sogou', 'exabot', 'facebot', 'facebookexternalhit',
+      'ia_archiver', 'archive.org_bot', 'applebot',
+      'gptbot', 'chatgpt', 'ccbot', 'anthropic-ai', 'claudebot',
+      'perplexitybot', 'amazonbot', 'semrushbot', 'ahrefsbot',
+      'mj12bot', 'dotbot', 'petalbot', 'bytespider',
+      'headless', 'phantomjs', 'selenium', 'puppeteer',
+      'wget', 'curl', 'python-requests', 'node-fetch',
+      'googleother', 'imagesift', 'diffbot', 'oai-searchbot',
+    ];
+    return botPatterns.some(p => lower.includes(p));
+  }
+
   async collectDeviceInfo() {
     if (this._cachedDeviceInfo) return this._cachedDeviceInfo;
 
@@ -120,6 +140,13 @@ export class AutoAccountManager {
       const authUser = this.getAuthUser();
       console.log('[AUTO_ACCOUNT] Already registered, skipping, user:', authUser);
       return { success: true, alreadyRegistered: true };
+    }
+
+    // Block web crawlers and AI bots from auto-registering
+    if (typeof navigator !== 'undefined' && this._isBotUserAgent(navigator.userAgent)) {
+      console.log('[AUTO_ACCOUNT] Bot user-agent detected, skipping auto-register:', navigator.userAgent);
+      this.setAuthStatus('failed');
+      return { success: false, reason: 'bot_detected' };
     }
 
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
