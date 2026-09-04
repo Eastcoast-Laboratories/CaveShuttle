@@ -112,6 +112,14 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
         onClick={(e) => e.stopPropagation()}
         className="tutorial-overlay__card"
       >
+        <button
+          className="tutorial-overlay__skip-btn"
+          onClick={onStartGuidedLevel || onDismiss}
+          title={guidedHints.skip}
+          aria-label={guidedHints.skip}
+        >
+          {guidedHints.skip} \u23ED
+        </button>
         <h2>{t.title}</h2>
         <p className="tutorial-overlay__intro">{t.intro}</p>
 
