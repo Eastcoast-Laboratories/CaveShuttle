@@ -994,7 +994,7 @@ function App() {
       } else if (gameState === 'levelcomplete') {
         if (e.key === ' ' || e.key === 'Space' || e.key === 'Enter') {
           // Block next-level shortcut when browser level limit is reached
-          if (capacitorManager.isWeb() && level >= BROWSER_MAX_LEVEL) {
+          if (capacitorManager.isWeb() && level >= BROWSER_MAX_LEVEL && lives <= 900) {
             e.preventDefault();
             return;
           }
@@ -1342,7 +1342,7 @@ function App() {
                   onPlayerNameChange={handlePlayerNameChange}
                   onPlayer2NameChange={handlePlayer2NameChange}
                   buttons={
-                    capacitorManager.isWeb() && level >= BROWSER_MAX_LEVEL ? (
+                    capacitorManager.isWeb() && level >= BROWSER_MAX_LEVEL && lives <= 900 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                         <p style={{ fontSize: '18px', fontWeight: '600', color: '#ffcc44', margin: 0 }}>
                           {t.browserLimitTitle.replace('{n}', level)}
