@@ -1329,7 +1329,7 @@ function App() {
               {/* Level complete overlay - centered over canvas */}
               {gameState === 'levelcomplete' && (
                 <EndOverlay
-                  title={t.levelComplete}
+                  title={t.levelComplete.replace('{n}', level)}
                   breakdown={scoreBreakdown}
                   total={levelScore}
                   totalLabel={t.scoreLabel}
