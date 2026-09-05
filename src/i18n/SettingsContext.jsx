@@ -75,6 +75,13 @@ export function SettingsProvider({ children }) {
     return stored === 'true';
   });
 
+  // Tilt steering mode: 'classic' (tilt to rotate + tilt back to thrust)
+  // or 'aim' (tilt direction = target heading, auto-thrust at 90% rotation)
+  const [tiltMode, setTiltMode] = useState(() => {
+    const stored = localStorage.getItem(storageKey('tiltMode'));
+    return stored === 'aim' ? 'aim' : 'classic';
+  });
+
   const [orientationMode, setOrientationMode] = useState(() => {
     const stored = localStorage.getItem(storageKey('orientationMode'));
     return stored === 'portrait' || stored === 'auto' ? stored : 'landscape';
@@ -118,6 +125,7 @@ export function SettingsProvider({ children }) {
   useEffect(() => { localStorage.setItem(storageKey('tiltNeutralBeta'), tiltNeutralBeta.toString()); }, [tiltNeutralBeta]);
   useEffect(() => { localStorage.setItem(storageKey('tiltNeutralGamma'), tiltNeutralGamma.toString()); }, [tiltNeutralGamma]);
   useEffect(() => { localStorage.setItem(storageKey('tiltSteeringRotated'), tiltSteeringRotated.toString()); }, [tiltSteeringRotated]);
+  useEffect(() => { localStorage.setItem(storageKey('tiltMode'), tiltMode); }, [tiltMode]);
   useEffect(() => { localStorage.setItem(storageKey('orientationMode'), orientationMode); }, [orientationMode]);
   useEffect(() => { applyOrientationLock(orientationMode); }, [orientationMode]);
   useEffect(() => { localStorage.setItem(storageKey('analyticsEnabled'), analyticsEnabled.toString()); }, [analyticsEnabled]);
@@ -152,6 +160,7 @@ export function SettingsProvider({ children }) {
     vibrationEnabled,
     tiltSteering,
     tiltSteeringRotated,
+    tiltMode,
     tiltNeutralBeta,
     tiltNeutralGamma,
     orientationMode,
@@ -160,7 +169,7 @@ export function SettingsProvider({ children }) {
     playerName,
     player2Name,
     currentPackId,
-  }), [language, showTouchButtons, joystickEnabled, soundVolume, touchButtonOpacity, vibrationEnabled, tiltSteering, tiltSteeringRotated, tiltNeutralBeta, tiltNeutralGamma, orientationMode, analyticsEnabled, twoPlayer, playerName, player2Name, currentPackId]);
+  }), [language, showTouchButtons, joystickEnabled, soundVolume, touchButtonOpacity, vibrationEnabled, tiltSteering, tiltSteeringRotated, tiltMode, tiltNeutralBeta, tiltNeutralGamma, orientationMode, analyticsEnabled, twoPlayer, playerName, player2Name, currentPackId]);
 
   // Sync settings to backend whenever onlineSyncEnabled is on and a setting changes
   const settingsSyncRef = useRef(false);
@@ -191,6 +200,7 @@ export function SettingsProvider({ children }) {
     tiltNeutralBeta, setTiltNeutralBeta,
     tiltNeutralGamma, setTiltNeutralGamma,
     tiltSteeringRotated, setTiltSteeringRotated,
+    tiltMode, setTiltMode,
     orientationMode, setOrientationMode,
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled, setOnlineSyncEnabled,
@@ -203,7 +213,7 @@ export function SettingsProvider({ children }) {
     collectSettings,
   }), [
     isMobile, showTouchButtons, joystickEnabled, soundVolume, touchButtonOpacity,
-    vibrationEnabled, tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, orientationMode,
+    vibrationEnabled, tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, orientationMode,
     analyticsEnabled, onlineSyncEnabled, twoPlayer, playerName, player2Name, currentPackId,
     ensureOneControlActive, collectSettings,
   ]);

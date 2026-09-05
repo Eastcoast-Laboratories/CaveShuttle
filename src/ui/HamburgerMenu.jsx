@@ -44,7 +44,7 @@ function SettingsSlider({ label, value, onChange, disabled = false }) {
   );
 }
 
-export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, installedPacks, onSwitchPack, onPackImported, onPackDeleted, podDocked, onShowTutorial, onPlayerNameChange, onPlayer2NameChange, onToggleOnlineSync, onToggleTouchButtons, onToggleJoystick, onToggleTiltSteering, onCalibrateTilt, networkRole = null }) {
+export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToMenu, appVersion, installedPacks, onSwitchPack, onPackImported, onPackDeleted, podDocked, onShowTutorial, onPlayerNameChange, onPlayer2NameChange, onToggleOnlineSync, onToggleTouchButtons, onToggleJoystick, onSetTiltMode, onCalibrateTilt, networkRole = null }) {
   const { language } = useLanguage();
   const t = hamburgerMenuTranslations[language] || hamburgerMenuTranslations.en;
   const {
@@ -54,6 +54,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
     touchButtonOpacity, setTouchButtonOpacity,
     vibrationEnabled, setVibrationEnabled,
     tiltSteering, tiltSteeringRotated, setTiltSteeringRotated,
+    tiltMode,
     orientationMode, setOrientationMode,
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled,
@@ -99,9 +100,18 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
     if (onToggleTouchButtons) onToggleTouchButtons();
   };
 
-  const handleToggleTiltSteering = () => {
-    console.log('[TOGGLE] Tilt Steering:', tiltSteering ? 'ON -> OFF' : 'OFF -> ON');
-    if (onToggleTiltSteering) onToggleTiltSteering();
+  const handleCycleTiltMode = () => {
+    // Cycle: off -> aim -> rotate -> off
+    let nextMode;
+    if (!tiltSteering) {
+      nextMode = 'aim';
+    } else if (tiltMode === 'aim') {
+      nextMode = 'classic';
+    } else {
+      nextMode = 'off';
+    }
+    console.log('[TOGGLE] Tilt Mode:', nextMode);
+    if (onSetTiltMode) onSetTiltMode(nextMode);
   };
 
   const handleToggleTiltRotation = () => {
@@ -366,15 +376,16 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
               <span className="toggle-label">{t.tiltSteering}</span>
               <button
                 onPointerDown={(e) => e.stopPropagation()}
-                onClick={handleToggleTiltSteering}
+                onClick={handleCycleTiltMode}
                 className={`hamburger-toggle-btn ${tiltSteering ? 'on' : 'off'}`}
               >
-                {tiltSteering ? t.on : t.off}
+                {!tiltSteering ? t.off : (tiltMode === 'aim' ? t.tiltModeAim : t.tiltModeClassic)}
               </button>
             </div>
             {tiltSteering && (
               <>
-                <p className="hamburger-hint">{t.tiltHint}</p>
+                <p className="hamburger-hint">{tiltMode === 'aim' ? t.tiltModeHint : t.tiltHint}</p>
+                <p className="hamburger-hint">{t.tapToFire}</p>
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={onCalibrateTilt}

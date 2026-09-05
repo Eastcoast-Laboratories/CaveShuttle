@@ -53,6 +53,7 @@ function App() {
     tiltNeutralBeta, setTiltNeutralBeta,
     tiltNeutralGamma, setTiltNeutralGamma,
     tiltSteeringRotated, setTiltSteeringRotated,
+    tiltMode, setTiltMode,
     orientationMode,
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled, setOnlineSyncEnabled,
@@ -1063,10 +1064,11 @@ function App() {
       if (next) setTiltSteering(false);
       ensureOneControlActive(showTouchButtons, next, tiltSteering, 'joystick');
     },
-    onToggleTiltSteering: () => {
-      const next = !tiltSteering;
+    onSetTiltMode: (mode) => {
+      const next = mode !== 'off';
       setTiltSteering(next);
       if (next) setJoystickEnabled(false);
+      if (mode === 'aim' || mode === 'classic') setTiltMode(mode);
       ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
     },
     onCalibrateTilt: () => { setTiltNeutralBeta(tiltSensorRef.current.beta); setTiltNeutralGamma(tiltSensorRef.current.gamma); },

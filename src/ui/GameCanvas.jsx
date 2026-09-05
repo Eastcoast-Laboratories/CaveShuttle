@@ -186,6 +186,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     showTouchButtons, joystickEnabled, isMobile,
     twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
     tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated,
+    tiltMode,
     orientationMode,
     tiltSensorRef,
   } = useSettings();
@@ -397,6 +398,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tiltRotateLeftRef = useRef(false);
   const tiltRotateRightRef = useRef(false);
   const tiltThrustRef = useRef(false);
+  // Aim-mode refs: track initial angular distance and previous diff for thrust-at-90% logic
+  const tiltAimInitialDiffRef = useRef(0);
+  const tiltAimPrevDiffRef = useRef(0);
 
   // Bullet impact tile expansion: maps "tileX,tileY" -> impact timestamp
   const tileImpactsRef = useRef(new Map());
@@ -411,6 +415,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       tiltRotateLeftRef.current = false;
       tiltRotateRightRef.current = false;
       tiltThrustRef.current = false;
+      tiltAimInitialDiffRef.current = 0;
+      tiltAimPrevDiffRef.current = 0;
       return;
     }
 
@@ -460,18 +466,71 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Screen gamma: relative to calibrated neutral gamma.
-      // Negative = tilt left, positive = tilt right -> rotation
-      const gammaDelta = screenGamma - tiltNeutralGamma;
-      const TILT_ROTATE_THRESHOLD = 5;
-      tiltRotateLeftRef.current = gammaDelta < -TILT_ROTATE_THRESHOLD;
-      tiltRotateRightRef.current = gammaDelta > TILT_ROTATE_THRESHOLD;
-
       // Screen beta: relative to calibrated neutral.
-      // Tilting phone back (screen up, negative betaDelta) = thrust ON.
-      // Tilting forward (screen down, positive betaDelta) = thrust OFF.
+      const gammaDelta = screenGamma - tiltNeutralGamma;
       const betaDelta = screenBeta - tiltNeutralBeta;
-      const TILT_THRUST_THRESHOLD = 10;
-      tiltThrustRef.current = betaDelta < -TILT_THRUST_THRESHOLD;
+
+      if (tiltMode === 'aim') {
+        // Aim mode: tilt direction defines target heading.
+        // Ship rotates towards target on shortest path.
+        // Thrust starts when 90% of rotation is complete (10% remaining).
+        const tiltMagnitude = Math.hypot(gammaDelta, betaDelta);
+        const TILT_AIM_DEADZONE = 5;
+
+        if (tiltMagnitude < TILT_AIM_DEADZONE) {
+          tiltRotateLeftRef.current = false;
+          tiltRotateRightRef.current = false;
+          tiltThrustRef.current = false;
+          tiltAimInitialDiffRef.current = 0;
+          tiltAimPrevDiffRef.current = 0;
+          return;
+        }
+
+        // Target angle: atan2(gammaDelta, -betaDelta) gives angle clockwise from up.
+        // gammaDelta > 0 = tilt right, betaDelta < 0 = tilt back (up).
+        const targetAngle = Math.atan2(gammaDelta, -betaDelta);
+
+        // Angular difference (shortest path, normalized to [-PI, PI])
+        let diff = targetAngle - ship.angle;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+
+        const absDiff = Math.abs(diff);
+        const TILT_AIM_REACHED = 0.05; // ~3° — close enough to stop rotating
+
+        // Track initial angular distance when a new rotation starts
+        // (previous diff was near target, now it's significant again)
+        if (absDiff > TILT_AIM_REACHED && tiltAimPrevDiffRef.current <= TILT_AIM_REACHED) {
+          tiltAimInitialDiffRef.current = absDiff;
+        }
+        // Update initial diff if target moved further away while rotating
+        if (absDiff > tiltAimInitialDiffRef.current) {
+          tiltAimInitialDiffRef.current = absDiff;
+        }
+        tiltAimPrevDiffRef.current = absDiff;
+
+        if (absDiff <= TILT_AIM_REACHED) {
+          // Reached target: stop rotating, keep thrust on
+          tiltRotateLeftRef.current = false;
+          tiltRotateRightRef.current = false;
+          tiltThrustRef.current = true;
+        } else {
+          // Rotate towards target on shortest path
+          tiltRotateLeftRef.current = diff < 0;
+          tiltRotateRightRef.current = diff > 0;
+          // Thrust when within 10% of initial angular distance
+          const initialDiff = tiltAimInitialDiffRef.current;
+          tiltThrustRef.current = initialDiff > 0 && absDiff <= initialDiff * 0.1;
+        }
+      } else {
+        // Classic mode: tilt left/right to rotate, tilt back to thrust.
+        const TILT_ROTATE_THRESHOLD = 5;
+        tiltRotateLeftRef.current = gammaDelta < -TILT_ROTATE_THRESHOLD;
+        tiltRotateRightRef.current = gammaDelta > TILT_ROTATE_THRESHOLD;
+
+        const TILT_THRUST_THRESHOLD = 10;
+        tiltThrustRef.current = betaDelta < -TILT_THRUST_THRESHOLD;
+      }
     };
 
     // Request permission on iOS 13+ (DeviceOrientationEvent.requestPermission)
@@ -488,7 +547,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
-  }, [tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltSensorRef]);
+  }, [tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, tiltSensorRef]);
 
   // [SOUND] Initialize the sound manager once and load all audio buffers.
   useEffect(() => {
