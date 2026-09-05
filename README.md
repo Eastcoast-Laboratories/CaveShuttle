@@ -33,15 +33,21 @@ A space game built with React, Vite, and HTML5 Canvas. Features modern graphics 
 | ↑ / W | Accelerate |
 | ← / A | Rotate Left |
 | → / D | Rotate Right |
-| Space / Ctrl | Tractor Beam / Pod docking|
+| Space / Ctrl | Shield / Tractor Beam (for Pod docking)|
 | X / Shift | Shoot |
 
 ### Tilt Steering
 
+- Touch button for Tractor Beam & shield / Pod docking
+- tap anywhere = fire
+
+#### 'aim' mode
+- tilt direction = target heading (ship rotates towards it)
+- auto-thrust when 90% rotation is complete (10% remaining)
+
+#### 'rotate' mode
 - turn left/right = ship rotation
 - tilt forward/back = thrust (relative to calibrated neutral position)
-- tap anywhere = fire
-- Touch button for Tractor Beam & shield / Pod docking
 
 ### Touch / Joystick Control
 

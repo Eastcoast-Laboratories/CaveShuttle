@@ -186,8 +186,12 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
             <h3>{t.tiltSteering.title}</h3>
             <p>{t.tiltSteering.hint}</p>
             <div className="tutorial-overlay__controls">
-              <div>{t.tiltSteering.rotate}</div>
-              <div>{t.tiltSteering.thrust}</div>
+              <div className="tutorial-overlay__mode-title">{t.tiltSteering.aimTitle}</div>
+              <div>{t.tiltSteering.aimDirection}</div>
+              <div>{t.tiltSteering.aimThrust}</div>
+              <div className="tutorial-overlay__mode-title">{t.tiltSteering.rotateTitle}</div>
+              <div>{t.tiltSteering.rotateRotate}</div>
+              <div>{t.tiltSteering.rotateThrust}</div>
               <div>{t.tiltSteering.fire}</div>
               <div>{t.tiltSteering.pod}</div>
             </div>

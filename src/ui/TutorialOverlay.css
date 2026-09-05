@@ -98,6 +98,12 @@
   font-size: 13px;
 }
 
+.tutorial-overlay__mode-title {
+  color: #ffcc44;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
 .tutorial-overlay canvas {
   width: 100%;
   max-width: 300px;

@@ -13,6 +13,13 @@ export const ROTATION_SNAP_ANGLE_THRESHOLD = 10; // degrees: when stopping rotat
 export const ROTATE_RAMP_MS = 500; // hold duration before fast rotation kicks in
 export const ROTATE_FAST_MULTIPLIER = 1.7; // speed multiplier after ramp or double-tap
 export const ROTATE_DOUBLE_TAP_MS = 300; // max interval between taps for double-tap detection
+
+// Tilt steering (aim mode) thresholds
+export const TILT_AIM_DEADZONE = 5;          // min tilt magnitude (degrees) to register a target
+export const TILT_AIM_REACHED = 3;          // degrees — angular difference considered "reached" (stop rotating, keep thrust on, unless aiming down)
+export const TILT_AIM_THRUST = 18;          // degrees — thrust starts when within this absolute angle of target
+export const TILT_AIM_DOWN_THRESHOLD = 45; // degrees — no-thrust half-window around straight down
+
 export const MAX_SPEED = 15; // maximum speed for the ship
 export const FRICTION = 0.99; // friction coefficient
 export const SHIELD_DURATION = 300; // frames

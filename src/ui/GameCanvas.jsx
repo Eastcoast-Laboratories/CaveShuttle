@@ -30,6 +30,7 @@ import {
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
   ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
+  TILT_AIM_DEADZONE, TILT_AIM_REACHED, TILT_AIM_THRUST, TILT_AIM_DOWN_THRESHOLD,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -398,8 +399,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tiltRotateLeftRef = useRef(false);
   const tiltRotateRightRef = useRef(false);
   const tiltThrustRef = useRef(false);
-  // Aim-mode refs: track initial angular distance and previous diff for thrust-at-90% logic
-  const tiltAimInitialDiffRef = useRef(0);
+  // Aim-mode ref: track previous diff to detect new rotation start
   const tiltAimPrevDiffRef = useRef(0);
 
   // Bullet impact tile expansion: maps "tileX,tileY" -> impact timestamp
@@ -415,7 +415,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       tiltRotateLeftRef.current = false;
       tiltRotateRightRef.current = false;
       tiltThrustRef.current = false;
-      tiltAimInitialDiffRef.current = 0;
       tiltAimPrevDiffRef.current = 0;
       return;
     }
@@ -475,20 +474,23 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Ship rotates towards target on shortest path.
         // Thrust starts when 90% of rotation is complete (10% remaining).
         const tiltMagnitude = Math.hypot(gammaDelta, betaDelta);
-        const TILT_AIM_DEADZONE = 5;
 
         if (tiltMagnitude < TILT_AIM_DEADZONE) {
           tiltRotateLeftRef.current = false;
           tiltRotateRightRef.current = false;
           tiltThrustRef.current = false;
-          tiltAimInitialDiffRef.current = 0;
           tiltAimPrevDiffRef.current = 0;
           return;
         }
 
         // Target angle: atan2(gammaDelta, -betaDelta) gives angle clockwise from up.
         // gammaDelta > 0 = tilt right, betaDelta < 0 = tilt back (up).
+        // angle 0 = up, ±π = down, π/2 = right, -π/2 = left.
         const targetAngle = Math.atan2(gammaDelta, -betaDelta);
+
+        // No-thrust zone: TILT_AIM_DOWN_THRESHOLD window around straight down.
+        // |targetAngle| > (180 - TILT_AIM_DOWN_THRESHOLD) means target is within the no-thrust zone.
+        const isAimingDown = Math.abs(targetAngle) > (180 - TILT_AIM_DOWN_THRESHOLD) * Math.PI / 180;
 
         // Angular difference (shortest path, normalized to [-PI, PI])
         let diff = targetAngle - ship.angle;
@@ -496,31 +498,19 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         while (diff < -Math.PI) diff += 2 * Math.PI;
 
         const absDiff = Math.abs(diff);
-        const TILT_AIM_REACHED = 0.05; // ~3° — close enough to stop rotating
-
-        // Track initial angular distance when a new rotation starts
-        // (previous diff was near target, now it's significant again)
-        if (absDiff > TILT_AIM_REACHED && tiltAimPrevDiffRef.current <= TILT_AIM_REACHED) {
-          tiltAimInitialDiffRef.current = absDiff;
-        }
-        // Update initial diff if target moved further away while rotating
-        if (absDiff > tiltAimInitialDiffRef.current) {
-          tiltAimInitialDiffRef.current = absDiff;
-        }
         tiltAimPrevDiffRef.current = absDiff;
 
-        if (absDiff <= TILT_AIM_REACHED) {
-          // Reached target: stop rotating, keep thrust on
+        if (absDiff <= TILT_AIM_REACHED * Math.PI / 180) {
+          // Reached target: stop rotating, keep thrust on (unless aiming down)
           tiltRotateLeftRef.current = false;
           tiltRotateRightRef.current = false;
-          tiltThrustRef.current = true;
+          tiltThrustRef.current = !isAimingDown;
         } else {
           // Rotate towards target on shortest path
           tiltRotateLeftRef.current = diff < 0;
           tiltRotateRightRef.current = diff > 0;
-          // Thrust when within 10% of initial angular distance
-          const initialDiff = tiltAimInitialDiffRef.current;
-          tiltThrustRef.current = initialDiff > 0 && absDiff <= initialDiff * 0.1;
+          // Thrust when within TILT_AIM_THRUST degrees of target (unless aiming down)
+          tiltThrustRef.current = !isAimingDown && absDiff <= TILT_AIM_THRUST * Math.PI / 180;
         }
       } else {
         // Classic mode: tilt left/right to rotate, tilt back to thrust.
