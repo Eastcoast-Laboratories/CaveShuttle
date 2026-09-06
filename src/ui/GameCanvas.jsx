@@ -2178,6 +2178,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Record angle when rotation STARTS (transition from not rotating to rotating)
           if (isRotating && !wasRotatingRef.current) {
             rotationStartAngleRef.current = ship.angle;
+            // Tilt rotation uses the same ramp as touch/keyboard. If the ramp timer was not
+            // initialized by a touch/keyboard handler, initialize it here for tilt.
+            if (touchRotateStartTimeRef.current === 0) {
+              touchRotateStartTimeRef.current = Date.now();
+              touchRotateFastRef.current = false;
+            }
             // Check if starting near vertical (within threshold) -> activate slow mode
             const angleDeg = (ship.angle * 180 / Math.PI) % 360;
             const normalizedAngle = angleDeg < 0 ? angleDeg + 360 : angleDeg;
@@ -2211,6 +2217,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Check if rotation stops
           if (!isRotating && wasRotatingRef.current) {
             if (tiltSteering) vibrateIfEnabled(VIBRATE_ROTATE_STOP);
+            // Reset rotation ramp for all sources (touch/keyboard also reset in their own handlers,
+            // but this ensures tilt rotation resets the ramp so the next tilt gesture starts slow).
+            touchRotateFastRef.current = false;
+            touchRotateStartTimeRef.current = 0;
             // Snap to vertical if current angle is close to vertical and snapping is not disabled
             if (!rotationSnapDisabledRef.current) {
               const currentAngleDeg = (ship.angle * 180 / Math.PI) % 360;
