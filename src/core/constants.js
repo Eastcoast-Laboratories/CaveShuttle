@@ -25,6 +25,7 @@ export const TILT_AIM_FIRM_HYSTERESIS = 10;   // degrees — while stutter is ac
 export const TILT_AIM_STUTTER_INTERVAL_MS = 200; // ms — on/off duration for stutter thrust
 export const TILT_AIM_REACHED = 3;          // degrees — angular difference to target considered "reached" (stop rotating, start thrust depending on tilt magnitude)
 export const TILT_AIM_THRUST = 18;          // degrees — at medium tilt magnitude, auto-thrust kicks in when the rotation angle is this close to target heading
+export const TILT_AIM_LONG_ROTATION = 40;   // degrees — medium auto-thrust only after the current tilt gesture demanded at least this much rotation; otherwise thrust starts in stutter mode
 export const TILT_AIM_DOWN_THRESHOLD = 45; // degrees — at medium tilt magnitude, no auto-thrust within this half-window of straight down
 
 export const MAX_SPEED = 15; // maximum speed for the ship

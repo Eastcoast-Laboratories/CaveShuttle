@@ -30,7 +30,7 @@ import {
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
   ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
-  TILT_AIM_REACHED,
+  TILT_AIM_REACHED, TILT_AIM_LONG_ROTATION,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -403,10 +403,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   // Aim-mode ref: track previous diff to detect new rotation start
   const tiltAimPrevDiffRef = useRef(0);
   const tiltAimSensorBandRef = useRef(null);
-  // Aim-mode: true once the ship rotated towards the target during the current tilt gesture
-  // (reset in deadzone/light). Medium auto-thrust requires this so an already aligned ship
-  // does not get continuous thrust before the stutter threshold is reached.
-  const tiltAimRotatedThisGestureRef = useRef(false);
+  // Aim-mode: largest angular difference (degrees) demanded during the current tilt gesture
+  // (reset in deadzone/light). Medium auto-thrust requires a long rotation (TILT_AIM_LONG_ROTATION),
+  // otherwise thrust always starts in stutter mode.
+  const tiltAimGestureMaxDiffRef = useRef(0);
   // Aim-mode stutter thrust state is advanced by the game loop, independently of sensor events and rotation.
   const tiltAimStutterActiveRef = useRef(false);
   const tiltAimStutterPhaseStartRef = useRef(0);
@@ -445,7 +445,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       tiltThrustRef.current = false;
       tiltAimPrevDiffRef.current = 0;
       tiltAimSensorBandRef.current = null;
-      tiltAimRotatedThisGestureRef.current = false;
+      tiltAimGestureMaxDiffRef.current = 0;
       resetStutter('off');
       return;
     }
@@ -529,7 +529,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           tiltRotateRightRef.current = false;
           tiltThrustRef.current = false;
           tiltAimPrevDiffRef.current = 0;
-          tiltAimRotatedThisGestureRef.current = false;
+          tiltAimGestureMaxDiffRef.current = 0;
           resetStutter(magnitudeBand, tiltMagnitude);
           return;
         }
@@ -552,9 +552,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const reachedTarget = absDiff <= TILT_AIM_REACHED * Math.PI / 180;
         tiltRotateLeftRef.current = !reachedTarget && diff < 0;
         tiltRotateRightRef.current = !reachedTarget && diff > 0;
-        if (!reachedTarget && !tiltAimRotatedThisGestureRef.current) {
-          tiltAimRotatedThisGestureRef.current = true;
-          console.log('[TILT_AIM_GESTURE] Rotation started, diff:', (diff * 180 / Math.PI).toFixed(1) + '°');
+        const absDiffDeg = absDiff * 180 / Math.PI;
+        if (absDiffDeg > tiltAimGestureMaxDiffRef.current) {
+          const wasLong = tiltAimGestureMaxDiffRef.current >= TILT_AIM_LONG_ROTATION;
+          tiltAimGestureMaxDiffRef.current = absDiffDeg;
+          if (!wasLong && absDiffDeg >= TILT_AIM_LONG_ROTATION) {
+            console.log('[TILT_AIM_GESTURE] Long rotation demanded, diff:', absDiffDeg.toFixed(1) + '° -> medium auto-thrust allowed');
+          }
         }
 
         // Thrust depends only on the tilt magnitude band. Rotation towards the target heading
@@ -567,15 +571,15 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           tiltThrustRef.current = tiltAimStutterThrustOnRef.current;
         } else if (magnitudeBand === TILT_AIM_BAND.LIGHT) {
           resetStutter(magnitudeBand, tiltMagnitude);
-          tiltAimRotatedThisGestureRef.current = false;
+          tiltAimGestureMaxDiffRef.current = 0;
           tiltThrustRef.current = false;
         } else {
           resetStutter(magnitudeBand, tiltMagnitude);
           tiltThrustRef.current = isTiltAimMediumThrustOn({
             isAimingDown,
-            rotatedThisGesture: tiltAimRotatedThisGestureRef.current,
+            gestureMaxDiffDeg: tiltAimGestureMaxDiffRef.current,
             reachedTarget,
-            absDiffDeg: absDiff * 180 / Math.PI,
+            absDiffDeg,
           });
         }
       } else {

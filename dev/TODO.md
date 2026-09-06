@@ -8,3 +8,4 @@
 - [ ] explosive obstacles
 - [ ] der feuer button ist ev. nicht mehr nötig oder eine neue option im menu, den auszublenden
 - [ ] der stutter muss verfeinert werden, abhängig vom winkel, je weiter weg vom 0°( schiff zeigt nach oben), desto länger muss die pause zwischen den kurzen pulsen sein
+- [ ] es muss ein efekt kommen, wenn man nahe dem syky threshhold ist ohnepod, bevor man explodier

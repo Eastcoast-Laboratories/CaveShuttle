@@ -10,6 +10,7 @@ import {
   TILT_AIM_FIRM_MAGNITUDE,
   TILT_AIM_FIRM_HYSTERESIS,
   TILT_AIM_STUTTER_INTERVAL_MS,
+  TILT_AIM_LONG_ROTATION,
 } from '../../src/core/constants.js';
 import {
   TILT_AIM_BAND,
@@ -20,13 +21,15 @@ import {
 } from '../../src/core/tilt-steering.js';
 
 describe('aim-mode medium auto-thrust', () => {
-  it('stays off for an already aligned ship until the gesture actually rotated it', () => {
+  it('stays off unless the gesture demanded a long rotation', () => {
     const aligned = { isAimingDown: false, reachedTarget: true, absDiffDeg: 0 };
-    expect(isTiltAimMediumThrustOn({ ...aligned, rotatedThisGesture: false })).toBe(false);
-    expect(isTiltAimMediumThrustOn({ ...aligned, rotatedThisGesture: true })).toBe(true);
-    expect(isTiltAimMediumThrustOn({ ...aligned, rotatedThisGesture: true, isAimingDown: true })).toBe(false);
-    expect(isTiltAimMediumThrustOn({ isAimingDown: false, rotatedThisGesture: true, reachedTarget: false, absDiffDeg: 10 })).toBe(true);
-    expect(isTiltAimMediumThrustOn({ isAimingDown: false, rotatedThisGesture: true, reachedTarget: false, absDiffDeg: 30 })).toBe(false);
+    const longRotation = TILT_AIM_LONG_ROTATION;
+    expect(isTiltAimMediumThrustOn({ ...aligned, gestureMaxDiffDeg: 0 })).toBe(false);
+    expect(isTiltAimMediumThrustOn({ ...aligned, gestureMaxDiffDeg: longRotation - 0.1 })).toBe(false);
+    expect(isTiltAimMediumThrustOn({ ...aligned, gestureMaxDiffDeg: longRotation })).toBe(true);
+    expect(isTiltAimMediumThrustOn({ ...aligned, gestureMaxDiffDeg: longRotation, isAimingDown: true })).toBe(false);
+    expect(isTiltAimMediumThrustOn({ isAimingDown: false, gestureMaxDiffDeg: longRotation, reachedTarget: false, absDiffDeg: 10 })).toBe(true);
+    expect(isTiltAimMediumThrustOn({ isAimingDown: false, gestureMaxDiffDeg: longRotation, reachedTarget: false, absDiffDeg: 30 })).toBe(false);
   });
 });
 

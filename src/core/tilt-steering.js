@@ -8,6 +8,7 @@ import {
   TILT_AIM_STUTTER_INTERVAL_MS,
   TILT_AIM_DOWN_THRESHOLD,
   TILT_AIM_THRUST,
+  TILT_AIM_LONG_ROTATION,
 } from './constants.js';
 
 export const TILT_AIM_BAND = Object.freeze({
@@ -41,11 +42,11 @@ export function getTiltAimInput(gammaDelta, betaDelta, stutterActive = false) {
   return { tiltMagnitude, targetAngle, magnitudeBand, isAimingDown };
 }
 
-// Medium auto-thrust only starts after the ship actually rotated towards the target during the
-// current tilt gesture. If the ship was already aligned when the tilt began, medium gives no thrust,
-// so reaching the stutter threshold starts the pulse cycle fresh instead of on top of a running thrust.
-export function isTiltAimMediumThrustOn({ isAimingDown, rotatedThisGesture, reachedTarget, absDiffDeg }) {
-  if (isAimingDown || !rotatedThisGesture) return false;
+// Medium auto-thrust only starts after the current tilt gesture demanded a long rotation
+// (largest angular difference seen in the gesture >= TILT_AIM_LONG_ROTATION). Otherwise medium
+// gives no thrust, so thrust always begins in stutter mode with a fresh pulse cycle.
+export function isTiltAimMediumThrustOn({ isAimingDown, gestureMaxDiffDeg, reachedTarget, absDiffDeg }) {
+  if (isAimingDown || gestureMaxDiffDeg < TILT_AIM_LONG_ROTATION) return false;
   return reachedTarget || absDiffDeg <= TILT_AIM_THRUST;
 }
 
