@@ -16,12 +16,12 @@ export const ROTATE_DOUBLE_TAP_MS = 300; // max interval between taps for double
 
 // Tilt steering (aim mode) thresholds
 export const TILT_AIM_DEADZONE = 5;          // degrees — below this tilt magnitude: treated as holding the phone level (no target)
-export const TILT_AIM_LIGHT_MAGNITUDE = 15;   // degrees — below this tilt magnitude: only rotate, no auto-thrust
-export const TILT_AIM_STUTTER_MAGNITUDE = 25; // degrees — between medium and firm: pulsing thrust (on/off at TILT_AIM_STUTTER_INTERVAL_MS)
+export const TILT_AIM_LIGHT_MAGNITUDE = 10;   // degrees — below this tilt magnitude: only rotate, no auto-thrust
+export const TILT_AIM_STUTTER_MAGNITUDE = 20; // degrees — between medium and firm: pulsing thrust (on/off at TILT_AIM_STUTTER_INTERVAL_MS)
 export const TILT_AIM_STUTTER_HYSTERESIS = 10; // degrees — once entered, retain stutter across the medium range while navigating
-export const TILT_AIM_FIRM_MAGNITUDE = 45;    // degrees — above this tilt magnitude: thrust immediately (even while rotating, even when aiming down)
+export const TILT_AIM_FIRM_MAGNITUDE = 25;    // degrees — above this tilt magnitude: thrust immediately (even while rotating, even when aiming down)
 // between TILT_AIM_LIGHT_MAGNITUDE and TILT_AIM_STUTTER_MAGNITUDE: auto-thrust when near target (see TILT_AIM_THRUST / TILT_AIM_DOWN_THRESHOLD)
-export const TILT_AIM_STUTTER_INTERVAL_MS = 200; // ms — stutter thrust-on duration and minimum thrust-off duration at target angle 0°
+export const TILT_AIM_STUTTER_INTERVAL_MS = 100; // ms — stutter thrust-on duration and minimum thrust-off duration at target angle 0°
 export const TILT_AIM_STUTTER_MAX_PAUSE_MS = 1000; // ms — thrust-off duration at the edge of the downward no-thrust zone
 export const TILT_AIM_REACHED = 3;          // degrees — angular difference to target considered "reached" (stop rotating, start thrust depending on tilt magnitude)
 export const TILT_AIM_THRUST = 18;          // degrees — at medium tilt magnitude, auto-thrust kicks in when the rotation angle is this close to target heading
