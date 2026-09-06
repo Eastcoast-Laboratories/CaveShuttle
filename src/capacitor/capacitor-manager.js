@@ -54,55 +54,6 @@ export class CapacitorManager {
     return /Android/.test(navigator.userAgent || '');
   }
 
-  async loadPlugin(pluginName) {
-    try {
-      const plugin = await import(`@capacitor/${pluginName}`);
-      return plugin;
-    } catch (error) {
-      console.error(`Failed to load plugin ${pluginName}:`, error);
-      return null;
-    }
-  }
-
-  async SplashScreen() {
-    const SplashScreen = await this.loadPlugin('splash-screen');
-    if (SplashScreen) {
-      return SplashScreen;
-    }
-    return null;
-  }
-
-  async StatusBar() {
-    const StatusBar = await this.loadPlugin('status-bar');
-    if (StatusBar) {
-      return StatusBar;
-    }
-    return null;
-  }
-
-  async App() {
-    const App = await this.loadPlugin('app');
-    if (App) {
-      return App;
-    }
-    return null;
-  }
-
-  async Device() {
-    const Device = await this.loadPlugin('device');
-    if (Device) {
-      return Device;
-    }
-    return null;
-  }
-
-  async Haptics() {
-    const Haptics = await this.loadPlugin('haptics');
-    if (Haptics) {
-      return Haptics;
-    }
-    return null;
-  }
 }
 
 // Singleton instance — lightweight, reads window.Capacitor once at import time.
