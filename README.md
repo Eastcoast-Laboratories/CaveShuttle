@@ -43,7 +43,11 @@ A space game built with React, Vite, and HTML5 Canvas. Features modern graphics 
 
 #### 'aim' mode
 - tilt direction = target heading (ship rotates towards it)
-- auto-thrust when 90% rotation is complete (10% remaining)
+- tilt magnitude controls auto-thrust behavior:
+  - light tilt: only rotate, no auto-thrust
+  - medium tilt: auto-thrust kicks in when rotation angle is near where the ship is currently pointing, except within 45° half-window of straight down (no auto-thrust pointing down)
+  - firm tilt: thrust immediately, even while rotating, even when aiming down
+- when target is reached: stop rotating, auto-thrust depending on tilt magnitude
 
 #### 'rotate' mode
 - turn left/right = ship rotation

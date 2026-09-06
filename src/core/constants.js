@@ -15,10 +15,13 @@ export const ROTATE_FAST_MULTIPLIER = 1.7; // speed multiplier after ramp or dou
 export const ROTATE_DOUBLE_TAP_MS = 300; // max interval between taps for double-tap detection
 
 // Tilt steering (aim mode) thresholds
-export const TILT_AIM_DEADZONE = 5;          // min tilt magnitude (degrees) to register a target
-export const TILT_AIM_REACHED = 3;          // degrees — angular difference considered "reached" (stop rotating, keep thrust on, unless aiming down)
-export const TILT_AIM_THRUST = 18;          // degrees — thrust starts when within this absolute angle of target
-export const TILT_AIM_DOWN_THRESHOLD = 45; // degrees — no-thrust half-window around straight down
+export const TILT_AIM_DEADZONE = 5;          // degrees — below this tilt magnitude: treated as holding the phone level (no target)
+export const TILT_AIM_LIGHT_MAGNITUDE = 15;   // degrees — below this tilt magnitude: only rotate, no auto-thrust
+export const TILT_AIM_FIRM_MAGNITUDE = 35;    // degrees — above this tilt magnitude: thrust immediately (even while rotating, even when aiming down)
+// between TILT_AIM_LIGHT_MAGNITUDE and TILT_AIM_FIRM_MAGNITUDE: auto-thrust when near target (see TILT_AIM_THRUST / TILT_AIM_DOWN_THRESHOLD)
+export const TILT_AIM_REACHED = 3;          // degrees — angular difference to target considered "reached" (stop rotating, start thrust depending on tilt magnitude)
+export const TILT_AIM_THRUST = 18;          // degrees — at medium tilt magnitude, auto-thrust kicks in when the rotation angle is this close to target heading
+export const TILT_AIM_DOWN_THRESHOLD = 45; // degrees — at medium tilt magnitude, no auto-thrust within this half-window of straight down
 
 export const MAX_SPEED = 15; // maximum speed for the ship
 export const FRICTION = 0.99; // friction coefficient

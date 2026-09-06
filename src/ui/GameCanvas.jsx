@@ -30,7 +30,7 @@ import {
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
   ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
-  TILT_AIM_DEADZONE, TILT_AIM_REACHED, TILT_AIM_THRUST, TILT_AIM_DOWN_THRESHOLD,
+  TILT_AIM_DEADZONE, TILT_AIM_LIGHT_MAGNITUDE, TILT_AIM_FIRM_MAGNITUDE, TILT_AIM_REACHED, TILT_AIM_THRUST, TILT_AIM_DOWN_THRESHOLD,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -501,16 +501,32 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         tiltAimPrevDiffRef.current = absDiff;
 
         if (absDiff <= TILT_AIM_REACHED * Math.PI / 180) {
-          // Reached target: stop rotating, keep thrust on (unless aiming down)
+          // Reached target: stop rotating
           tiltRotateLeftRef.current = false;
           tiltRotateRightRef.current = false;
-          tiltThrustRef.current = !isAimingDown;
+          // Weak tilt: no thrust. Strong tilt: thrust even when aiming down.
+          // Normal tilt: thrust unless aiming down.
+          if (tiltMagnitude < TILT_AIM_LIGHT_MAGNITUDE) {
+            tiltThrustRef.current = false;
+          } else if (tiltMagnitude >= TILT_AIM_FIRM_MAGNITUDE) {
+            tiltThrustRef.current = true;
+          } else {
+            tiltThrustRef.current = !isAimingDown;
+          }
         } else {
           // Rotate towards target on shortest path
           tiltRotateLeftRef.current = diff < 0;
           tiltRotateRightRef.current = diff > 0;
-          // Thrust when within TILT_AIM_THRUST degrees of target (unless aiming down)
-          tiltThrustRef.current = !isAimingDown && absDiff <= TILT_AIM_THRUST * Math.PI / 180;
+          // Firm tilt magnitude: thrust immediately, even while rotating, even when aiming down.
+          // Light tilt magnitude: no thrust.
+          // Normal tilt magnitude: thrust when within TILT_AIM_THRUST degrees of target (unless aiming down).
+          if (tiltMagnitude >= TILT_AIM_FIRM_MAGNITUDE) {
+            tiltThrustRef.current = true;
+          } else if (tiltMagnitude < TILT_AIM_LIGHT_MAGNITUDE) {
+            tiltThrustRef.current = false;
+          } else {
+            tiltThrustRef.current = !isAimingDown && absDiff <= TILT_AIM_THRUST * Math.PI / 180;
+          }
         }
       } else {
         // Classic mode: tilt left/right to rotate, tilt back to thrust.
