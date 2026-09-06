@@ -118,7 +118,7 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
           title={guidedHints.skip}
           aria-label={guidedHints.skip}
         >
-          {guidedHints.skip} \u23ED
+          {guidedHints.skip} {'\u23ED'}
         </button>
         <h2>{t.title}</h2>
         <p className="tutorial-overlay__intro">{t.intro}</p>
