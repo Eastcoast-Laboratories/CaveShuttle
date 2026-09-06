@@ -30,7 +30,7 @@ import {
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
   ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
-  TILT_AIM_DEADZONE, TILT_AIM_LIGHT_MAGNITUDE, TILT_AIM_FIRM_MAGNITUDE, TILT_AIM_REACHED, TILT_AIM_THRUST, TILT_AIM_DOWN_THRESHOLD,
+  TILT_AIM_REACHED,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -52,6 +52,7 @@ import {
   GUIDED_ACTIVE_SIM_BEFORE_TRACTOR_MS, GUIDED_HOLD_TRACTOR_THRUST_MS,
   GUIDED_HOLD_THRUST_ESCAPE_MS, GUIDED_ACTIVE_SIM_BEFORE_ESCAPE_MS,
 } from '../core/constants.js';
+import { TILT_AIM_BAND, getTiltAimInput, isTiltAimMediumThrustOn, isTiltAimStutterThrustOn } from '../core/tilt-steering.js';
 import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { vibrate } from '../core/haptics.js';
 import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
@@ -401,6 +402,15 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tiltThrustRef = useRef(false);
   // Aim-mode ref: track previous diff to detect new rotation start
   const tiltAimPrevDiffRef = useRef(0);
+  const tiltAimSensorBandRef = useRef(null);
+  // Aim-mode: true once the ship rotated towards the target during the current tilt gesture
+  // (reset in deadzone/light). Medium auto-thrust requires this so an already aligned ship
+  // does not get continuous thrust before the stutter threshold is reached.
+  const tiltAimRotatedThisGestureRef = useRef(false);
+  // Aim-mode stutter thrust state is advanced by the game loop, independently of sensor events and rotation.
+  const tiltAimStutterActiveRef = useRef(false);
+  const tiltAimStutterPhaseStartRef = useRef(0);
+  const tiltAimStutterThrustOnRef = useRef(false);
 
   // Bullet impact tile expansion: maps "tileX,tileY" -> impact timestamp
   const tileImpactsRef = useRef(new Map());
@@ -411,12 +421,38 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
   // [TILT] Listen to deviceorientation events and update sensor ref + tilt state
   useEffect(() => {
+    const resetStutter = (nextBand, tiltMagnitude) => {
+      if (tiltAimStutterActiveRef.current) {
+        const magnitudeText = Number.isFinite(tiltMagnitude) ? ` at ${tiltMagnitude.toFixed(1)}°` : '';
+        console.log('[TILT_STUTTER] Left stutter magnitude for', nextBand + magnitudeText);
+      }
+      tiltAimStutterActiveRef.current = false;
+      tiltAimStutterPhaseStartRef.current = 0;
+      tiltAimStutterThrustOnRef.current = false;
+    };
+
+    const enterStutter = (tiltMagnitude) => {
+      if (tiltAimStutterActiveRef.current) return;
+      tiltAimStutterActiveRef.current = true;
+      tiltAimStutterPhaseStartRef.current = performance.now();
+      tiltAimStutterThrustOnRef.current = true;
+      console.log('[TILT_STUTTER] Entered stutter magnitude at', tiltMagnitude.toFixed(1) + '°, phase: ON');
+    };
+
     if (!tiltSteering) {
       tiltRotateLeftRef.current = false;
       tiltRotateRightRef.current = false;
       tiltThrustRef.current = false;
       tiltAimPrevDiffRef.current = 0;
+      tiltAimSensorBandRef.current = null;
+      tiltAimRotatedThisGestureRef.current = false;
+      resetStutter('off');
       return;
+    }
+
+    if (tiltMode !== 'aim') {
+      tiltAimSensorBandRef.current = null;
+      resetStutter('classic');
     }
 
     const handleOrientation = (e) => {
@@ -472,25 +508,38 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       if (tiltMode === 'aim') {
         // Aim mode: tilt direction defines target heading.
         // Ship rotates towards target on shortest path.
-        // Thrust starts when 90% of rotation is complete (10% remaining).
-        const tiltMagnitude = Math.hypot(gammaDelta, betaDelta);
+        // Tilt magnitude selects the automatic thrust behavior.
+        const { tiltMagnitude, targetAngle, magnitudeBand, isAimingDown } =
+          getTiltAimInput(gammaDelta, betaDelta, tiltAimStutterActiveRef.current);
+        if (magnitudeBand !== tiltAimSensorBandRef.current) {
+          console.log(
+            '[TILT_AIM_SENSOR] Band:', (tiltAimSensorBandRef.current || 'none') + ' -> ' + magnitudeBand,
+            '| orientation:', orientAngle,
+            '| raw beta/gamma:', rawBeta.toFixed(1) + '/' + rawGamma.toFixed(1),
+            '| screen beta/gamma:', screenBeta.toFixed(1) + '/' + screenGamma.toFixed(1),
+            '| delta beta/gamma:', betaDelta.toFixed(1) + '/' + gammaDelta.toFixed(1),
+            '| magnitude:', tiltMagnitude.toFixed(1),
+            '| target:', (targetAngle * 180 / Math.PI).toFixed(1) + '°'
+          );
+          tiltAimSensorBandRef.current = magnitudeBand;
+        }
 
-        if (tiltMagnitude < TILT_AIM_DEADZONE) {
+        if (magnitudeBand === TILT_AIM_BAND.DEADZONE) {
           tiltRotateLeftRef.current = false;
           tiltRotateRightRef.current = false;
           tiltThrustRef.current = false;
           tiltAimPrevDiffRef.current = 0;
+          tiltAimRotatedThisGestureRef.current = false;
+          resetStutter(magnitudeBand, tiltMagnitude);
           return;
         }
 
         // Target angle: atan2(gammaDelta, -betaDelta) gives angle clockwise from up.
         // gammaDelta > 0 = tilt right, betaDelta < 0 = tilt back (up).
         // angle 0 = up, ±π = down, π/2 = right, -π/2 = left.
-        const targetAngle = Math.atan2(gammaDelta, -betaDelta);
 
         // No-thrust zone: TILT_AIM_DOWN_THRESHOLD window around straight down.
         // |targetAngle| > (180 - TILT_AIM_DOWN_THRESHOLD) means target is within the no-thrust zone.
-        const isAimingDown = Math.abs(targetAngle) > (180 - TILT_AIM_DOWN_THRESHOLD) * Math.PI / 180;
 
         // Angular difference (shortest path, normalized to [-PI, PI])
         let diff = targetAngle - ship.angle;
@@ -500,33 +549,34 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const absDiff = Math.abs(diff);
         tiltAimPrevDiffRef.current = absDiff;
 
-        if (absDiff <= TILT_AIM_REACHED * Math.PI / 180) {
-          // Reached target: stop rotating
-          tiltRotateLeftRef.current = false;
-          tiltRotateRightRef.current = false;
-          // Weak tilt: no thrust. Strong tilt: thrust even when aiming down.
-          // Normal tilt: thrust unless aiming down.
-          if (tiltMagnitude < TILT_AIM_LIGHT_MAGNITUDE) {
-            tiltThrustRef.current = false;
-          } else if (tiltMagnitude >= TILT_AIM_FIRM_MAGNITUDE) {
-            tiltThrustRef.current = true;
-          } else {
-            tiltThrustRef.current = !isAimingDown;
-          }
+        const reachedTarget = absDiff <= TILT_AIM_REACHED * Math.PI / 180;
+        tiltRotateLeftRef.current = !reachedTarget && diff < 0;
+        tiltRotateRightRef.current = !reachedTarget && diff > 0;
+        if (!reachedTarget && !tiltAimRotatedThisGestureRef.current) {
+          tiltAimRotatedThisGestureRef.current = true;
+          console.log('[TILT_AIM_GESTURE] Rotation started, diff:', (diff * 180 / Math.PI).toFixed(1) + '°');
+        }
+
+        // Thrust depends only on the tilt magnitude band. Rotation towards the target heading
+        // continues independently, so entering or changing rotation never restarts stutter timing.
+        if (magnitudeBand === TILT_AIM_BAND.FIRM) {
+          resetStutter(magnitudeBand, tiltMagnitude);
+          tiltThrustRef.current = true;
+        } else if (magnitudeBand === TILT_AIM_BAND.STUTTER) {
+          enterStutter(tiltMagnitude);
+          tiltThrustRef.current = tiltAimStutterThrustOnRef.current;
+        } else if (magnitudeBand === TILT_AIM_BAND.LIGHT) {
+          resetStutter(magnitudeBand, tiltMagnitude);
+          tiltAimRotatedThisGestureRef.current = false;
+          tiltThrustRef.current = false;
         } else {
-          // Rotate towards target on shortest path
-          tiltRotateLeftRef.current = diff < 0;
-          tiltRotateRightRef.current = diff > 0;
-          // Firm tilt magnitude: thrust immediately, even while rotating, even when aiming down.
-          // Light tilt magnitude: no thrust.
-          // Normal tilt magnitude: thrust when within TILT_AIM_THRUST degrees of target (unless aiming down).
-          if (tiltMagnitude >= TILT_AIM_FIRM_MAGNITUDE) {
-            tiltThrustRef.current = true;
-          } else if (tiltMagnitude < TILT_AIM_LIGHT_MAGNITUDE) {
-            tiltThrustRef.current = false;
-          } else {
-            tiltThrustRef.current = !isAimingDown && absDiff <= TILT_AIM_THRUST * Math.PI / 180;
-          }
+          resetStutter(magnitudeBand, tiltMagnitude);
+          tiltThrustRef.current = isTiltAimMediumThrustOn({
+            isAimingDown,
+            rotatedThisGesture: tiltAimRotatedThisGestureRef.current,
+            reachedTarget,
+            absDiffDeg: absDiff * 180 / Math.PI,
+          });
         }
       } else {
         // Classic mode: tilt left/right to rotate, tilt back to thrust.
@@ -1945,6 +1995,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     };
 
     const currentTime = performance.now();
+
+    // Advance stutter thrust on every animation frame. Sensor events only select the
+    // magnitude band; rotation and sensor event frequency cannot restart or stall this clock.
+    if (tiltSteering && tiltMode === 'aim' && tiltAimStutterActiveRef.current) {
+      const thrustOn = isTiltAimStutterThrustOn(tiltAimStutterPhaseStartRef.current, currentTime);
+      if (thrustOn !== tiltAimStutterThrustOnRef.current) {
+        tiltAimStutterThrustOnRef.current = thrustOn;
+        console.log('[TILT_STUTTER] Phase:', thrustOn ? 'ON' : 'OFF');
+      }
+      tiltThrustRef.current = thrustOn;
+    }
+
     const frameElapsedMs = currentTime - lastTimeRef.current;
     const gameDeltaMs = frozen ? 0 : frameElapsedMs;
     gameTimeRef.current += gameDeltaMs;

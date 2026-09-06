@@ -45,7 +45,8 @@ A space game built with React, Vite, and HTML5 Canvas. Features modern graphics 
 - tilt direction = target heading (ship rotates towards it)
 - tilt magnitude controls auto-thrust behavior:
   - light tilt: only rotate, no auto-thrust
-  - medium tilt: auto-thrust kicks in when rotation angle is near where the ship is currently pointing, except within 45° half-window of straight down (no auto-thrust pointing down)
+  - medium tilt: auto-thrust starts when the remaining rotation angle to the target heading is small, except within a 45° half-window around straight down
+  - stutter tilt: pulsing thrust with multiple on/off cycles per second; the cycle starts with thrust on and continues while navigating
   - firm tilt: thrust immediately, even while rotating, even when aiming down
 - when target is reached: stop rotating, auto-thrust depending on tilt magnitude
 

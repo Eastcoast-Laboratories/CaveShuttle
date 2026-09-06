@@ -7,3 +7,4 @@
 - [ ] der editor die zufällige hügelige oberfläche, die aufsteigende und absteigende boden-hügelkette muss immer wenn die Richtung wechselt Modetrends einmal auf der selben Höhe bleiben um rechtzeitig das slope elements to zeichnen, das die umgekehrte Richtung einleitet
 - [ ] explosive obstacles
 - [ ] der feuer button ist ev. nicht mehr nötig oder eine neue option im menu, den auszublenden
+- [ ] der stutter muss verfeinert werden, abhängig vom winkel, je weiter weg vom 0°( schiff zeigt nach oben), desto länger muss die pause zwischen den kurzen pulsen sein
