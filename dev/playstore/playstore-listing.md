@@ -7,12 +7,12 @@ Cave Shuttle
 
 ### Short description (80 characters max)
 
-Pilot a spaceship through dangerous caves, rescue the pod, and escape into the sky
+Pilot a spaceship through dangerous caves, rescue the pod, and escape into space
 
 ### Full description (4,000 characters max)
-Pilot a spaceship through dangerous caves, rescue the pod, and escape into the sky.
+Pilot a spaceship through dangerous caves, rescue the pod, and escape into space.
 
-Cave Shuttle is a physics-based arcade game about precision flying, fuel management, and momentum control. Navigate through cave levels, dodge walls and enemy fire, dock the pod, and deliver it back upward into open sky to complete the level.
+Cave Shuttle is a physics-based arcade game about precision flying, fuel management, and momentum control. Navigate through cave levels, dodge walls and enemy fire, dock the pod, and deliver it back upward into open space to complete the level.
 
 FEATURES
 
@@ -34,7 +34,7 @@ Use the on-screen touch buttons, a virtual joystick, or gyroscope tilt for accel
 
 1. Fly close to the pod.
 2. Activate the tractor beam to dock it under your ship.
-3. Fly upward into the sky with the pod to finish the level.
+3. Fly upward into space with the pod to finish the level.
 4. Earn more points by flying efficiently, collecting fuel, triggering level elements, destroying bunkers, and finishing quickly.
 
 HIGH SCORES

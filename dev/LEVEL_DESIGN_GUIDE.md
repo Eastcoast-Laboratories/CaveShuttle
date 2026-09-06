@@ -345,7 +345,7 @@ Die ersten 10 Zeilen sind Metadaten im genauen Format. Breite und Höhe sind fre
 
 ## Harte Regeln (keine Ausnahmen)
 
-- Mindestens ein `*` (Start-/Respawn-Punkt) in freiem Raum oben; mehrere `*` sind erlaubt (maximal zwei pro `#######`-Respawn-Bereich). Das Level wird gewonnen, indem man mit dem Pod in den Himmel fliegt, nicht durch das `*`.
+- Mindestens ein `*` (Start-/Respawn-Punkt) in freiem Raum oben; mehrere `*` sind erlaubt (maximal zwei pro `#######`-Respawn-Bereich). Das Level wird gewonnen, indem man mit dem Pod in den Weltraum fliegt, nicht durch das `*`.
 - Genau ein Pod-Halter `m` mit den Stand-Platten `0`, `1`, `2`, `3`, `4` (siehe `LEVEL_DESIGN_GUIDE.md` Abschnitt 5) tief unten. Die Zelle direkt über `m` muss frei (` `) sein, damit der Pod spawnen kann.
 - Der linke und rechte Kartenrand jeder Zeile muss horizontal zusammenpassen (gleiche Boden-/Deckenhöhe), damit das Wrap-around nicht ins Terrain teleportiert.
 - Jede Tür (`H` links, `G` rechts) muss auf derselben Zeile stehen und mit soliden `p`-Kacheln zwischen den Begrenzern gefüllt sein. Mehrere solcher Zeilen übereinander bilden eine größere Tür. Schaltflächen `L` (linke Wand) oder `N` (rechte Wand) müssen aus einem offenen Korridor heraus schießbar sein.

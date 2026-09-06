@@ -1,6 +1,6 @@
-Flieg ein Raumschiff durch gefährliche Höhlen, rette die Frachtkugel und entkomme in den Himmel.
+Flieg ein Raumschiff durch gefährliche Höhlen, rette die Frachtkugel und entkomme in den Weltraum.
 
-Cave Shuttle ist ein physik-basiertes Arcade-Spiel über Präzisionsflug, Treibstoffmanagement und Impulskontrolle. Navigiere durch Höhlenlevel, weiche Wänden und feindlichem Feuer aus, docke die Frachtkugel an und bring sie zurück in den offenen Himmel, um das Level abzuschließen.
+Cave Shuttle ist ein physik-basiertes Arcade-Spiel über Präzisionsflug, Treibstoffmanagement und Impulskontrolle. Navigiere durch Höhlenlevel, weiche Wänden und feindlichem Feuer aus, docke die Frachtkugel an und bring sie zurück in den offenen Weltraum, um das Level abzuschließen.
 
 FUNKTIONEN
 
@@ -22,7 +22,7 @@ Verwende Touch-Buttons, einen virtuellen Joystick oder das Gyroskop für Beschle
 
 1. Flieg nah an die Frachtkugel heran.
 2. Aktiviere den Traktorstrahl, um sie unter dem Schiff anzudocken.
-3. Flieg mit der Frachtkugel nach oben in den Himmel, um das Level abzuschließen.
+3. Flieg mit der Frachtkugel nach oben in den Weltraum, um das Level abzuschließen.
 4. Sammle mehr Punkte durch effizientes Fliegen, Treibstoff sammeln, Level-Elemente auslösen, Bunker zerstören und schnelles Abschließen.
 
 HIGHSCORES

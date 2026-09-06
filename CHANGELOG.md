@@ -71,7 +71,7 @@
 - **Next Level sync**: When one player presses "Next Level" after level complete, the other player also advances
 - **Play Again sync**: Restarting after game over is synchronized between both players
 - **Enemy mine sync**: Host streams authoritative mine positions to the client every 50ms; client no longer runs independent mine physics
-- **Wormhole animation on client**: The wormhole effect (flying into the sky with the pod) now appears on both host and client, not just the host
+- **Wormhole animation on client**: The wormhole effect (flying into space with the pod) now appears on both host and client, not just the host
 - **Ship & pod explosion sync**: Explosion effects are mirrored on the other player's screen
 - **Bunker bullet sync**: Host broadcasts bunker bullet spawns to the client
 - **Shield & tractor beam sync**: Shield/tractor beam state is synchronized from host to client

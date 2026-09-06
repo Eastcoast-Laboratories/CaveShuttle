@@ -87,7 +87,7 @@ describe('TutorialHintOverlay', () => {
       />
     );
     expect(screen.getByText(/Step 6\/6/)).toBeTruthy();
-    expect(screen.getByText(/fly up into the sky/)).toBeTruthy();
+    expect(screen.getByText(/fly up into space/)).toBeTruthy();
   });
 
   it('renders tractorAndThrustAction as step 5/6', () => {

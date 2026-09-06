@@ -203,13 +203,13 @@ port 9208 only for localhost development.
 
 ### Objective
 
-The goal is to fly your ship through each level, pick up the pod using your tractor beam, and deliver it to the restart point. Once the pod is docked, fly into the sky to complete the level.
+The goal is to fly your ship through each level, pick up the pod using your tractor beam, and deliver it to the restart point. Once the pod is docked, fly into space to complete the level.
 
 ### Level Completion
 
 1. **Pick up the pod**: Get close to the pod and press Space to activate the tractor beam
 2. **Deliver to restart point**: Fly to the restart point (marked with a special tile)
-3. **Fly into sky**: With the pod towed, fly upward into the sky to complete the level
+3. **Fly into space**: With the pod towed, fly upward into space to complete the level
 
 ### Hazards
 

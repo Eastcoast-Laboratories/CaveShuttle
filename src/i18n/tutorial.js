@@ -10,7 +10,7 @@ export const tutorialTranslations = {
     intro: 'Hier erfährst du in Kürze, wie du deine erste Mission steuerst.',
     
     objective: 'Ziel',
-    objectiveText: 'Fliege über die Frachtkugel und aktiviere den Traktorstrahl, damit sie an deinem Schiff andockt. Schleppe sie an die Oberfläche und dort in den Himmel, um das Level zu beenden.',
+    objectiveText: 'Fliege über die Frachtkugel und aktiviere den Traktorstrahl, damit sie an deinem Schiff andockt. Schleppe sie an die Oberfläche und dort in den Weltraum, um das Level zu beenden.',
     
     dockingPodImageText: 'Die Frachtkugel dockt an dein Schiff, wenn du nah genug den Traktorstrahl aktivierst.',
     
@@ -79,7 +79,7 @@ export const tutorialTranslations = {
         hold: 'Halte Traktorstrahl und Schub gleichzeitig',
       },
       escapeThrustAction: {
-        text: 'Halte den Schub und fliege in den Himmel bis zum Wurmloch.',
+        text: 'Halte den Schub und fliege in den Weltraum bis zum Wurmloch.',
         hold: 'Halte den Schub',
       },
       holdProgress: (ms, target) => `${Math.max(0, Math.round(ms))} / ${target} ms`,
@@ -90,7 +90,7 @@ export const tutorialTranslations = {
     intro: 'This is a quick overview of how to control your first campaign.',
 
     objective: 'Objective',
-    objectiveText: 'Fly over the cargo pod and activate the tractor beam to dock it under your ship.<br>Then carry it up to the sky to finish the level.',
+    objectiveText: 'Fly over the cargo pod and activate the tractor beam to dock it under your ship.<br>Then carry it up into space to finish the level.',
 
     dockingPodImageText: 'The cargo pod will dock under your ship when you get close enough and activate the tractor beam.',
 
@@ -160,7 +160,7 @@ export const tutorialTranslations = {
         hold: 'Hold tractor beam and thrust together',
       },
       escapeThrustAction: {
-        text: 'Hold thrust and fly up into the sky to the wormhole.',
+        text: 'Hold thrust and fly up into space to the wormhole.',
         hold: 'Hold thrust',
       },
       holdProgress: (ms, target) => `${Math.max(0, Math.round(ms))} / ${target} ms`,
