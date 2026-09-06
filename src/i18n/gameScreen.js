@@ -38,6 +38,9 @@ export const gameScreenTranslations = {
     browserLimitText: 'Lade dir die App herunter, um alle {total} Level zu spielen.',
     iosComingSoon: 'iOS coming soon',
     replay: 'Nochmal',
+
+    // Sky return warning (shown when flying into sky without pod)
+    skyReturnWarning: 'Hole erst die Frachtkugel und schleppe sie in den Weltraum!',
   },
   en: {
     // Buttons
@@ -77,6 +80,9 @@ export const gameScreenTranslations = {
     browserLimitText: 'Download the app to play all {total} levels.',
     iosComingSoon: 'iOS coming soon',
     replay: 'Replay',
+
+    // Sky return warning (shown when flying into sky without pod)
+    skyReturnWarning: 'Pick up the cargo pod and tow it into space!',
   },
 };
 

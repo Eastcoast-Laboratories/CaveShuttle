@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNetwork } from '../network/NetworkContext.jsx';
 import { useSettings } from '../i18n/SettingsContext.jsx';
+import { getGameScreenTranslations } from '../i18n/gameScreen.js';
 import { Ship } from '../game/ship.js';
 import { Pod } from '../game/pod.js';
 import { Bunker } from '../game/bunker.js';
@@ -191,6 +192,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     tiltMode,
     orientationMode,
     tiltSensorRef,
+    language,
   } = useSettings();
   // [PORTRAIT_VIEWPORT] Width stays fixed at GAME_WIDTH (preserves the horizontal
   // tile scale and touch-button layout tuned for it). In portrait orientation the
@@ -362,6 +364,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const replayLoggerRef = useRef(new ReplayLogger());
   const shipDestroyed = useRef(false);
   const deathAnim = useRef({ active: false, timeLeft: 0 });
+  // Sky return: ship fades and shrinks upward (reversed respawn) when flying into sky without pod.
+  // No life lost — the ship respawns at the restart point after the animation.
+  const skyReturnAnim = useRef({ active: false, startTime: 0, pinged: false });
+  const skyReturnWarningRef = useRef(0); // gameTime when the warning text should disappear
   // God mode state: the ship bounces off walls, bunkers, fuel depots and reactors
   const godModeActiveRef = useRef(false);
   const godModeEndTimeRef = useRef(0);
@@ -1383,6 +1389,8 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           gameTimeRef.current = performance.now();
           replayLoggerRef.current.start();
           deathAnim.current = { active: false, timeLeft: 0 };
+          skyReturnAnim.current = { active: false, startTime: 0, pinged: false };
+          skyReturnWarningRef.current = 0;
           wormholeRef.current = { active: false, progress: 0, x: 0, y: 0, startTime: 0, started: false, shipStart: null, podOffset: null };
           podConnectScoreGivenRef.current = false;
           reactorDamageMsRef.current = 0;
@@ -2154,8 +2162,34 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
       }
 
-      // Handle input (skipped while the ship is exploding)
-      if (!isDying) {
+      // Sky return animation: a beam circle contracts around the ship and pulls it in
+      // (reversed respawn), then the ship reappears at the restart point in a respawn circle.
+      // No life is lost — this is not a death, just a gentle "go back and get the pod" reset.
+      const isSkyReturning = skyReturnAnim.current.active;
+      if (isSkyReturning) {
+        const SKY_RETURN_DURATION_MS = 1200;
+        const SKY_RETURN_RESPAWN_DELAY_MS = 3000;
+        const elapsed = gameNow - skyReturnAnim.current.startTime;
+        const progress = Math.min(elapsed / SKY_RETURN_DURATION_MS, 1);
+        // Particles fire immediately at the start, then the ring shrinks over the full duration
+        if (!skyReturnAnim.current.pinged) {
+          skyReturnAnim.current.pinged = true;
+          particleSystem.current.spawnExplosion(ship.x, ship.y, 20, '#88ccff');
+          particleSystem.current.spawnExplosion(ship.x, ship.y, 12, '#ffffff');
+          if (soundManager.current) soundManager.current.playOnce('respawn');
+          console.log('[SKY_RETURN] Particle burst at start, ship vanished at', ship.x.toFixed(0), ship.y.toFixed(0));
+        }
+        if (elapsed >= SKY_RETURN_DURATION_MS + SKY_RETURN_RESPAWN_DELAY_MS) {
+          skyReturnAnim.current.active = false;
+          // Respawn at restart point without losing a life
+          podWasDockedRef.current = false;
+          respawnShipAndPod();
+          console.log('[SKY_RETURN] Respawned after sky return at', ship.x.toFixed(0), ship.y.toFixed(0));
+        }
+      }
+
+      // Handle input (skipped while the ship is exploding or returning from sky)
+      if (!isDying && !isSkyReturning) {
 
         // Stop joystick rotation if the finger has held still (no pointermove events) for a short
         // window. pointermove only fires on movement, so silence means the finger stopped sliding.
@@ -3303,8 +3337,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const targetX = isWormholeActive ? wormholeRef.current.x - viewWidth / 2 : ship.x - viewWidth / 2;
         const targetY = isWormholeActive ? wormholeRef.current.y - viewHeight / 2 : ship.y - viewHeight / 2;
 
-        // Smooth camera interpolation (lerp)
-        const lerpFactor = 0.1;
+        // Smooth camera interpolation (lerp). During sky return the ship is stationary,
+        // so use a slower lerp to let the camera glide to a gentle stop instead of snapping.
+        const lerpFactor = skyReturnAnim.current.active ? 0.04 : 0.1;
         const clampedTargetX = Math.max(0, Math.min(targetX, Math.max(0, levelWidth - viewWidth)));
         // Allow camera to go above level (sky), but clamp bottom to show full level
         // If level is taller than canvas, clamp bottom to levelHeight - viewHeight
@@ -3360,9 +3395,21 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             // In god mode without pod: bounce off the sky boundary like a wall.
             ship.y = skyThreshold;
             ship.vy = Math.abs(ship.vy) * 0.5;
-          } else {
-            // Flying into sky without pod = explosion then respawn
-            destroyShip();
+          } else if (!skyReturnAnim.current.active && !shipDestroyed.current) {
+            // Flying into sky without pod: no explosion, no life lost.
+            // The ship fades and shrinks upward (reversed respawn), then reappears
+            // at the restart point with a warning to pick up the pod first.
+            skyReturnAnim.current = {
+              active: true,
+              startTime: gameNow,
+              pinged: false,
+            };
+            skyReturnWarningRef.current = gameNow + 3000;
+            ship.setVelocity(0, 0);
+            ship.setAccelerate(false);
+            if (soundManager.current) soundManager.current.playOnce('respawn');
+            vibrateIfEnabled([30, 40, 60]);
+            console.log('[SKY_RETURN] Sky without pod at', ship.x.toFixed(0), ship.y.toFixed(0), '— fade out, no life lost');
           }
         }
       }
@@ -3649,13 +3696,65 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const wormholeScale = isWormhole ? Math.max(0, 1 - easeInCubic(wormholeProgress)) : 1;
       const wormholeAlpha = isWormhole ? Math.max(0, 1 - wormholeProgress) : 1;
 
+      // Sky return: ship vanishes immediately with particles, then a ring shrinks down
+      const skyReturnProgress = skyReturnAnim.current.active
+        ? Math.min((gameNow - skyReturnAnim.current.startTime) / 1200, 1)
+        : 0;
+      // Ship disappears instantly at the start (particles fire in the game loop)
+      const skyReturnVisible = !skyReturnAnim.current.active;
+      const combinedScale = wormholeScale;
+      const combinedAlpha = wormholeAlpha;
+
       // Draw ship with camera offset (hidden while exploding)
       if (!isDying) {
+        // Sky return: particles fire first (in game loop), then two concentric rings shrink fast
+        if (skyReturnAnim.current.active) {
+          const srProgress = skyReturnProgress;
+          const beamScreenX = ship.x - cameraRef.current.x;
+          const beamScreenY = ship.y - cameraRef.current.y;
+          const beamPulse = Math.sin(performance.now() / 60) * 0.5 + 0.5;
+          // Outer ring: starts at 60px, shrinks very fast (cubic ease-in)
+          const outerMax = 60;
+          const outerMin = 2;
+          const outerEase = srProgress * srProgress * srProgress; // cubic ease-in for very fast shrink
+          const outerRadius = outerMax - (outerMax - outerMin) * outerEase;
+          const outerAlpha = Math.max(0, 1 - srProgress);
+          // Inner ring: smaller, starts at 25px, shrinks with the outer ring
+          const innerMax = 25;
+          const innerMin = 1;
+          const innerRadius = innerMax - (innerMax - innerMin) * outerEase;
+          const innerAlpha = Math.max(0, 1 - srProgress);
+          ctx.save();
+          // Outer glow
+          const beamGradient = ctx.createRadialGradient(beamScreenX, beamScreenY, 0, beamScreenX, beamScreenY, outerRadius + 12);
+          beamGradient.addColorStop(0, `rgba(136,204,255,${0.3 * outerAlpha})`);
+          beamGradient.addColorStop(0.7, `rgba(136,204,255,${0.12 * outerAlpha})`);
+          beamGradient.addColorStop(1, 'rgba(136,204,255,0)');
+          ctx.fillStyle = beamGradient;
+          ctx.beginPath();
+          ctx.arc(beamScreenX, beamScreenY, outerRadius + 12, 0, Math.PI * 2);
+          ctx.fill();
+          // Outer shrinking ring
+          ctx.beginPath();
+          ctx.arc(beamScreenX, beamScreenY, outerRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(200,230,255,${outerAlpha * (0.7 + beamPulse * 0.3)})`;
+          ctx.lineWidth = 2 + beamPulse * 1.5;
+          ctx.stroke();
+          // Inner shrinking ring (brighter, thinner)
+          ctx.beginPath();
+          ctx.arc(beamScreenX, beamScreenY, innerRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255,255,255,${innerAlpha * 0.8})`;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.restore();
+        }
+        // Ship is hidden after the ping (alpha = 0), drawn at full size before it
+        if (skyReturnVisible) {
         ctx.save();
         ctx.translate(ship.x - cameraRef.current.x, ship.y - cameraRef.current.y);
         ctx.rotate(ship.angle);
-        ctx.scale(wormholeScale, wormholeScale);
-        ctx.globalAlpha = wormholeAlpha;
+        ctx.scale(combinedScale, combinedScale);
+        ctx.globalAlpha = combinedAlpha;
 
         // Ship body
         const SHIP_SPRITE_WIDTH = 20;
@@ -3704,6 +3803,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         }
 
         ctx.restore();
+        } // end if (skyReturnVisible)
 
         // Draw shield circle around ship (when pod button is pressed)
         if (shieldAndBeamActive && !isWormhole) {
@@ -4038,6 +4138,29 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         ctx.fillStyle = '#ffaa00';
         ctx.font = 'bold 28px sans-serif';
         ctx.fillText('ESCAPE WITH POD!', cw / 2, ch / 3 + 52);
+        ctx.restore();
+      }
+
+      // Sky return warning: reminds the player to pick up the pod first (no explosion penalty)
+      if (skyReturnWarningRef.current > gameNow) {
+        const gsT = getGameScreenTranslations(language);
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const now = performance.now();
+        const pulse = 0.5 + 0.5 * Math.sin(now / 200);
+        const remainingMs = skyReturnWarningRef.current - gameNow;
+        const fadeAlpha = Math.min(1, remainingMs / 500);
+        ctx.globalAlpha = fadeAlpha;
+        ctx.fillStyle = `rgba(255, 200, 60, ${0.7 + pulse * 0.3})`;
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 12;
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gsT.skyReturnWarning, cw / 2, ch / 4);
+        ctx.shadowBlur = 0;
         ctx.restore();
       }
 
