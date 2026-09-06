@@ -411,6 +411,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const tiltAimStutterActiveRef = useRef(false);
   const tiltAimStutterPhaseStartRef = useRef(0);
   const tiltAimStutterThrustOnRef = useRef(false);
+  const tiltAimStutterTargetAngleRef = useRef(0);
 
   // Bullet impact tile expansion: maps "tileX,tileY" -> impact timestamp
   const tileImpactsRef = useRef(new Map());
@@ -568,6 +569,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           tiltThrustRef.current = true;
         } else if (magnitudeBand === TILT_AIM_BAND.STUTTER) {
           enterStutter(tiltMagnitude);
+          tiltAimStutterTargetAngleRef.current = targetAngle;
           tiltThrustRef.current = tiltAimStutterThrustOnRef.current;
         } else if (magnitudeBand === TILT_AIM_BAND.LIGHT) {
           resetStutter(magnitudeBand, tiltMagnitude);
@@ -2003,7 +2005,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     // Advance stutter thrust on every animation frame. Sensor events only select the
     // magnitude band; rotation and sensor event frequency cannot restart or stall this clock.
     if (tiltSteering && tiltMode === 'aim' && tiltAimStutterActiveRef.current) {
-      const thrustOn = isTiltAimStutterThrustOn(tiltAimStutterPhaseStartRef.current, currentTime);
+      const thrustOn = isTiltAimStutterThrustOn(tiltAimStutterPhaseStartRef.current, currentTime, tiltAimStutterTargetAngleRef.current);
       if (thrustOn !== tiltAimStutterThrustOnRef.current) {
         tiltAimStutterThrustOnRef.current = thrustOn;
         console.log('[TILT_STUTTER] Phase:', thrustOn ? 'ON' : 'OFF');

@@ -20,13 +20,13 @@ export const TILT_AIM_LIGHT_MAGNITUDE = 15;   // degrees — below this tilt mag
 export const TILT_AIM_STUTTER_MAGNITUDE = 25; // degrees — between medium and firm: pulsing thrust (on/off at TILT_AIM_STUTTER_INTERVAL_MS)
 export const TILT_AIM_STUTTER_HYSTERESIS = 10; // degrees — once entered, retain stutter across the medium range while navigating
 export const TILT_AIM_FIRM_MAGNITUDE = 45;    // degrees — above this tilt magnitude: thrust immediately (even while rotating, even when aiming down)
-export const TILT_AIM_FIRM_HYSTERESIS = 10;   // degrees — while stutter is active, firm requires this much extra tilt so a quick tilt gesture does not overshoot into firm
 // between TILT_AIM_LIGHT_MAGNITUDE and TILT_AIM_STUTTER_MAGNITUDE: auto-thrust when near target (see TILT_AIM_THRUST / TILT_AIM_DOWN_THRESHOLD)
-export const TILT_AIM_STUTTER_INTERVAL_MS = 200; // ms — on/off duration for stutter thrust
+export const TILT_AIM_STUTTER_INTERVAL_MS = 200; // ms — stutter thrust-on duration and minimum thrust-off duration at target angle 0°
+export const TILT_AIM_STUTTER_MAX_PAUSE_MS = 1000; // ms — thrust-off duration at the edge of the downward no-thrust zone
 export const TILT_AIM_REACHED = 3;          // degrees — angular difference to target considered "reached" (stop rotating, start thrust depending on tilt magnitude)
 export const TILT_AIM_THRUST = 18;          // degrees — at medium tilt magnitude, auto-thrust kicks in when the rotation angle is this close to target heading
 export const TILT_AIM_LONG_ROTATION = 40;   // degrees — medium auto-thrust only after the current tilt gesture demanded at least this much rotation; otherwise thrust starts in stutter mode
-export const TILT_AIM_DOWN_THRESHOLD = 45; // degrees — at medium tilt magnitude, no auto-thrust within this half-window of straight down
+export const TILT_AIM_DOWN_THRESHOLD = 45; // degrees — below firm magnitude, no auto-thrust within this half-window of straight down
 
 export const MAX_SPEED = 15; // maximum speed for the ship
 export const FRICTION = 0.99; // friction coefficient

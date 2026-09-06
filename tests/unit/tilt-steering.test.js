@@ -1,4 +1,4 @@
-// Verifies direction-independent aim-mode magnitude bands, navigation hysteresis, medium auto-thrust gating, and configured stutter timing.
+// Verifies direction-independent aim-mode magnitude bands, navigation hysteresis, medium auto-thrust gating, and angle-dependent stutter timing.
 // Run with: npx vitest run tests/unit/tilt-steering.test.js
 // This unit test needs no browser; browser-backed tests use $HOME/.playwright-browsers/chromium-1194/chrome-linux/chrome.
 import { describe, expect, it } from 'vitest';
@@ -8,14 +8,16 @@ import {
   TILT_AIM_STUTTER_MAGNITUDE,
   TILT_AIM_STUTTER_HYSTERESIS,
   TILT_AIM_FIRM_MAGNITUDE,
-  TILT_AIM_FIRM_HYSTERESIS,
   TILT_AIM_STUTTER_INTERVAL_MS,
+  TILT_AIM_STUTTER_MAX_PAUSE_MS,
   TILT_AIM_LONG_ROTATION,
+  TILT_AIM_DOWN_THRESHOLD,
 } from '../../src/core/constants.js';
 import {
   TILT_AIM_BAND,
   getTiltAimInput,
   getTiltAimMagnitudeBand,
+  getTiltAimStutterOffPauseMs,
   isTiltAimMediumThrustOn,
   isTiltAimStutterThrustOn,
 } from '../../src/core/tilt-steering.js';
@@ -69,21 +71,50 @@ describe('aim-mode tilt magnitude bands', () => {
   });
 
   it('does not let a quick tilt gesture overshoot from stutter into firm', () => {
-    const firmWhileStuttering = TILT_AIM_FIRM_MAGNITUDE + TILT_AIM_FIRM_HYSTERESIS;
     expect(getTiltAimMagnitudeBand(TILT_AIM_FIRM_MAGNITUDE, false)).toBe(TILT_AIM_BAND.FIRM);
-    expect(getTiltAimMagnitudeBand(TILT_AIM_FIRM_MAGNITUDE + 1.5, true)).toBe(TILT_AIM_BAND.STUTTER);
-    expect(getTiltAimMagnitudeBand(firmWhileStuttering - 0.1, true)).toBe(TILT_AIM_BAND.STUTTER);
-    expect(getTiltAimMagnitudeBand(firmWhileStuttering, true)).toBe(TILT_AIM_BAND.FIRM);
+    expect(getTiltAimMagnitudeBand(TILT_AIM_FIRM_MAGNITUDE - 0.1, true)).toBe(TILT_AIM_BAND.STUTTER);
   });
 });
 
 describe('aim-mode stutter timing', () => {
+  const DEG = Math.PI / 180;
+  const downEdgeRad = (180 - TILT_AIM_DOWN_THRESHOLD) * DEG;
+
+  it('off pause increases linearly from interval at 0° to max pause at the downward zone edge', () => {
+    expect(getTiltAimStutterOffPauseMs(0)).toBe(TILT_AIM_STUTTER_INTERVAL_MS);
+    expect(getTiltAimStutterOffPauseMs(downEdgeRad)).toBeCloseTo(TILT_AIM_STUTTER_MAX_PAUSE_MS, 5);
+    const midRad = downEdgeRad / 2;
+    const midPause = getTiltAimStutterOffPauseMs(midRad);
+    expect(midPause).toBeGreaterThan(TILT_AIM_STUTTER_INTERVAL_MS);
+    expect(midPause).toBeLessThan(TILT_AIM_STUTTER_MAX_PAUSE_MS);
+  });
+
   it('starts on and alternates at the configured interval without sensor updates', () => {
     const phaseStart = 1000;
-    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart)).toBe(true);
-    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS - 1)).toBe(true);
-    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS)).toBe(false);
-    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS * 2)).toBe(true);
-    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS * 3)).toBe(false);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart, 0)).toBe(true);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS - 1, 0)).toBe(true);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS, 0)).toBe(false);
+    const offPause = getTiltAimStutterOffPauseMs(0);
+    const cycle = TILT_AIM_STUTTER_INTERVAL_MS + offPause;
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + cycle, 0)).toBe(true);
+  });
+
+  it('gives no thrust inside the downward no-thrust zone', () => {
+    const phaseStart = 1000;
+    const insideDown = downEdgeRad + 5 * DEG;
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart, insideDown)).toBe(false);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + 500, insideDown)).toBe(false);
+  });
+
+  it('has a longer off pause near the downward zone edge than at 0°', () => {
+    const phaseStart = 1000;
+    const nearDown = downEdgeRad - 1 * DEG;
+    const offPauseNearDown = getTiltAimStutterOffPauseMs(nearDown);
+    const offPauseAtZero = getTiltAimStutterOffPauseMs(0);
+    // At 0° the OFF phase ends after interval ms; near the edge it lasts much longer
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS + offPauseAtZero - 1, 0)).toBe(false);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS + offPauseAtZero - 1, nearDown)).toBe(false);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS + offPauseNearDown - 1, nearDown)).toBe(false);
+    expect(isTiltAimStutterThrustOn(phaseStart, phaseStart + TILT_AIM_STUTTER_INTERVAL_MS + offPauseNearDown + 1, nearDown)).toBe(true);
   });
 });
