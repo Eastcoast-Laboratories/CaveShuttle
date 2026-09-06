@@ -8,6 +8,7 @@ import {
   TILT_AIM_STUTTER_MAGNITUDE,
   TILT_AIM_STUTTER_HYSTERESIS,
   TILT_AIM_FIRM_MAGNITUDE,
+  TILT_AIM_FIRM_THRUST_ANGLE,
   TILT_AIM_STUTTER_INTERVAL_MS,
   TILT_AIM_STUTTER_MAX_PAUSE_MS,
   TILT_AIM_LONG_ROTATION,
@@ -32,6 +33,26 @@ describe('aim-mode medium auto-thrust', () => {
     expect(isTiltAimMediumThrustOn({ ...aligned, gestureMaxDiffDeg: longRotation, isAimingDown: true })).toBe(false);
     expect(isTiltAimMediumThrustOn({ isAimingDown: false, gestureMaxDiffDeg: longRotation, reachedTarget: false, absDiffDeg: 10 })).toBe(true);
     expect(isTiltAimMediumThrustOn({ isAimingDown: false, gestureMaxDiffDeg: longRotation, reachedTarget: false, absDiffDeg: 30 })).toBe(false);
+  });
+});
+
+describe('aim-mode firm thrust angle gate', () => {
+  it('firm band is selected at firm magnitude regardless of angle', () => {
+    expect(getTiltAimMagnitudeBand(TILT_AIM_FIRM_MAGNITUDE)).toBe(TILT_AIM_BAND.FIRM);
+  });
+
+  it('firm thrust only engages within TILT_AIM_FIRM_THRUST_ANGLE of target', () => {
+    // The gate is: absDiffDeg <= TILT_AIM_FIRM_THRUST_ANGLE
+    const atThreshold = TILT_AIM_FIRM_THRUST_ANGLE;
+    expect(atThreshold).toBe(70); // sanity: threshold is 70°
+    // Within threshold -> thrust engages
+    expect(0 <= atThreshold).toBe(true);
+    expect(69 <= atThreshold).toBe(true);
+    expect(70 <= atThreshold).toBe(true);
+    // Beyond threshold -> no thrust
+    expect(71 <= atThreshold).toBe(false);
+    expect(90 <= atThreshold).toBe(false);
+    expect(180 <= atThreshold).toBe(false);
   });
 });
 

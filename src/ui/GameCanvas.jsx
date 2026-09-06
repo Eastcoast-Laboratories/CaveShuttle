@@ -30,7 +30,7 @@ import {
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
   ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
-  TILT_AIM_REACHED, TILT_AIM_LONG_ROTATION,
+  TILT_AIM_REACHED, TILT_AIM_LONG_ROTATION, TILT_AIM_FIRM_THRUST_ANGLE,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
   FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
@@ -566,7 +566,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // continues independently, so entering or changing rotation never restarts stutter timing.
         if (magnitudeBand === TILT_AIM_BAND.FIRM) {
           resetStutter(magnitudeBand, tiltMagnitude);
-          tiltThrustRef.current = true;
+          // In firm mode, thrust only engages when within TILT_AIM_FIRM_THRUST_ANGLE of the
+          // target heading. While still rotating toward the target, the ship only rotates.
+          tiltThrustRef.current = absDiffDeg <= TILT_AIM_FIRM_THRUST_ANGLE;
         } else if (magnitudeBand === TILT_AIM_BAND.STUTTER) {
           enterStutter(tiltMagnitude);
           tiltAimStutterTargetAngleRef.current = targetAngle;
