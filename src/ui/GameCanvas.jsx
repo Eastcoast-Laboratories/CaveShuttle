@@ -1436,9 +1436,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const levelHeightPx = layout.length * 16;
           const yBottom = Math.min(-sy * 16, levelHeightPx); // density 0 boundary
           const yFullDensity = -SKY_FULL_STAR_DENSITY;       // density 1 boundary
-          // Generate stars well above the delivery threshold, so the player flies through a
-          // full-density star field until reaching skyThreshold.
-          const yTop = -SKY_FULL_STAR_DENSITY;
+          // Generate stars well above the delivery threshold so the player flies through
+          // a full-density star field through the wormhole and beyond. The sky threshold is
+          // at -(SKY_FULL_STAR_DENSITY - SKY_DELIVERY_THRESHOLD); add extra margin above it
+          // so stars keep getting denser toward the top.
+          const skyThresholdY = -(SKY_FULL_STAR_DENSITY - SKY_DELIVERY_THRESHOLD);
+          const yTop = skyThresholdY - 600;
           // Seed from level dimensions and the configurable base seed so each
           // level has a deterministic star field. Change STAR_FIELD_SEED to
           // regenerate all star fields across every level.
@@ -1463,11 +1466,22 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const span = yBottom - yTop;
           if (span > 0) {
             // Density factor 0.004 gives a pleasing star density at full density.
-            const candidateCount = Math.round(span * lenx * 0.004);
+            // Above yFullDensity the density keeps increasing so stars get denser toward the top.
+            const candidateCount = Math.round(span * lenx * 0.006);
             for (let i = 0; i < candidateCount; i++) {
               const y = yTop + rng() * span;
-              // Linear density: 0 at yBottom, 1 at yFullDensity, clamped to [0,1].
-              const density = y >= yBottom ? 0 : Math.max(0, Math.min(1, (yBottom - y) / (yBottom - yFullDensity)));
+              // Linear density: 0 at yBottom, 1 at yFullDensity, then increasing above it
+              // so the star field gets denser the further up the player flies.
+              let density;
+              if (y >= yBottom) {
+                density = 0;
+              } else if (y >= yFullDensity) {
+                density = (yBottom - y) / (yBottom - yFullDensity);
+              } else {
+                // Above full density: keep increasing up to 1.5x
+                const aboveFraction = (yFullDensity - y) / (yFullDensity - yTop);
+                density = 1 + aboveFraction * 0.5;
+              }
               if (rng() > density) continue;
 
               const x = rng() * levelWidthPx;
