@@ -1552,12 +1552,16 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   // Handle bonus life popup from App: increment internal lives and show brief popup
   useEffect(() => {
     if (!bonusLifePopup) return;
-    setLives(prev => prev + 1);
-    if (onLivesChange) onLivesChange(livesRef.current + 1);
+    setLives(prev => {
+      const newLives = prev + 1;
+      if (onLivesChange) onLivesChange(newLives);
+      return newLives;
+    });
     setBonusLifeDisplay({ threshold: bonusLifePopup.threshold });
     const timer = setTimeout(() => setBonusLifeDisplay(null), 2500);
     return () => clearTimeout(timer);
-  }, [bonusLifePopup, onLivesChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onLivesChange is a stable useCallback; adding it would re-trigger the effect and loop lives
+  }, [bonusLifePopup]);
 
   // Load the ship sprite images once on mount.
   useEffect(() => {

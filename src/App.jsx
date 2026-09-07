@@ -804,9 +804,9 @@ function App() {
     checkBonusLifeThresholds();
   };
 
-  const handleLivesChange = (newLives) => {
+  const handleLivesChange = useCallback((newLives) => {
     setLives(newLives);
-  };
+  }, []);
 
   const handleSwitchPack = async (packId) => {
     let pack = installedPacks.find(p => p.id === packId);
