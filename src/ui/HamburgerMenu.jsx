@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import KeyLabel from './KeyLabel.jsx';
 import { parseImportedPackFile } from '../levels/level-pack-import.js';
 import { registerCustomPack } from '../levels/levelpacks.js';

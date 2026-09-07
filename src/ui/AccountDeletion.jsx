@@ -1,4 +1,3 @@
-import React from 'react';
 import './LegalPages.css';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { getAccountDeletionTranslations } from '../i18n/accountDeletion.js';

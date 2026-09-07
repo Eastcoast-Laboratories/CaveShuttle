@@ -1,4 +1,3 @@
-import React from 'react'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { multiplayerTranslations } from '../i18n/multiplayer.js'
 import './cave-theme.css'

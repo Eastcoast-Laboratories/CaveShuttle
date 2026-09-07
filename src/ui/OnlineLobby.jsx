@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNetwork } from '../network/NetworkContext.jsx'
 import { HighScoreManager } from '../game/high-score-manager.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'

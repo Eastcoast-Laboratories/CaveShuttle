@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { storageKey } from '../core/storage-keys.js';
 import { autoAccountManager } from '../game/auto-account.js';
 import { applyOrientationLock } from '../core/screen-orientation.js';

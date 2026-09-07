@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Web-based QR code scanner using getUserMedia + BarcodeDetector API.
 // Used as a fallback when the native Capacitor BarcodeScanner is not available

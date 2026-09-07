@@ -1,4 +1,3 @@
-import React from 'react';
 import { tutorialTranslations } from '../i18n/tutorial.js';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { VISIBLE_GUIDED_STEPS } from '../core/constants.js';

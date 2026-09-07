@@ -1,4 +1,3 @@
-import React from 'react';
 import './LegalPages.css';
 
 // Static Impressum page linked from the main menu.

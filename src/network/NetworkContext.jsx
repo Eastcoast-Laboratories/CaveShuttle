@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { CaveNetworkManager } from './CaveNetworkManager.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Impressum from './Impressum';
 import Datenschutz from './Datenschutz';
 import AccountDeletion from './AccountDeletion';

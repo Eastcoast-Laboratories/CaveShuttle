@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PlayerNameInput from './PlayerNameInput.jsx';
 import { useLanguage } from '../i18n/LanguageContext.jsx';
 import { useSettings } from '../i18n/SettingsContext.jsx';

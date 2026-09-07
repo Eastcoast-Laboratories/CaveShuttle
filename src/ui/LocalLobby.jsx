@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning'
 import { capacitorManager } from '../capacitor/capacitor-manager.js'

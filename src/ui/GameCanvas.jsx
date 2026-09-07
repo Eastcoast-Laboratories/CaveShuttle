@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useNetwork } from '../network/NetworkContext.jsx';
 import { useSettings } from '../i18n/SettingsContext.jsx';
 import { getGameScreenTranslations } from '../i18n/gameScreen.js';

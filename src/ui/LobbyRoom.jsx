@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNetwork } from '../network/NetworkContext.jsx'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 import { multiplayerTranslations } from '../i18n/multiplayer.js'

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Menu from './ui/Menu';
 import GameCanvas from './ui/GameCanvas';
 import EndOverlay from './ui/EndOverlay';

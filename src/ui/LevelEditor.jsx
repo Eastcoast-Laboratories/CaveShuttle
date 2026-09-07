@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parseImportedPackFile } from '../levels/level-pack-import.js';
 import { storageKey } from '../core/storage-keys.js';
 import { levelEditorTranslations } from '../i18n/levelEditor.js';

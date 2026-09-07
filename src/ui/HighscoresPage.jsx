@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './LegalPages.css';
 import './cave-theme.css';
 import './HighscoresPage.css';

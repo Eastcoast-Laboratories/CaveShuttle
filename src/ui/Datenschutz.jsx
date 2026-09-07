@@ -1,4 +1,3 @@
-import React from 'react';
 import './LegalPages.css';
 
 // Static data protection page linked from the main menu.
