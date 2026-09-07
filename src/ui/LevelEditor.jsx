@@ -211,7 +211,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
 
   const removeLevel = (levelId) => {
     setDraft(prev => {
-      const { [levelId]: _, ...rest } = prev.levels;
+      const rest = Object.fromEntries(Object.entries(prev.levels).filter(([k]) => k !== levelId));
       return { ...prev, levels: rest };
     });
   };

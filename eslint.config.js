@@ -25,7 +25,7 @@ export default [
     },
     rules: {
       'no-const-assign': 'error',
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': 'error',
       'react/jsx-uses-react': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-vars': 'error',
