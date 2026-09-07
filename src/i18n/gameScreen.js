@@ -41,6 +41,11 @@ export const gameScreenTranslations = {
 
     // Sky return warning (shown when flying into sky without pod)
     skyReturnWarning: 'Hole erst die Frachtkugel und schleppe sie in den Weltraum!',
+
+    // Orientation mismatch warning (shown once per game start when browser orientation
+    // doesn't match the settings)
+    orientationMismatchTitle: 'Orientierung',
+    orientationMismatchWarning: 'Die Bildschirmausrichtung stimmt nicht mit den Einstellungen überein. Wechsle im Menü in den passenden Modus, oder drehe dein Gerät / passe das Fenster an. Cave Shuttle wird am besten im Portrait-Modus gespielt.',
   },
   en: {
     // Buttons
@@ -83,6 +88,11 @@ export const gameScreenTranslations = {
 
     // Sky return warning (shown when flying into sky without pod)
     skyReturnWarning: 'Pick up the cargo pod and tow it into space!',
+
+    // Orientation mismatch warning (shown once per game start when browser orientation
+    // doesn't match the settings)
+    orientationMismatchTitle: 'Orientation',
+    orientationMismatchWarning: 'The screen orientation does not match the settings. Switch to the matching mode in the menu, or rotate your device / resize the window. Cave Shuttle is best played in portrait mode.',
   },
 };
 

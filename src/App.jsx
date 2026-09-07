@@ -6,6 +6,7 @@ import HamburgerMenu from './ui/HamburgerMenu';
 import TopRightMenu from './ui/TopRightMenu';
 import TutorialOverlay from './ui/TutorialOverlay';
 import TutorialHintOverlay from './ui/TutorialHintOverlay';
+import InfoHintOverlay from './ui/InfoHintOverlay';
 import LevelEditor from './ui/LevelEditor';
 import MultiplayerMenu from './ui/MultiplayerMenu';
 import LocalLobby from './ui/LocalLobby';
@@ -168,6 +169,7 @@ function App() {
 
   const [gravityMultiplier, setGravityMultiplier] = useState(1.0);
   const [gameSession, setGameSession] = useState(0); // Increments on each new game to force GameCanvas remount
+  const [orientationWarningDismissed, setOrientationWarningDismissed] = useState(false);
 
   // Check for ?level= URL parameter or #level= hash fragment to start game with a custom level (from external editor)
   useEffect(() => {
@@ -290,6 +292,7 @@ function App() {
 
   const handleStartGame = (isTwoPlayer = twoPlayer, role = null) => {
     setNewHighscore(null);
+    setOrientationWarningDismissed(false);
     const mode = isTwoPlayer ? 'two' : 'single';
     const pack = installedPacks.find(p => p.id === currentPackId);
     const packVersion = pack?.version || pack?.meta?.version || '1';
@@ -1423,6 +1426,27 @@ function App() {
           onStepBack={handleGuidedTutorialStepBack}
         />
       )}
+
+      {gameState === 'playing' && !orientationWarningDismissed && !guidedTutorialStep && (() => {
+        const isBrowserPortrait = typeof window !== 'undefined' && window.innerWidth < window.innerHeight;
+        const isSettingsPortrait = orientationMode === 'portrait';
+        const isSettingsLandscape = orientationMode === 'landscape';
+        // Warn when the visible screen ratio doesn't match the orientation setting.
+        // This applies to both mobile (actual orientation) and desktop (window proportions).
+        // 'auto' mode never triggers a warning — the user explicitly chose to follow the device.
+        const mismatch = (isBrowserPortrait && isSettingsLandscape) || (!isBrowserPortrait && isSettingsPortrait);
+        console.log('[ORIENTATION_WARN]', { orientationMode, isBrowserPortrait, isSettingsPortrait, isSettingsLandscape, mismatch, dismissed: orientationWarningDismissed });
+        if (mismatch) {
+          return (
+            <InfoHintOverlay
+              title={t.orientationMismatchTitle}
+              message={t.orientationMismatchWarning}
+              onDismiss={() => setOrientationWarningDismissed(true)}
+            />
+          );
+        }
+        return null;
+      })()}
     </div>
   );
 }
