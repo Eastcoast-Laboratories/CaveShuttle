@@ -1240,12 +1240,6 @@ function App() {
             <div id="hud-stats" className={isPortraitLayout ? 'hud-stats--portrait' : 'hud-stats--landscape'}>
               <span className="hud-score-label">SCORE </span>
               <span className="hud-score-value">{score}</span>
-              {/* LIVES display: 0 shows "0", 1-10 show hearts, 11-100 show infinite symbol (∞),
-                  >100 show lives % 3 as hearts (for screen recording with valid-looking count) */}
-              <span className="hud-score-label">LIVES </span>
-              <span className="hud-lives-value">{lives === 0
-                ? (isPortraitLayout ? '' : <span className="hud-score-value">0</span>)
-                : (lives > 100 ? '❤️'.repeat(Math.max(0, (lives % 3) + 1)) : lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives)))}</span>
               <div className="hud-fuel">
                 <span>FUEL</span>
                 <progress
@@ -1254,6 +1248,12 @@ function App() {
                   max="100"
                 />
               </div>
+              {/* LIVES display: 0 shows "0", 1-10 show hearts, 11-100 show infinite symbol (∞),
+                  >100 show lives % 3 as hearts (for screen recording with valid-looking count) */}
+              <span className="hud-score-label">LIVES </span>
+              <span className="hud-lives-value">{lives === 0
+                ? (isPortraitLayout ? '' : <span className="hud-score-value">0</span>)
+                : (lives > 100 ? '❤️'.repeat(Math.max(0, (lives % 3) + 1)) : lives > 10 ? '∞ ❤️' : '❤️'.repeat(Math.max(0, lives)))}</span>
               <span className="hud-level">LEVEL {level}</span>
             </div>
           </div>
