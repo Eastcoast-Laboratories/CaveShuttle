@@ -5,8 +5,8 @@ import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
 import { capacitorManager, PLAY_STORE_URL } from '../capacitor/capacitor-manager.js';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
-import { useSettings } from '../i18n/SettingsContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
+import { useSettings } from '../i18n/settings-context.js';
 import { getMenuTranslations } from '../i18n/menu.js';
 import './cave-theme.css';
 

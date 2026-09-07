@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNetwork } from '../network/NetworkContext.jsx'
-import { useLanguage } from '../i18n/LanguageContext.jsx'
+import { useNetwork } from '../network/network-context.js'
+import { useLanguage } from '../i18n/language-context.js'
 import { multiplayerTranslations } from '../i18n/multiplayer.js'
 import './cave-theme.css'
 

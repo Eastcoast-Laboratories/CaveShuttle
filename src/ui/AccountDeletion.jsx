@@ -1,5 +1,5 @@
 import './LegalPages.css';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
 import { getAccountDeletionTranslations } from '../i18n/accountDeletion.js';
 
 // Account deletion page reachable via #account-deletion hash.

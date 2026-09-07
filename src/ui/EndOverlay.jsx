@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PlayerNameInput from './PlayerNameInput.jsx';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
-import { useSettings } from '../i18n/SettingsContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
+import { useSettings } from '../i18n/settings-context.js';
 import { getGameScreenTranslations } from '../i18n/gameScreen.js';
 import { getGlobalTranslations } from '../i18n/global.js';
 import './EndOverlay.css';
@@ -22,11 +22,15 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
   const animationRef = useRef({ timers: [], interval: null });
 
   useEffect(() => {
+    // Capture the current ref value so the cleanup function uses the same
+    // instance rather than reading animationRef.current, which may have
+    // changed by the time cleanup runs.
+    const anim = animationRef.current;
     // Clean up any previous animation
-    animationRef.current.timers.forEach(clearTimeout);
-    if (animationRef.current.interval) clearInterval(animationRef.current.interval);
-    animationRef.current.timers = [];
-    animationRef.current.interval = null;
+    anim.timers.forEach(clearTimeout);
+    if (anim.interval) clearInterval(anim.interval);
+    anim.timers = [];
+    anim.interval = null;
 
     setVisibleRow(-1);
     setDisplayedValues(breakdown.map(() => 0));
@@ -44,9 +48,9 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
           setShowTotal(true);
           setFlash(true);
           const flashTimer = setTimeout(() => setFlash(false), TOTAL_FLASH_DURATION);
-          animationRef.current.timers.push(flashTimer);
+          anim.timers.push(flashTimer);
         }, ROW_DELAY);
-        animationRef.current.timers.push(totalTimer);
+        anim.timers.push(totalTimer);
         return;
       }
 
@@ -60,12 +64,12 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
           return next;
         });
         const nextTimer = setTimeout(() => startRow(index + 1), ROW_DELAY);
-        animationRef.current.timers.push(nextTimer);
+        anim.timers.push(nextTimer);
         return;
       }
 
       const start = Date.now();
-      animationRef.current.interval = setInterval(() => {
+      anim.interval = setInterval(() => {
         const elapsed = Date.now() - start;
         const progress = Math.min(1, elapsed / ROW_DURATION);
         const current = Math.round(finalValue * progress);
@@ -75,25 +79,25 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
           return next;
         });
         if (progress >= 1) {
-          clearInterval(animationRef.current.interval);
-          animationRef.current.interval = null;
+          clearInterval(anim.interval);
+          anim.interval = null;
           setDisplayedValues((prev) => {
             const next = [...prev];
             next[index] = finalValue;
             return next;
           });
           const nextTimer = setTimeout(() => startRow(index + 1), ROW_DELAY);
-          animationRef.current.timers.push(nextTimer);
+          anim.timers.push(nextTimer);
         }
       }, 20);
     };
 
     const initialTimer = setTimeout(() => startRow(0), 300);
-    animationRef.current.timers.push(initialTimer);
+    anim.timers.push(initialTimer);
 
     return () => {
-      animationRef.current.timers.forEach(clearTimeout);
-      if (animationRef.current.interval) clearInterval(animationRef.current.interval);
+      anim.timers.forEach(clearTimeout);
+      if (anim.interval) clearInterval(anim.interval);
     };
   }, [breakdown]);
 

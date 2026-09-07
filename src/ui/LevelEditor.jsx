@@ -164,7 +164,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
       console.error('[LEVEL_EDITOR_PACK] Failed to save draft', error);
       setError(t.draftTooLarge);
     }
-  }, [draft]);
+  }, [draft, t.draftTooLarge]);
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -194,7 +194,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [onEditorTest, draft.levels]);
+  }, [onEditorTest, draft.levels, t.addedToPack]);
 
   const setMetaField = (field, value) => {
     setDraft(prev => ({ ...prev, meta: { ...prev.meta, [field]: value } }));

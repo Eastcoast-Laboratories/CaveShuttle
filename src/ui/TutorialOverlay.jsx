@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getTouchButtonRects, TOP_GAP, drawTouchButton } from '../core/touch-buttons.js';
 import { tutorialTranslations } from '../i18n/tutorial.js';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
-import { useSettings } from '../i18n/SettingsContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
+import { useSettings } from '../i18n/settings-context.js';
 import KeyLabel from './KeyLabel.jsx';
 import './TutorialOverlay.css';
 

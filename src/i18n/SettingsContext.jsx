@@ -1,10 +1,9 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { storageKey } from '../core/storage-keys.js';
 import { autoAccountManager } from '../game/auto-account.js';
 import { applyOrientationLock } from '../core/screen-orientation.js';
-import { useLanguage } from './LanguageContext.jsx';
-
-const SettingsContext = createContext(null);
+import { useLanguage } from './language-context.js';
+import { SettingsContext } from './settings-context.js';
 
 export function SettingsProvider({ children }) {
   const { language } = useLanguage();
@@ -225,10 +224,3 @@ export function SettingsProvider({ children }) {
   );
 }
 
-export function useSettings() {
-  const ctx = useContext(SettingsContext);
-  if (!ctx) {
-    throw new Error('useSettings must be used within a SettingsProvider');
-  }
-  return ctx;
-}

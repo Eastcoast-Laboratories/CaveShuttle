@@ -1,10 +1,7 @@
-import { createContext, useContext, useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { CaveNetworkManager } from './CaveNetworkManager.js'
-import { useLanguage } from '../i18n/LanguageContext.jsx'
-
-const defaultManager = new CaveNetworkManager()
-const defaultValue = { manager: defaultManager, state: defaultManager.getState() }
-const NetworkContext = createContext(defaultValue)
+import { useLanguage } from '../i18n/language-context.js'
+import { NetworkContext } from './network-context.js'
 
 export function NetworkProvider({ children }) {
   const { language } = useLanguage()
@@ -28,6 +25,3 @@ export function NetworkProvider({ children }) {
   )
 }
 
-export function useNetwork() {
-  return useContext(NetworkContext) || defaultValue
-}

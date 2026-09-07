@@ -1,4 +1,4 @@
-import { useLanguage } from '../i18n/LanguageContext.jsx'
+import { useLanguage } from '../i18n/language-context.js'
 import { multiplayerTranslations } from '../i18n/multiplayer.js'
 import './cave-theme.css'
 

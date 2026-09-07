@@ -1,5 +1,5 @@
 import { tutorialTranslations } from '../i18n/tutorial.js';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
 import { VISIBLE_GUIDED_STEPS } from '../core/constants.js';
 import './TutorialHintOverlay.css';
 

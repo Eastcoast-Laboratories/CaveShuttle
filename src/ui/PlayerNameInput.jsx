@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
 import { getMenuTranslations } from '../i18n/menu.js';
 import './PlayerNameInput.css';
 

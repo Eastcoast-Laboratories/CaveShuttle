@@ -2,7 +2,7 @@ import { useState } from 'react';
 import LanguageSwitcher from './LanguageSwitcher';
 import HamburgerMenu from './HamburgerMenu';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
 import { getMenuTranslations } from '../i18n/menu.js';
 import './TopRightMenu.css';
 

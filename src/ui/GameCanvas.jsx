@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
-import { useNetwork } from '../network/NetworkContext.jsx';
-import { useSettings } from '../i18n/SettingsContext.jsx';
+import { useNetwork } from '../network/network-context.js';
+import { useSettings } from '../i18n/settings-context.js';
 import { getGameScreenTranslations } from '../i18n/gameScreen.js';
 import { Ship } from '../game/ship.js';
 import { Pod } from '../game/pod.js';
@@ -407,6 +407,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     // Record the ship's Y when the braking-hint phase begins so we can
     // measure sunk depth positionally rather than by fixed time.
     guidedBrakingStartYRef.current = guidedTutorialStep === 'playingBeforeBrakingHint' ? ship.y : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- ship.y changes every frame; effect should only run when guidedTutorialStep changes
   }, [guidedTutorialStep]);
   const multiShotAuraEndTimeRef = useRef(0);
   const meltdownActiveRef = useRef(false);
@@ -642,6 +643,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- ship.angle/vx/vy change every frame; effect should only re-run when tilt settings change
   }, [tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, tiltSensorRef]);
 
   // [SOUND] Initialize the sound manager once and load all audio buffers.
@@ -655,6 +657,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       manager.stopAllLoops();
       soundManager.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only init; soundVolume changes are handled by the separate volume effect below
   }, []);
 
   // [SOUND] Apply the master volume whenever the slider value changes.
@@ -752,7 +755,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [twoPlayer]);
+  }, [twoPlayer, networkRole]);
 
   // Log the mode/level the canvas was mounted with for debugging.
   useEffect(() => {
@@ -826,7 +829,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       networkManager.off('game:state', handleState);
       networkManager.off('game:event', handleEvent);
     };
-  }, [networkManager, networkRole, onGameOver, onLevelComplete]);
+  }, [networkManager, networkRole, onGameOver, onLevelComplete, pod, podExploded, ship]);
 
   // Pointer handling for all on-screen touch buttons (mouse + touch)
   useEffect(() => {
@@ -1530,6 +1533,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     };
 
     loadAssets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- level assets should only reload when currentLevel changes; adding viewHeight/viewWidth/ship/editorLevelData etc. would cause frequent reloads on resize/editor changes
   }, [currentLevel]);
 
   // Update currentLevel when levelProp changes
@@ -1543,7 +1547,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       lastRespawnTimeRef.current = performance.now();
       if (onLivesChange) onLivesChange(initialLives);
     }
-  }, [levelProp, currentLevel]);
+  }, [levelProp, currentLevel, initialLives, onLivesChange]);
 
   // Handle bonus life popup from App: increment internal lives and show brief popup
   useEffect(() => {
@@ -1553,7 +1557,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     setBonusLifeDisplay({ threshold: bonusLifePopup.threshold });
     const timer = setTimeout(() => setBonusLifeDisplay(null), 2500);
     return () => clearTimeout(timer);
-  }, [bonusLifePopup]);
+  }, [bonusLifePopup, onLivesChange]);
 
   // Load the ship sprite images once on mount.
   useEffect(() => {

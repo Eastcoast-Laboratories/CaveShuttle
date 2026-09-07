@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Menu from './ui/Menu';
 import GameCanvas from './ui/GameCanvas';
 import EndOverlay from './ui/EndOverlay';
@@ -13,7 +13,7 @@ import LocalLobby from './ui/LocalLobby';
 import OnlineLobby from './ui/OnlineLobby';
 import LobbyRoom from './ui/LobbyRoom';
 import HighscoresPage from './ui/HighscoresPage';
-import { useNetwork } from './network/NetworkContext.jsx';
+import { useNetwork } from './network/network-context.js';
 import {
   SCORE_LEVEL_COMPLETE,
   SCORE_FUEL_REMAINING,
@@ -34,8 +34,8 @@ import { APP_VERSION } from './version.js';
 import { storageKey } from './core/storage-keys.js';
 import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './core/progress-storage.js';
 import { getAllPacks, ensurePackMetaLoaded, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
-import { useLanguage } from './i18n/LanguageContext.jsx';
-import { useSettings } from './i18n/SettingsContext.jsx';
+import { useLanguage } from './i18n/language-context.js';
+import { useSettings } from './i18n/settings-context.js';
 import { getGameScreenTranslations } from './i18n/gameScreen.js';
 import { getGlobalTranslations } from './i18n/global.js';
 
@@ -101,7 +101,7 @@ function App() {
   useEffect(() => {
     setPlayerName(HighScoreManager.getPlayerProfile().name);
     setPlayer2Name(HighScoreManager.getPlayerProfile().player2Name);
-  }, []);
+  }, [setPlayerName, setPlayer2Name]);
 
   // One-time migration of legacy completedLevels to classic pack
   useEffect(() => {
@@ -118,7 +118,7 @@ function App() {
         p.id === currentPackId ? { ...p, meta } : p
       ));
     }).catch(err => console.error('[APP] Failed to load pack meta:', err));
-  }, [currentPackId]);
+  }, [currentPackId, installedPacks]);
 
   const [tutorialDismissed, setTutorialDismissed] = useState(() => {
     const stored = localStorage.getItem(storageKey('tutorialDismissed'));
@@ -209,7 +209,7 @@ function App() {
         console.error('[APP] Failed to decode level from URL parameter:', e);
       }
     }
-  }, []);
+  }, [setCurrentPackId]);
   const scoreRef = useRef(0); // Synchronous score tracking for bonus life threshold checks
   const bonusLivesAwardedRef = useRef(0); // Number of bonus lives awarded so far this run
   const [bonusLifePopup, setBonusLifePopup] = useState(null); // { threshold, id } to signal GameCanvas
@@ -224,6 +224,69 @@ function App() {
   const [multiplayerView, setMultiplayerView] = useState(null);
   const [networkRole, setNetworkRole] = useState(null);
   const [networkDisconnectMessage, setNetworkDisconnectMessage] = useState(null);
+
+  // Wrapped in useCallback so they can be used in useEffect dependency arrays
+  // without re-running the effect on every render.
+  const handleStartLevel = useCallback((levelNum) => {
+    setNewHighscore(null);
+    const pack = installedPacks.find(p => p.id === currentPackId);
+    const packVersion = pack?.version || pack?.meta?.version || '1';
+    setPodDocked(false);
+    setGameState('playing');
+    setScore(0);
+    scoreRef.current = 0;
+    bonusLivesAwardedRef.current = 0;
+    setBonusLifePopup(null);
+    setLevel(levelNum);
+    setLevelScore(0);
+    setLevelScoreBreakdown({ bunker: 0, button: 0, pod: 0, reactor: 0, fuel: 0, level: 0, timeBonus: 0, time: 0, scoringVersion: '' });
+    setLives(INITIAL_LIVES);
+    setFuel(100);
+    setGravityMultiplier(1.0);
+    setMultiShotEnabled(false);
+    setGameSession(prev => prev + 1); // Force full GameCanvas reset
+    runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: levelNum, mode: twoPlayer ? 'two' : 'single' });
+    levelRecordIdsRef.current = [];
+    gameOverSavedRef.current = false;
+    // Guided tutorial: if a pending guided tutorial exists, restart from step 1
+    // so the player gets the full tutorial flow on a fresh level start.
+    // Never start guided tutorial in multiplayer.
+    if (guidedTutorialPending && !twoPlayer && !networkRole) {
+      setGuidedTutorialStep('materializing');
+      setGuidedHoldProgress({ ms: 0, target: 0 });
+    }
+  }, [installedPacks, currentPackId, twoPlayer, guidedTutorialPending, networkRole]);
+
+  const handlePlayAgain = useCallback(() => {
+    if (networkRole && networkManager) {
+      networkManager.sendEvent({ type: 'playagain', level });
+    }
+    handleStartLevel(level);
+  }, [networkRole, networkManager, level, handleStartLevel]);
+
+  const handleNextLevel = useCallback(() => {
+    if (networkRole && networkManager) {
+      networkManager.sendEvent({ type: 'nextlevel' });
+    }
+    const currentPack = installedPacks.find(p => p.id === currentPackId);
+    const levelCount = currentPack?.meta?.levelCount || 6;
+    // If last level completed, restart from level 1 with stronger gravity
+    if (level >= levelCount) {
+      setLevel(1);
+      setGravityMultiplier(prev => prev + 0.4); // Increase gravity by 40% each time all levels in the pack are completed
+      setMultiShotEnabled(false);
+      if (runContextRef.current) {
+        runContextRef.current = { ...runContextRef.current, pass: (runContextRef.current.pass || 1) + 1 };
+      }
+    } else {
+      setLevel(prev => prev + 1);
+    }
+    setGameState('playing');
+    setLevelScore(0);
+    setLevelScoreBreakdown({ bunker: 0, button: 0, pod: 0, reactor: 0, fuel: 0, level: 0, timeBonus: 0, time: 0, scoringVersion: '' });
+    setBonusLifePopup(null);
+    setGameSession(prev => prev + 1); // Force full GameCanvas reset to reset ship position and velocity
+  }, [networkRole, networkManager, installedPacks, currentPackId, level]);
 
   useEffect(() => {
     if (gameState === 'menu' && networkRole && networkState.state !== 'lobby' && networkState.state !== 'ready') {
@@ -244,7 +307,7 @@ function App() {
       setTwoPlayer(false);
       setNetworkDisconnectMessage(msg);
     }
-  }, [networkState.state, networkRole, gameState, networkManager, t]);
+  }, [networkState.state, networkRole, gameState, networkManager, t, setTwoPlayer]);
 
   // Auto-dismiss disconnect message after 20 seconds
   useEffect(() => {
@@ -263,7 +326,7 @@ function App() {
     };
     networkManager.on('game:event', handlePlayAgain);
     return () => networkManager.off('game:event', handlePlayAgain);
-  }, [networkManager, networkRole, gameState, level]);
+  }, [networkManager, networkRole, gameState, level, handleStartLevel]);
 
   // [NETWORK] Listen for nextlevel event from the other player
   useEffect(() => {
@@ -275,7 +338,7 @@ function App() {
     };
     networkManager.on('game:event', handleNextLevelRemote);
     return () => networkManager.off('game:event', handleNextLevelRemote);
-  }, [networkManager, networkRole, gameState]);
+  }, [networkManager, networkRole, gameState, handleNextLevel]);
 
   // [NETWORK] Listen for startlevel event from the other player
   useEffect(() => {
@@ -288,7 +351,7 @@ function App() {
     };
     networkManager.on('game:event', handleStartLevelRemote);
     return () => networkManager.off('game:event', handleStartLevelRemote);
-  }, [networkManager, networkRole]);
+  }, [networkManager, networkRole, handleStartLevel]);
 
   const handleStartGame = (isTwoPlayer = twoPlayer, role = null) => {
     setNewHighscore(null);
@@ -322,48 +385,11 @@ function App() {
     }
   };
 
-  const handleStartLevel = (levelNum) => {
-    setNewHighscore(null);
-    const pack = installedPacks.find(p => p.id === currentPackId);
-    const packVersion = pack?.version || pack?.meta?.version || '1';
-    setPodDocked(false);
-    setGameState('playing');
-    setScore(0);
-    scoreRef.current = 0;
-    bonusLivesAwardedRef.current = 0;
-    setBonusLifePopup(null);
-    setLevel(levelNum);
-    setLevelScore(0);
-    setLevelScoreBreakdown({ bunker: 0, button: 0, pod: 0, reactor: 0, fuel: 0, level: 0, timeBonus: 0, time: 0, scoringVersion: '' });
-    setLives(INITIAL_LIVES);
-    setFuel(100);
-    setGravityMultiplier(1.0);
-    setMultiShotEnabled(false);
-    setGameSession(prev => prev + 1); // Force full GameCanvas reset
-    runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: levelNum, mode: twoPlayer ? 'two' : 'single' });
-    levelRecordIdsRef.current = [];
-    gameOverSavedRef.current = false;
-    // Guided tutorial: if a pending guided tutorial exists, restart from step 1
-    // so the player gets the full tutorial flow on a fresh level start.
-    // Never start guided tutorial in multiplayer.
-    if (guidedTutorialPending && !twoPlayer && !networkRole) {
-      setGuidedTutorialStep('materializing');
-      setGuidedHoldProgress({ ms: 0, target: 0 });
-    }
-  };
-
   const handleStartLevelNetworked = (levelNum) => {
     if (networkRole && networkManager) {
       networkManager.sendEvent({ type: 'startlevel', level: levelNum });
     }
     handleStartLevel(levelNum);
-  };
-
-  const handlePlayAgain = () => {
-    if (networkRole && networkManager) {
-      networkManager.sendEvent({ type: 'playagain', level });
-    }
-    handleStartLevel(level);
   };
 
   // Shared handler to open the big tutorial overlay from any entry point
@@ -634,30 +660,6 @@ function App() {
     setGameState('levelcomplete');
   };
 
-  const handleNextLevel = () => {
-    if (networkRole && networkManager) {
-      networkManager.sendEvent({ type: 'nextlevel' });
-    }
-    const currentPack = installedPacks.find(p => p.id === currentPackId);
-    const levelCount = currentPack?.meta?.levelCount || 6;
-    // If last level completed, restart from level 1 with stronger gravity
-    if (level >= levelCount) {
-      setLevel(1);
-      setGravityMultiplier(prev => prev + 0.4); // Increase gravity by 40% each time all levels in the pack are completed
-      setMultiShotEnabled(false);
-      if (runContextRef.current) {
-        runContextRef.current = { ...runContextRef.current, pass: (runContextRef.current.pass || 1) + 1 };
-      }
-    } else {
-      setLevel(prev => prev + 1);
-    }
-    setGameState('playing');
-    setLevelScore(0);
-    setLevelScoreBreakdown({ bunker: 0, button: 0, pod: 0, reactor: 0, fuel: 0, level: 0, timeBonus: 0, time: 0, scoringVersion: '' });
-    setBonusLifePopup(null);
-    setGameSession(prev => prev + 1); // Force full GameCanvas reset to reset ship position and velocity
-  };
-
   const handleGameOver = () => {
     if (gameOverSavedRef.current) {
       setGameState('gameover');
@@ -848,7 +850,7 @@ function App() {
     { key: 'level', label: t.levelCompleteLabel, value: levelScoreBreakdown.level },
     { key: 'reactor', label: t.reactorEscape, value: levelScoreBreakdown.reactor },
     { key: 'timeBonus', label: t.timeBonus, value: levelScoreBreakdown.timeBonus }
-  ].filter(item => item.value !== 0), [levelScoreBreakdown, t]);
+  ].filter(item => item.value !== 0), [levelScoreBreakdown, t, g.seconds]);
 
   // Generate level buttons (DRY: used by hamburger menu)
   const generateLevelButtons = (onClose) => {
@@ -1007,7 +1009,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+  }, [gameState, handleNextLevel, handlePlayAgain, level, lives]);
 
   // Shortcut: Ctrl+Alt+Shift+Super+L = 999 lives
   useEffect(() => {

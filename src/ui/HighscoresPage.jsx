@@ -4,8 +4,8 @@ import './cave-theme.css';
 import './HighscoresPage.css';
 import { HighScoreManager } from '../game/high-score-manager.js';
 import { autoAccountManager } from '../game/auto-account.js';
-import { useLanguage } from '../i18n/LanguageContext.jsx';
-import { useSettings } from '../i18n/SettingsContext.jsx';
+import { useLanguage } from '../i18n/language-context.js';
+import { useSettings } from '../i18n/settings-context.js';
 import { getHighscoreTranslations } from '../i18n/highscores.js';
 import { getGlobalTranslations } from '../i18n/global.js';
 
@@ -107,6 +107,10 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
       levels.push({ level: i, top: bestTop });
     }
     setLevelTop(levels);
+    // isOwnEntry is recreated every render (depends on playerName from profile state) so listing
+    // it would re-run this effect on every render. It is a pure function of playerName, which only
+    // changes via setProfile above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [installedPacks, selectedPackId, selectedMode]);
 
   useEffect(() => {
