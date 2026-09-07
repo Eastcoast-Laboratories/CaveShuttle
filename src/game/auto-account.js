@@ -79,7 +79,7 @@ export class AutoAccountManager {
     try {
       const stored = localStorage.getItem('caveShuttle_language');
       if (stored) info.app_language = stored;
-    } catch {}
+    } catch { /* localStorage not available */ }
 
     if (isCapacitorNative) {
       try {

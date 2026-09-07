@@ -17,17 +17,15 @@ import { SoundManager } from '../audio/sound-manager.js';
 import {
   SKY_FULL_STAR_DENSITY, SKY_DELIVERY_THRESHOLD, GAME_SPEED, GRAVITY, WORMHOLE_GRAVITY,
   POD_HOLDER_OFFSET, POD_TETHER_WIDTH, POD_HOLDER_CHAR, POD_DROPPABLE,
-  GAME_WIDTH, GAME_HEIGHT, HUD_HEIGHT,
+  GAME_WIDTH, GAME_HEIGHT,
   JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS,
   DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL,
   CAMERA_BOTTOM_OFFSET, PORTRAIT_ZOOM_MAX, PORTRAIT_ZOOM_FACTOR,
-  SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT, SCORE_FUEL_REMAINING,
-  TIME_BONUS_HEIGHT_SECONDS_PER_TILE, TIME_BONUS_WIDTH_SECONDS_PER_TILE,
-  TIME_BONUS_POINTS_PER_SECOND, TIME_BONUS_MAX, SCORING_VERSION,
+  SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT,
   SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION,
   FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE,
-  BUTTON_SIZE_FACTOR, BUTTON_MARGIN_FACTOR, BUNKER_INDICATOR_OFFSETS,
-  INITIAL_LIVES, POD_TETHER_LENGTH,
+  BUNKER_INDICATOR_OFFSETS,
+  POD_TETHER_LENGTH,
   ROTATION_SPEED, TURRET_ROTATION_SPEED, POD_ROTATION_SPEED,
   ROTATION_SLOW_ANGLE_THRESHOLD, ROTATION_SLOW_MULTIPLIER, ROTATION_SNAP_ANGLE_THRESHOLD,
   ROTATE_RAMP_MS, ROTATE_FAST_MULTIPLIER, ROTATE_DOUBLE_TAP_MS,
@@ -37,7 +35,6 @@ import {
   FUEL_EMPTY_DESTROY_DELAY_MS, FUEL_LOW_PULSE_THRESHOLD, FUEL_LOW_PULSE_ON_MS, FUEL_LOW_PULSE_OFF_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
   BULLET_SPEED, SHOOT_COOLDOWN_MS,
   BUNKER_ALL_TILES,
-  BULLET_IMPACT_EXPAND_PX, BULLET_IMPACT_DURATION_MS,
   RESPAWN_IMMUNITY_MS,
   REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS,
   REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE,
@@ -45,7 +42,6 @@ import {
   VIBRATE_FIRE, VIBRATE_POD,
   SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS,
   STAR_FIELD_SEED,
-  VISIBLE_GUIDED_STEPS,
   GUIDED_MATERIALIZE_MS, GUIDED_HOLD_SHIELD_MS,
   GUIDED_SINK_DEPTH_BEFORE_BRAKING_PX, GUIDED_HOLD_ROTATE_RIGHT_MS,
   GUIDED_ACTIVE_SIM_BEFORE_APPROACH_MS, GUIDED_HOLD_APPROACH_MS,
@@ -147,11 +143,10 @@ function getCanvasContentGeom(canvas, w, h) {
   const scale = drawW / w;
   const contentLeftClient = rect.left + offsetX;
   const contentTopClient = rect.top + offsetY;
-  const topOffset = Math.max(0, -contentTopClient / scale);
   const now = Date.now();
   if (now - lastCanvasGeomLog > CANVAS_GEOM_LOG_INTERVAL) {
     lastCanvasGeomLog = now;
-    // console.log('[CANVAS_GEOM]', { logicalW: w, logicalH: h, rectWidth: rect.width, rectHeight: rect.height, elementRatio: elementRatio.toFixed(3), canvasRatio: canvasRatio.toFixed(3), drawW: Math.round(drawW), drawH: Math.round(drawH), scale: +scale.toFixed(3), contentLeftClient: Math.round(contentLeftClient), contentTopClient: Math.round(contentTopClient), topOffset: +topOffset.toFixed(2), });
+    // console.log('[CANVAS_GEOM]', { logicalW: w, logicalH: h, rectWidth: rect.width, rectHeight: rect.height, elementRatio: elementRatio.toFixed(3), canvasRatio: canvasRatio.toFixed(3), drawW: Math.round(drawW), drawH: Math.round(drawH), scale: +scale.toFixed(3), contentLeftClient: Math.round(contentLeftClient), contentTopClient: Math.round(contentTopClient) });
   }
   return { scale, contentLeftClient, contentTopClient, contentBottomClient: rect.top + offsetY + drawH };
 }
@@ -292,7 +287,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const [pod, setPod] = useState(null);
   const podRef = useRef(pod);
   useEffect(() => { podRef.current = pod; }, [pod]);
-  const [podPosition, setPodPosition] = useState(null);
+  const [, setPodPosition] = useState(null);
   const [restartPosition, setRestartPosition] = useState(null);
   // podWasDockedRef tracks if pod was docked at ship destruction
   const podWasDockedRef = useRef(false);
@@ -1147,7 +1142,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         console.log('[LEVEL_LOAD] Loading level:', currentLevel, '| gravityMultiplier:', gravityMultiplier, isLoopBack ? '| (loop back after all levels completed)' : '');
         // Parse metadata: width, height, height of start, empty space, bedrock
         const lenx = parseInt(lines[0], 10);
-        const sx = parseInt(lines[2], 10); // height of start (stars, currently 0)
+        // lines[2] = height of start (stars, currently 0) — parsed but not used
         const sy = parseInt(lines[3], 10); // height of empty space (controls star start, negative = inside level)
         const sz = parseInt(lines[4], 10); // height of bedrock (generated below rendered level)
 
@@ -2198,7 +2193,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const SKY_RETURN_DURATION_MS = 1200;
         const SKY_RETURN_RESPAWN_DELAY_MS = 3000;
         const elapsed = gameNow - skyReturnAnim.current.startTime;
-        const progress = Math.min(elapsed / SKY_RETURN_DURATION_MS, 1);
         // Particles fire immediately at the start, then the ring shrinks over the full duration
         if (!skyReturnAnim.current.pinged) {
           skyReturnAnim.current.pinged = true;
@@ -3502,7 +3496,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           wormholeRef.current.secondKickTime = null;
         }
 
-        const start = wormholeRef.current.shipStart;
         const drag = Math.pow(0.97, deltaTime);
 
         const shipDx = wx - ship.x;

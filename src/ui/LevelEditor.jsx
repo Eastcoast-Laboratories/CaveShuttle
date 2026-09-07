@@ -24,7 +24,7 @@ function getPlayerName() {
       const parsed = JSON.parse(stored);
       if (parsed && parsed.name) return parsed.name;
     }
-  } catch {}
+  } catch { /* localStorage not available */ }
   return 'Editor';
 }
 
@@ -33,7 +33,7 @@ function getStoredLanguage() {
   try {
     const stored = localStorage.getItem(LANGUAGE_KEY);
     if (stored) return stored;
-  } catch {}
+  } catch { /* localStorage not available */ }
   return navigator.language && navigator.language.startsWith('de') ? 'de' : 'en';
 }
 
@@ -85,7 +85,7 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
   const t = levelEditorTranslations[language] || levelEditorTranslations.en;
   const setLanguage = (lang) => {
     setLanguageState(lang);
-    try { localStorage.setItem(LANGUAGE_KEY, lang); } catch {}
+    try { localStorage.setItem(LANGUAGE_KEY, lang); } catch { /* localStorage not available */ }
   };
   const iframeRef = useRef(null);
   const fileInputRef = useRef(null);

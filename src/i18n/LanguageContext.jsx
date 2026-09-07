@@ -7,14 +7,14 @@ export function LanguageProvider({ children }) {
     try {
       const stored = localStorage.getItem('caveShuttle_language')
       if (stored) return stored
-    } catch {}
+    } catch { /* localStorage not available */ }
     return navigator.language && navigator.language.startsWith('de') ? 'de' : 'en'
   })
 
   useEffect(() => {
     try {
       localStorage.setItem('caveShuttle_language', language)
-    } catch {}
+    } catch { /* localStorage not available */ }
   }, [language])
 
   return (

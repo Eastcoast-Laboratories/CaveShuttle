@@ -27,12 +27,19 @@ export default [
       'no-const-assign': 'error',
       'react/jsx-uses-react': 'off',
       'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-vars': 'error',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'react-refresh/only-export-components': 'warn',
     },
     settings: {
       react: { version: 'detect' },
+    },
+  },
+  {
+    files: ['src/levels/level-validator.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
     },
   },
 ];

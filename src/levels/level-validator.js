@@ -22,7 +22,6 @@ const FUEL_TILE = String.fromCharCode(96); // backtick
 const HEADER_LINES = 10;
 const BUNKER_TILES = ['P', 'U', '[', '\\'];
 const FEATURE_TILES = ['P', 'U', '[', '\\', 'd', 'L', 'N'];
-const SLOPE_TILES = ['q', 'r', 's', 't', 'u', 'v', 'w', 'x'];
 const MIN_RESPAWN_OBSTACLE_DISTANCE_BELOW = 4;
 const MIN_RESPAWN_HORIZONTAL_CLEARANCE = 4;
 
@@ -664,7 +663,6 @@ export function validateLevel(level) {
     }
     for (let x = 1; x < width; x++) {
       const ch = padded[y][x];
-      const ch2 = padded[y][x - 1];
       // wx pair: w at x, x at x+1. Open below/left.
       // Bad ceiling bump: w has p on its left and open space below it.
       if (ch === 'w' && x + 1 < width && padded[y][x + 1] === 'x') {

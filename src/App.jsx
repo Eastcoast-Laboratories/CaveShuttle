@@ -32,7 +32,7 @@ import { autoAccountManager } from './game/auto-account.js';
 import { APP_VERSION } from './version.js';
 import { storageKey } from './core/storage-keys.js';
 import { migrateLegacyProgress, getPackProgress, markLevelCompleted } from './core/progress-storage.js';
-import { getAllPacks, ensurePackMetaLoaded, BUILTIN_PACKS, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
+import { getAllPacks, ensurePackMetaLoaded, registerCustomPack, isReservedPackId } from './levels/levelpacks.js';
 import { useLanguage } from './i18n/LanguageContext.jsx';
 import { useSettings } from './i18n/SettingsContext.jsx';
 import { getGameScreenTranslations } from './i18n/gameScreen.js';
@@ -43,19 +43,14 @@ function App() {
   const t = getGameScreenTranslations(language);
   const g = getGlobalTranslations(language);
   const {
-    isMobile, setIsMobile,
     showTouchButtons, setShowTouchButtons,
     joystickEnabled, setJoystickEnabled,
-    soundVolume, setSoundVolume,
     touchButtonOpacity, setTouchButtonOpacity,
-    vibrationEnabled, setVibrationEnabled,
     tiltSteering, setTiltSteering,
-    tiltNeutralBeta, setTiltNeutralBeta,
-    tiltNeutralGamma, setTiltNeutralGamma,
-    tiltSteeringRotated, setTiltSteeringRotated,
-    tiltMode, setTiltMode,
+    setTiltNeutralBeta,
+    setTiltNeutralGamma,
+    setTiltMode,
     orientationMode,
-    analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled, setOnlineSyncEnabled,
     twoPlayer, setTwoPlayer,
     playerName, setPlayerName,
