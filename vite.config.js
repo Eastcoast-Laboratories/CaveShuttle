@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import eslint from 'vite-plugin-eslint'
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -16,7 +17,10 @@ const versionFilePath = join(__dirname, 'src/version.js')
 writeFileSync(versionFilePath, `// Read version from package.json\n// This file is generated during build to include the current version\nexport const APP_VERSION = '${APP_VERSION}';\n`)
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    eslint({ cache: false, failOnWarning: false, failOnError: false }),
+  ],
   publicDir: 'public',
   server: {
     host: true,
