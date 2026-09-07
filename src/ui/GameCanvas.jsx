@@ -86,6 +86,23 @@ const FUEL_DEPOT_OFFSETS = [[0, 0], [1, 0], [0, 1], [1, 1]];
 // Wormhole easing function (hoisted to module level to avoid per-frame closure allocation)
 const easeInCubic = t => t * t * t;
 
+// Low-fuel thrust pulsing: when fuel is below FUEL_LOW_PULSE_THRESHOLD, thrust is only
+// allowed in short pulses (FUEL_LOW_PULSE_ON_MS on, FUEL_LOW_PULSE_OFF_MS off).
+// When braking (velocity against nose direction), full thrust is always allowed.
+// Shared by ship and pod thrust logic (DRY).
+function applyLowFuelPulse(rawThrust, fuel, angle, vx, vy, pulseStart, gameNow) {
+  if (!rawThrust || fuel <= 0 || fuel > FUEL_LOW_PULSE_THRESHOLD) return rawThrust;
+  const speed = Math.hypot(vx, vy);
+  const noseX = Math.sin(angle);
+  const noseY = -Math.cos(angle);
+  const dotProduct = speed > 0.5 ? (vx * noseX + vy * noseY) / speed : 1;
+  if (dotProduct < 0) return true; // braking — always allow full thrust
+  const pulseElapsed = gameNow - pulseStart;
+  const cycleMs = FUEL_LOW_PULSE_ON_MS + FUEL_LOW_PULSE_OFF_MS;
+  const inCycle = pulseElapsed % cycleMs;
+  return inCycle < FUEL_LOW_PULSE_ON_MS;
+}
+
 // Minimum distance from a point (px, py) to a line segment (x1,y1)-(x2,y2)
 function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
   const dx = x2 - x1;
@@ -2344,8 +2361,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           } else {
             if (p2Left) pod.setAngle(pod.angle - POD_ROTATION_SPEED * deltaTime);
             if (p2Right) pod.setAngle(pod.angle + POD_ROTATION_SPEED * deltaTime);
-            // Pod thrust only when ship has fuel
-            pod.setAccelerate(ship.fuel > 0 && p2Thrust);
+            // Pod thrust only when ship has fuel, with low-fuel pulsing
+            const podAccelerating = applyLowFuelPulse(p2Thrust, ship.fuel, pod.angle, pod.vx, pod.vy, fuelLowPulseStartRef.current, gameNow);
+            pod.setAccelerate(podAccelerating);
             if (pod.accelerate > 0) {
               ship.fuel -= POD_FUEL_CONSUMPTION * deltaTime;
               particleSystem.current.spawnAccelerate(
@@ -2365,21 +2383,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // make small adjustments before fuel runs out completely.
           // Exception: when the ship is braking (moving against its nose direction), full
           // thrust is always allowed so the player can still decelerate effectively.
-          let isAccelerating = rawAccelerating;
-          if (rawAccelerating && ship.fuel > 0 && ship.fuel <= FUEL_LOW_PULSE_THRESHOLD) {
-            const speed = Math.hypot(ship.vx, ship.vy);
-            // Braking = velocity points more than 90° away from the ship's nose direction
-            const noseX = Math.sin(ship.angle);
-            const noseY = -Math.cos(ship.angle);
-            const dotProduct = speed > 0.5 ? (ship.vx * noseX + ship.vy * noseY) / speed : 1;
-            const isBraking = dotProduct < 0;
-            if (!isBraking) {
-              const pulseElapsed = gameNow - fuelLowPulseStartRef.current;
-              const cycleMs = FUEL_LOW_PULSE_ON_MS + FUEL_LOW_PULSE_OFF_MS;
-              const inCycle = pulseElapsed % cycleMs;
-              isAccelerating = inCycle < FUEL_LOW_PULSE_ON_MS;
-            }
-          }
+          const isAccelerating = applyLowFuelPulse(rawAccelerating, ship.fuel, ship.angle, ship.vx, ship.vy, fuelLowPulseStartRef.current, gameNow);
           if (isAccelerating) {
             ship.setAccelerate(true);
             // Spawn accelerate particles
