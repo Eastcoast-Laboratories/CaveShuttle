@@ -1234,8 +1234,8 @@ function App() {
       {/* Game canvas, HUD and overlays - only during active gameplay */}
       {isGameScreen && (
         <>
-          <div id="hud-overlay" style={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(0, 0, 0, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 10 }}>
-            <div id="hud-stats" style={{ display: 'flex', flexDirection: 'row', gap: '16px', color: '#fff', alignItems: 'center', fontFamily: '"Commodore 64 Thin", "Courier New", monospace', fontSize: '12px' }}>
+          <div id="hud-overlay" style={{ position: 'absolute', top: 0, left: 0, width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '8px 12px', background: 'rgba(0, 0, 0, 0.8)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)', zIndex: 10 }}>
+            <div id="hud-stats" style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'flex-start' : 'center', gap: '16px', color: '#fff', alignItems: 'center', fontFamily: '"Commodore 64 Thin", "Courier New", monospace', fontSize: '12px' }}>
               <span className="hud-score-label" style={{ whiteSpace: 'nowrap', display: (orientationMode === 'portrait' || (orientationMode === 'auto' && typeof window !== 'undefined' && window.innerWidth < window.innerHeight)) ? 'none' : undefined }}>SCORE </span>
               <span style={{ fontFamily: '"Commodore 64", "Courier New", monospace', fontWeight: '700', fontSize: '15px', whiteSpace: 'nowrap' }}>{score}</span>
               {/* LIVES display: 0 shows "0", 1-10 show hearts, 11-100 show infinite symbol (∞),
