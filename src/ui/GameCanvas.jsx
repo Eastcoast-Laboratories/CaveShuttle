@@ -576,9 +576,19 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // target heading. While still rotating toward the target, the ship only rotates.
           tiltThrustRef.current = absDiffDeg <= TILT_AIM_FIRM_THRUST_ANGLE;
         } else if (magnitudeBand === TILT_AIM_BAND.STUTTER) {
-          enterStutter(tiltMagnitude);
-          tiltAimStutterTargetAngleRef.current = targetAngle;
-          tiltThrustRef.current = tiltAimStutterThrustOnRef.current;
+          // If the ship is still moving against the target heading (braking), use continuous
+          // thrust instead of stutter so the deceleration is smooth and effective.
+          const shipSpeed = Math.hypot(ship.vx, ship.vy);
+          const isBraking = shipSpeed > 0.5 &&
+            Math.abs(Math.atan2(ship.vx, -ship.vy) - targetAngle) > Math.PI / 2;
+          if (isBraking) {
+            resetStutter('braking', tiltMagnitude);
+            tiltThrustRef.current = true;
+          } else {
+            enterStutter(tiltMagnitude);
+            tiltAimStutterTargetAngleRef.current = targetAngle;
+            tiltThrustRef.current = tiltAimStutterThrustOnRef.current;
+          }
         } else if (magnitudeBand === TILT_AIM_BAND.LIGHT) {
           resetStutter(magnitudeBand, tiltMagnitude);
           tiltAimGestureMaxDiffRef.current = 0;
