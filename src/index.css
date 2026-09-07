@@ -70,6 +70,7 @@ body {
   z-index: 10;
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   padding: 8px 12px;
   box-sizing: border-box;
@@ -81,7 +82,8 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 100%;
+  width: fit-content;
+  min-width: 56vw;
   gap: 16px;
   color: #fff;
   font-family: 'Commodore 64 Thin', 'Courier New', monospace;
@@ -89,7 +91,7 @@ body {
 }
 
 #hud-stats.hud-stats--landscape {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 #hud-stats.hud-stats--portrait {
