@@ -67,12 +67,12 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 10;
+  z-index: 1001;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 8px 12px;
+  padding: 0.5vw 1vw;
   box-sizing: border-box;
   background: rgba(0, 0, 0, 0.8);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -83,7 +83,7 @@ body {
   flex-direction: row;
   align-items: center;
   width: fit-content;
-  min-width: 56vw;
+  min-width: min(56vw, 400px);
   gap: 16px;
   color: #fff;
   font-family: 'Commodore 64 Thin', 'Courier New', monospace;

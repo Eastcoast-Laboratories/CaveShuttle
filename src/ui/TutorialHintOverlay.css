@@ -3,9 +3,9 @@
 .tutorial-hint-overlay {
   position: fixed;
   left: 0;
-  top: 0;
+  top: 4vh;
   width: 100vw;
-  height: 100vh;
+  height: 96vh;
   z-index: 2500;
   display: flex;
   align-items: flex-start;
