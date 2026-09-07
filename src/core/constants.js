@@ -189,6 +189,9 @@ export const BROWSER_MENU_MAX_LEVEL = 6;
 // Game settings
 export const INITIAL_LIVES = 3; // Starting number of lives
 export const FUEL_EMPTY_DESTROY_DELAY_MS = 11000; // Delay before ship explodes after fuel runs out
+export const FUEL_LOW_PULSE_THRESHOLD = 8; // below this fuel level, thrust is pulsed (0.1s on, 1s off)
+export const FUEL_LOW_PULSE_ON_MS = 100;  // thrust-on duration during low-fuel pulsing
+export const FUEL_LOW_PULSE_OFF_MS = 1000; // thrust-off pause during low-fuel pulsing
 
 // Bunker tiles: cannon tiles (P, U, [, \) fire at the ship; the other
 // tiles are decorative parts of the same 4-tile bunker structure.

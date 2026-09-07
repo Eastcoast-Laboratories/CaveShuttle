@@ -34,7 +34,7 @@ import {
   TILT_AIM_REACHED, TILT_AIM_LONG_ROTATION, TILT_AIM_FIRM_THRUST_ANGLE,
   GOD_MODE_TILE, GOD_MODE_DURATION_MS, GOD_MODE_COLOR,
   MULTI_SHOT_TILE, MULTI_SHOT_COLOR,
-  FUEL_EMPTY_DESTROY_DELAY_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
+  FUEL_EMPTY_DESTROY_DELAY_MS, FUEL_LOW_PULSE_THRESHOLD, FUEL_LOW_PULSE_ON_MS, FUEL_LOW_PULSE_OFF_MS, POD_FUEL_CONSUMPTION, FIRE_FUEL_CONSUMPTION,
   BULLET_SPEED, SHOOT_COOLDOWN_MS,
   BUNKER_ALL_TILES,
   BULLET_IMPACT_EXPAND_PX, BULLET_IMPACT_DURATION_MS,
@@ -373,6 +373,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const godModeEndTimeRef = useRef(0);
   // Fuel empty state: when set, thrust is disabled and ship explodes after delay
   const fuelEmptyTimeRef = useRef(null);
+  // Low-fuel pulsing: when fuel is below FUEL_LOW_PULSE_THRESHOLD, thrust is only allowed
+  // in short pulses (FUEL_LOW_PULSE_ON_MS on, FUEL_LOW_PULSE_OFF_MS off) in all control modes.
+  const fuelLowPulseStartRef = useRef(0);
   // Reactor meltdown state
   const reactorDamageMsRef = useRef(0);
   const reactorLastHitTimeRef = useRef(0);
@@ -1767,6 +1770,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       ship.p1LastShotTime = 0;
       ship.p2LastShotTime = 0;
       fuelEmptyTimeRef.current = null;
+      fuelLowPulseStartRef.current = 0;
 
       // Pod handling
       const wasDocked = podWasDockedRef.current;
@@ -2361,7 +2365,27 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Single player: arrow keys or WASD. Two-player: player 1 uses arrow keys.
         // In network mode the client receives ship acceleration from the host's snapshot.
         if (networkRole !== 'client') {
-          const isAccelerating = ship.fuel > 0 && (keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+          const rawAccelerating = ship.fuel > 0 && (keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+          // Low-fuel pulsing: when fuel is below the threshold, thrust is only allowed in
+          // short pulses regardless of control mode. This gives the player a last chance to
+          // make small adjustments before fuel runs out completely.
+          // Exception: when the ship is braking (moving against its nose direction), full
+          // thrust is always allowed so the player can still decelerate effectively.
+          let isAccelerating = rawAccelerating;
+          if (rawAccelerating && ship.fuel > 0 && ship.fuel <= FUEL_LOW_PULSE_THRESHOLD) {
+            const speed = Math.hypot(ship.vx, ship.vy);
+            // Braking = velocity points more than 90° away from the ship's nose direction
+            const noseX = Math.sin(ship.angle);
+            const noseY = -Math.cos(ship.angle);
+            const dotProduct = speed > 0.5 ? (ship.vx * noseX + ship.vy * noseY) / speed : 1;
+            const isBraking = dotProduct < 0;
+            if (!isBraking) {
+              const pulseElapsed = gameNow - fuelLowPulseStartRef.current;
+              const cycleMs = FUEL_LOW_PULSE_ON_MS + FUEL_LOW_PULSE_OFF_MS;
+              const inCycle = pulseElapsed % cycleMs;
+              isAccelerating = inCycle < FUEL_LOW_PULSE_ON_MS;
+            }
+          }
           if (isAccelerating) {
             ship.setAccelerate(true);
             // Spawn accelerate particles
