@@ -312,11 +312,12 @@ function App() {
     runContextRef.current = HighScoreManager.createRunContext({ packId: currentPackId, packVersion, startLevel: 1, mode });
     levelRecordIdsRef.current = [];
     gameOverSavedRef.current = false;
-    if (guidedTutorialPending) {
+    // Never start tutorial or guided tutorial in multiplayer
+    if (!isTwoPlayer && !role && guidedTutorialPending) {
       // Resume a pending guided tutorial run from a previous session.
       setGuidedTutorialStep('materializing');
       setGuidedHoldProgress({ ms: 0, target: 0 });
-    } else if (!tutorialDismissed) {
+    } else if (!isTwoPlayer && !role && !tutorialDismissed) {
       setShowTutorial(true);
     }
   };
@@ -344,7 +345,8 @@ function App() {
     gameOverSavedRef.current = false;
     // Guided tutorial: if a pending guided tutorial exists, restart from step 1
     // so the player gets the full tutorial flow on a fresh level start.
-    if (guidedTutorialPending) {
+    // Never start guided tutorial in multiplayer.
+    if (guidedTutorialPending && !twoPlayer && !networkRole) {
       setGuidedTutorialStep('materializing');
       setGuidedHoldProgress({ ms: 0, target: 0 });
     }
