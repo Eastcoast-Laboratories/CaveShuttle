@@ -1,4 +1,4 @@
-import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Haptics } from '@capacitor/haptics';
 import { capacitorManager } from '../capacitor/capacitor-manager.js';
 
 // Log platform info once at module load

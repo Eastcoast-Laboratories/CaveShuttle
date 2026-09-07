@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 // Web-based QR code scanner using getUserMedia + BarcodeDetector API.
 // Used as a fallback when the native Capacitor BarcodeScanner is not available
 // (i.e. when running in a regular browser instead of the native app).
-export default function WebQrScanner({ onScan, onError, onClose }) {
+export default function WebQrScanner({ onScan, onClose }) {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
   const rafRef = useRef(null)

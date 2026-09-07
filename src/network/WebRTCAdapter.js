@@ -118,7 +118,7 @@ export class WebRTCAdapter extends EventEmitter {
         const stats = pc.getStats ? pc.getStats() : null
         if (stats) {
           stats.then(report => {
-            report.forEach((item, key) => {
+            report.forEach(item => {
               if (item.type === 'candidate-pair' && item.state === 'failed') {
                 console.error(`[WEBRTC_${this.role}] Failed candidate pair:`, {
                   local: item.localCandidateId,

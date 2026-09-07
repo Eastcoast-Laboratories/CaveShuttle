@@ -103,28 +103,23 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
 
   // Determine primary (better = lower number) and secondary rank
   let bestRank = null;
-  let bestType = null;
   let secondaryRank = null;
   let secondaryType = null;
 
   if (levelRank != null && runRank != null) {
     if (levelRank <= runRank) {
       bestRank = levelRank;
-      bestType = 'level';
       secondaryRank = runRank;
       secondaryType = 'run';
     } else {
       bestRank = runRank;
-      bestType = 'run';
       secondaryRank = levelRank;
       secondaryType = 'level';
     }
   } else if (levelRank != null) {
     bestRank = levelRank;
-    bestType = 'level';
   } else if (runRank != null) {
     bestRank = runRank;
-    bestType = 'run';
   }
 
   const subRankLabel = secondaryRank != null

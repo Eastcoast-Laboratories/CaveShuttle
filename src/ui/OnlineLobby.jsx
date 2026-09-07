@@ -100,7 +100,7 @@ export default function OnlineLobby({ onBack }) {
     try {
       const name = HighScoreManager.getPlayerProfile().name
       await manager.createOnlineLobby(serverUrl, undefined, false, name)
-    } catch (e) {
+    } catch {
       manager.addStatus(nt.noInternetConnection, 'error')
     }
   }
@@ -109,7 +109,7 @@ export default function OnlineLobby({ onBack }) {
     try {
       const name = HighScoreManager.getPlayerProfile().name
       await manager.joinRandomOnlineLobby(serverUrl, undefined, name)
-    } catch (e) {
+    } catch {
       manager.addStatus(nt.noInternetConnection, 'error')
     }
   }
@@ -118,7 +118,7 @@ export default function OnlineLobby({ onBack }) {
     try {
       const name = HighScoreManager.getPlayerProfile().name
       await manager.joinOnlineLobby(serverUrl, undefined, joinCode, name)
-    } catch (e) {
+    } catch {
       manager.addStatus(nt.noInternetConnection, 'error')
     }
   }

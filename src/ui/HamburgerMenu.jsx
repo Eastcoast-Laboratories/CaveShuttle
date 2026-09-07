@@ -59,7 +59,6 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled,
     twoPlayer, playerName, player2Name, currentPackId,
-    tiltSensorRef,
   } = useSettings();
   const menuRef = useRef(null);
   const [importError, setImportError] = useState(null);

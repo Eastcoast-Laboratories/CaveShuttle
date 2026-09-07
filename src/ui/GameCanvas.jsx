@@ -822,7 +822,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // positions even after orientation/resize without relying on event state.
       const { ratio, topOffset, bottomOffset, topGap } = getLiveTouchGeom(canvas, width, height);
       const podDocked = podRef.current && podRef.current.towed;
-      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, isMobile, twoPlayer, podDocked, tiltSteering, networkRole, bottomOffset).find((b) => {
+      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, twoPlayer, podDocked, tiltSteering, networkRole, bottomOffset).find((b) => {
         const angle = b.angle || 0;
         const origin = b.origin || { x: 0, y: 0 };
         const cos = Math.cos(angle);
@@ -4219,7 +4219,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // fixed screen-pixel distance from the on-screen canvas top on any
       // aspect ratio, independent of resize/orientation event timing.
       const { ratio: liveRatio, topOffset: liveTopOffset, bottomOffset: liveBottomOffset, topGap: liveTopGap } = getLiveTouchGeom(canvasRef.current, width, height);
-      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, isMobile, twoPlayer, pod && pod.towed, tiltSteering, networkRole, liveBottomOffset);
+      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, twoPlayer, pod && pod.towed, tiltSteering, networkRole, liveBottomOffset);
       for (const btn of touchButtons) {
         let active = false;
         switch (btn.type) {

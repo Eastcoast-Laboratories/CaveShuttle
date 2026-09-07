@@ -1,7 +1,7 @@
 // Level-pack registry.
 // Built-in packs are fixed in code and their IDs are reserved: no custom/imported
 // pack may ever use one of these IDs (enforced in registerCustomPack).
-import { getInstalledPacks, addInstalledPack, saveInstalledPacks } from '../core/progress-storage.js';
+import { getInstalledPacks, saveInstalledPacks } from '../core/progress-storage.js';
 
 export const BUILTIN_PACKS = [
   {

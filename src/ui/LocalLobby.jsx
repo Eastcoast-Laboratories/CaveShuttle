@@ -100,7 +100,7 @@ export default function LocalLobby({ onBack }) {
           await BarcodeScanner.stopScan()
           document.body.classList.remove('barcode-scanner-active')
           resolve(scanResult.barcode?.rawValue || scanResult.barcode?.displayValue || scanResult.barcode)
-        }).then(listener => {
+        }).then(() => {
           BarcodeScanner.startScan().catch(err => {
             document.body.classList.remove('barcode-scanner-active')
             reject(err)
@@ -176,7 +176,7 @@ export default function LocalLobby({ onBack }) {
       await navigator.clipboard.writeText(text)
       setCopied(key)
       setTimeout(() => setCopied(''), 2000)
-    } catch (e) {
+    } catch {
       manager.addStatus(t.copyFailed, 'error')
     }
   }
@@ -192,7 +192,6 @@ export default function LocalLobby({ onBack }) {
     return (
       <WebQrScanner
         onScan={handleWebScanResult}
-        onError={handleWebScanError}
         onClose={() => setWebScanMode(null)}
       />
     )
@@ -206,11 +205,6 @@ export default function LocalLobby({ onBack }) {
       setManualAnswer(value)
       manager.provideLocalAnswer(value)
     }
-  }
-
-  function handleWebScanError(msg) {
-    setWebScanMode(null)
-    setScanError(msg)
   }
 
   if (state.state === 'lobby' || state.state === 'ready' || state.state === 'playing') {

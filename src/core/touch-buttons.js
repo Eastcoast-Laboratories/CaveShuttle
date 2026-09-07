@@ -22,7 +22,7 @@ export const TOP_GAP = 10;
 // Returns the right-cluster buttons (rotate, fire, thrust) in canvas-internal
 // coordinates. topGap is a fixed canvas-space gap below the canvas top edge.
 // topOffset and ratio are kept in the signature for call-site compatibility.
-export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, isMobile = false, options = {}) {
+export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, options = {}) {
   const margin = BUTTON_MARGIN_FACTOR;
   const hitMargin = BUTTON_MARGIN_FACTOR; // Extra margin for hit area
   const gap = BUTTON_MARGIN_FACTOR * 2; // Spacing between buttons in a cluster (>= 2*hitMargin so hit areas don't overlap)
@@ -263,17 +263,17 @@ export function getSideStripButtons(w, h, topGap, topOffset, isRight, sizeScale,
 // - Single-player: getTouchButtonRects builds the right-cluster layout.
 // - Two-player: getSideStripButtons builds the P1 (right) and P2 (left)
 //   vertical strips; this is where all 2-player buttons are defined.
-export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, isMobile = false, twoPlayer = false, podDocked = false, tiltSteering = false, networkRole = null, bottomOffset = 0) {
+export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, twoPlayer = false, podDocked = false, tiltSteering = false, networkRole = null, bottomOffset = 0) {
   if (!twoPlayer && !networkRole) {
     if (tiltSteering) {
-      return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
+      return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, {
         maximizeThrustHeight: true,
         maximizeRotateHeight: true,
         tiltSteering: true,
         bottomOffset,
       });
     }
-    return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
+    return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, {
       maximizeThrustHeight: true,
       maximizeRotateHeight: true,
       podBelowRotate: true,
@@ -287,7 +287,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
   if (networkRole) {
     if (networkRole === 'host') {
       // Host controls the ship: fire only visible after pod is docked.
-      return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
+      return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, {
         maximizeThrustHeight: true,
         maximizeRotateHeight: true,
         showFire: podDocked,
@@ -296,7 +296,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
       });
     } else {
       // Client controls the pod/turret: thrust only visible after pod is docked.
-      return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, isMobile, {
+      return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, {
         maximizeThrustHeight: true,
         maximizeRotateHeight: true,
         includePod: false,

@@ -27,7 +27,6 @@ function TouchButtonPreview({ buttonTypes, podIcon, crosshairIcon, label }) {
       0,
       TOP_GAP,
       true,
-      false,
       { rotateHeight: 120, forceVisible: true, maximizeThrustHeight: buttonTypes.includes('accelerate') }
     );
 

@@ -472,7 +472,7 @@ export class HighScoreManager {
     let payload;
     try {
       payload = JSON.parse(decodeURIComponent(atob(encoded)));
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Import data is corrupt' };
     }
     if (!isPlainObject(payload)) return { success: false, error: 'Import must be an object' };

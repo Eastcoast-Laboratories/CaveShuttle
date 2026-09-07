@@ -1,5 +1,5 @@
 // Pod - The fuel canister that the ship must tow to the restart point
-import { POD_MASS_FACTOR, POD_GRAVITY, POD_TETHER_LENGTH, POD_TETHER_STIFFNESS, POD_TETHER_DAMPING, POD_THRUST, FRICTION, POD_FUEL_CONSUMPTION, SKY_LOW_GRAVITY_THRESHOLD } from '../core/constants.js';
+import { POD_MASS_FACTOR, POD_GRAVITY, POD_TETHER_LENGTH, POD_TETHER_STIFFNESS, POD_TETHER_DAMPING, POD_THRUST, FRICTION, SKY_LOW_GRAVITY_THRESHOLD } from '../core/constants.js';
 
 export class Pod {
   constructor(x, y) {

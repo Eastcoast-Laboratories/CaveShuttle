@@ -5,7 +5,7 @@ export function parseImportedPackFile(fileText) {
   let parsed;
   try {
     parsed = JSON.parse(fileText);
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON file. Please ensure the file is valid JSON.');
   }
 
