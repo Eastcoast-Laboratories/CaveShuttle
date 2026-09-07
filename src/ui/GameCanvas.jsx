@@ -2118,8 +2118,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       ? networkInputRef.current.fire
       : (keys['Shift'] || keys['ShiftLeft'] || keys['ShiftRight'] || p2FireActive);
     // Tractor beam (Space key, Ctrl key, or on-screen touch button)
-    // Includes shieldAndBeamActive for network sync (client receives host's shield state)
-    const tractorBeamActive = keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive || shieldAndBeamActive;
+    // The client never activates the tractor beam locally — it receives the host's
+    // shield/beam state via shieldAndBeamActive (network sync).
+    const isClient = networkRole === 'client';
+    const tractorBeamActive = (!isClient && (keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive)) || shieldAndBeamActive;
     const beamActive = tractorBeamActive;
     let beamEndY = ship.y;
     let isRefueling = false;
