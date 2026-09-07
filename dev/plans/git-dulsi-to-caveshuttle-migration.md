@@ -65,13 +65,13 @@ Migrate the Caveshuttle web application into the dulsi-thrust `caveshuttle` bran
 - `src/network/` (5 files) — multiplayer networking
 - `src/i18n/` (5 files) — internationalization
 - `src/ui/` (most files) — React UI components
-- `src/editor/level-editor.js` — editor integration
 - `src/capacitor/capacitor-manager.js` — mobile integration
 - `src/core/data-transfer.js`, `haptics.js`, `storage-keys.js` — new core utils
-- `src/levels/level-validator.js`, `levelpacks.js`, `level-pack-import.js` — level management
+- `src/levels/levelpacks.js`, `src/levels/level-pack-import.js` — level management
+- `public/level-editor/level-validator.js` — standalone level validation
 - `src/game/particle.js`, `particle-system.js` — effects
 - `src/version.js` — version info
-- `public/level-editor/` (6 files) — standalone level editor
+- `public/level-editor/` (8 files) — standalone level editor
 - `public/levelpacks/default/meta.json` — pack metadata
 - `public/levelpacks/default/level7.def` — new 7th level
 - `public/sounds/` (remaining) — additional sounds
@@ -236,9 +236,8 @@ Related files (data file rename + C wrapper deletion) are grouped in the same co
     ```
 
 15. **Add level editor**: Standalone editor + React wrapper
-    - Add `src/editor/level-editor.js`
     - Add `src/ui/LevelEditor.jsx`, `src/ui/level-editor.css`
-    - Add `public/level-editor/` (editor.js, tile-definitions.js, level-generator.js, level-renderer.js, editor.css, index.html)
+    - Add `public/level-editor/` (editor.js, tile-definitions.js, level-generator.js, level-validator.js, level-renderer.js, editor.css, index.html)
     ```
     git commit -m "Add level editor (standalone vanilla JS + React wrapper with Pack Builder)"
     ```

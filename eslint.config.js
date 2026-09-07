@@ -38,9 +38,9 @@ export default [
     },
   },
   {
-    files: ['src/levels/level-validator.js'],
+    files: ['dev/validate-levels.js'],
     languageOptions: {
-      globals: { ...globals.node, ...globals.browser },
+      globals: globals.node,
     },
   },
 ];

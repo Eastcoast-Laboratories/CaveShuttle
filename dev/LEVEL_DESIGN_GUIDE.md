@@ -301,7 +301,7 @@ Lies diese Dateien und Abschnitte zuerst vollständig. Der Prompt verwendet Begr
 
 - `dev/LEVEL_DESIGN_GUIDE.md` – Abschnitte 1–9 (Steigungs-Paare, Bunker-Templates, Reaktor, Pod-Halter, Türen, harte Regeln).
 - `LEVELS.md` – Dateiformat, Header-Struktur und Tile-Referenz.
-- `src/levels/level-validator.js` – Die Regeln, die ein Level mechanisch spielbar machen (Erreichbarkeit von `m` aus `*`, keine abgeschlossenen Taschen, erreichbare Fuel-Depots, passende Ränder, etc.). Ausführung mit z.B. `node src/levels/level-validator.js public/levelpacks/default/level*.def`.
+- `public/level-editor/level-validator.js` – Die Regeln, die ein Level mechanisch spielbar machen (Erreichbarkeit von `m` aus `*`, keine abgeschlossenen Taschen, erreichbare Fuel-Depots, passende Ränder, etc.). Ausführung mit z.B. `node dev/validate-levels.js public/levelpacks/default/level*.def`.
 - `src/core/constants.js` – `GAME_WIDTH`, `POD_HOLDER_CHAR`, `GOD_MODE_TILE`, Farbwerte.
 - `src/game/tile-renderer.js` – `isWall()` (char code >= 76 ist solide; `m`, `0`, `1`, `2` sind keine Wände).
 - `src/ui/GameCanvas.jsx` – Kurzer Blick auf `loadLevel` (Fuel-Depot-Erkennung, Tür-/Button-Erkennung, Spawn-Logik).
@@ -314,7 +314,7 @@ Lies diese Dateien und Abschnitte zuerst vollständig. Der Prompt verwendet Begr
 3. Speichere das Ergebnis in `dev/level_generated_classic4to6.def`.
 4. Führe aus:
    ```bash
-   node src/levels/level-validator.js dev/level_generated_classic4to6.def
+   node dev/validate-levels.js dev/level_generated_classic4to6.def
    ```
 5. Wenn `ERROR` oder `WARN` auftreten, korrigiere das Layout und wiederhole 3–4, bis der Validator `OK` meldet.
 6. Erst wenn der Validator `OK` meldet, gibst du das Ergebnis aus.
@@ -375,7 +375,7 @@ Die ersten 10 Zeilen sind Metadaten im genauen Format. Breite und Höhe sind fre
 
 ## Ausgabe
 
-Gib NUR die fertige `.def`-Datei in einer einzelnen Markdown-Code-Box aus. Keine zusätzlichen Sätze, keine Klammern-Hinweise, keine Platzhalter, keine Erklärungen. Bevor du ausgibst, muss `node src/levels/level-validator.js dev/level_generated_classic4to6.def` auf der Datei `OK` melden.
+Gib NUR die fertige `.def`-Datei in einer einzelnen Markdown-Code-Box aus. Keine zusätzlichen Sätze, keine Klammern-Hinweise, keine Platzhalter, keine Erklärungen. Bevor du ausgibst, muss `node dev/validate-levels.js dev/level_generated_classic4to6.def` auf der Datei `OK` melden.
 
 ## Qualitätsprüfung (muss erfüllt sein)
 
@@ -391,4 +391,4 @@ Gib NUR die fertige `.def`-Datei in einer einzelnen Markdown-Code-Box aus. Keine
 - [ ] Fuel depots have 2 rows of open space above for ship clearance?
 - [ ] Corridor width is at least 3 tiles everywhere on the main path?
 - [ ] Door `H…G` spans wall-to-wall (no open space beside the door)?
-- [ ] `node src/levels/level-validator.js` meldet `OK`?
+- [ ] `node dev/validate-levels.js` meldet `OK`?

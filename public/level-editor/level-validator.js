@@ -790,34 +790,3 @@ export function validateDef(text) {
   const height = layout.length;
   return validateLevel({ width, height, layout });
 }
-
-async function main() {
-  const { readFileSync } = await import('fs');
-  const paths = process.argv.slice(2);
-  if (paths.length === 0) {
-    console.error('usage: node src/levels/level-validator.js <level.def> ...');
-    process.exit(2);
-  }
-  let totalErr = 0;
-  for (const p of paths) {
-    const text = readFileSync(p, 'utf-8');
-    const result = validateDef(text);
-    const status = result.valid ? 'OK' : 'FAIL';
-    console.log(`[${status}] ${p}  ${JSON.stringify(result.inventory)}`);
-    for (const e of result.errors) {
-      console.log(`    ERROR: ${e}`);
-    }
-    for (const w of result.warnings) {
-      console.log(`    warn:  ${w}`);
-    }
-    totalErr += result.errors.length;
-  }
-  process.exit(totalErr ? 1 : 0);
-}
-
-if (typeof process !== 'undefined' && process.argv && process.argv[1] && process.argv[1].endsWith('level-validator.js')) {
-  main().catch(err => {
-    console.error(err);
-    process.exit(2);
-  });
-}

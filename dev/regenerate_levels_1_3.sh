@@ -24,7 +24,7 @@ done
 
 echo "=== Validating levels 1-3 ==="
 for L in 1 2 3; do
-  node src/levels/level-validator.js public/levelpacks/default/level${L}.def
+  node dev/validate-levels.js public/levelpacks/default/level${L}.def
 done
 
 echo "=== Done ==="

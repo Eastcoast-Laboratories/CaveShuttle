@@ -2,7 +2,7 @@
 // Used to debug generator output and inspect specific tile positions that cause
 // validator errors. Run with: node dev/test-gen.mjs
 import { generateRandomLevel } from '../public/level-editor/level-generator.js';
-import { validateDef } from '../src/levels/level-validator.js';
+import { validateDef } from '../public/level-editor/level-validator.js';
 
 const text = generateRandomLevel({seed: 19});
 const lines = text.split('\n');

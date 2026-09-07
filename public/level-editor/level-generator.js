@@ -1300,12 +1300,7 @@
 
   // ---- Validation loop ----
   async function loadValidator() {
-    if (typeof window !== 'undefined') {
-      return await import('/src/levels/level-validator.js');
-    } else {
-      const url = new URL('../../src/levels/level-validator.js', import.meta.url);
-      return await import(url.href);
-    }
+    return await import('./level-validator.js');
   }
 
   async function generateValidRandomLevel(opts) {

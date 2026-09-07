@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateLevel, validateDef } from '../../src/levels/level-validator.js';
+import { validateLevel, validateDef } from '../../public/level-editor/level-validator.js';
 
 function makeValidLevel() {
   return {
