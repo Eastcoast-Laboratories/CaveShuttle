@@ -2128,6 +2128,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     const tractorBeamActive = (!isClient && (keys[' '] || keys['Space'] || ((!twoPlayer || networkRole === 'host') && (keys['Control'] || keys['ControlLeft'] || keys['ControlRight'])) || touchActive)) || shieldAndBeamActive;
     const beamActive = tractorBeamActive;
     let beamEndY = ship.y;
+    let beamHitObstacle = false;
     let isRefueling = false;
 
     // Guided tutorial: evaluate normalized input signals and hold durations.
@@ -2521,10 +2522,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               }
             }
             beamEndY = checkY;
+            beamHitObstacle = true;
             break;
           }
           if (tileRenderer.current.isWall(tile)) {
             beamEndY = checkY;
+            beamHitObstacle = true;
             break;
           }
         }
@@ -4157,6 +4160,27 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             const hue = (t * 50 + strand * 140) % 360;
             ctx.strokeStyle = `hsla(${hue}, 95%, 72%, 0.22)`;
             ctx.stroke();
+          }
+
+          const endY = sy + length;
+          const pulse = Math.sin(t * 2.5);
+          const endHue = (t * 50 + 70) % 360;
+          if (beamHitObstacle) {
+            ctx.lineWidth = 1.4;
+            ctx.strokeStyle = `hsla(${endHue}, 95%, 72%, 0.35)`;
+            ctx.beginPath();
+            ctx.ellipse(sx, endY, 8 + pulse, 3 + pulse * 0.35, t * 0.35, 0, Math.PI * 2);
+            ctx.stroke();
+          } else {
+            for (let particle = 0; particle < 5; particle++) {
+              const progress = (t * 0.5 + particle / 5) % 1;
+              const particleY = endY + 18 * (1 - progress);
+              const particleX = sx + Math.sin(t * 2 + particle * 2.1) * (3 + 3 * (1 - progress));
+              ctx.fillStyle = `hsla(${(endHue + particle * 24) % 360}, 95%, 72%, 0.35)`;
+              ctx.beginPath();
+              ctx.arc(particleX, particleY, 1.2, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
           ctx.restore();
         }
