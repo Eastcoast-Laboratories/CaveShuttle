@@ -3694,7 +3694,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const star = stars[si];
           if (star.x < starMinX || star.x > starMaxX || star.y < starMinY || star.y > starMaxY) continue;
           // Slight flicker around the star's base brightness
-          const flicker = 0.85 + 0.15 * Math.sin(time * star.flickerSpeed + star.flickerOffset);
+          const flicker = 0.7 + 0.3 * Math.sin(time * star.flickerSpeed + star.flickerOffset);
           const alpha = Math.max(0, Math.min(1, star.brightness * flicker));
           ctx.globalAlpha = alpha;
           ctx.fillStyle = '#ffffff';
