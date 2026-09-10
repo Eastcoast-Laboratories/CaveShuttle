@@ -358,6 +358,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const podExplosionTimeRef = useRef(null);
   const [podStartPosition, setPodStartPosition] = useState(null);
   const [stars, setStars] = useState([]);
+  const [moon, setMoon] = useState(null);
   const [levelColors, setLevelColors] = useState(null);
   const particleSystem = useRef(new ParticleSystem());
   const [lives, setLives] = useState(initialLives);
@@ -1555,8 +1556,21 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               newStars.push(makeStar(x, y));
             }
           }
+
+          // Generate alien moon: random position in the sky area, deterministic per level.
+          // Placed in the lower sky region the player actually sees when flying up,
+          // between the level top (y=0) and the sky threshold.
+          const moonRadius = 20 + rng() * 15; // 20-35 px radius
+          const moonX = rng() * (lenx * 16 - moonRadius * 4) + moonRadius * 2;
+          const skyTop = Math.min(skyThresholdY, -100); // at least 100px above level top
+          const moonY = skyTop + rng() * (0 - skyTop); // between skyTop and level top (y=0)
+          const moonSeed = (rng() * 4294967296) >>> 0;
+          setMoon({ x: moonX, y: moonY, radius: moonRadius, seed: moonSeed });
+        } else {
+          setMoon(null);
         }
         setStars(newStars);
+
         setLevelReady(true);
       } catch (error) {
         console.error('[LEVEL] Failed to load:', error);
@@ -3739,6 +3753,58 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           ctx.fill();
         }
         ctx.globalAlpha = 1;
+      }
+
+      // Draw alien moon (distant, parallax-free, drawn before level tiles)
+      if (level && tilesetLoaded && moon) {
+        const mx = moon.x - cameraRef.current.x;
+        const my = moon.y - cameraRef.current.y;
+        // Cull if fully off-screen
+        if (mx + moon.radius > 0 && mx - moon.radius < viewWidth && my + moon.radius > 0 && my - moon.radius < viewHeight) {
+          ctx.save();
+          // Moon body — pale alien green-gray
+          ctx.fillStyle = '#a8c0b0';
+          ctx.beginPath();
+          ctx.arc(mx, my, moon.radius, 0, Math.PI * 2);
+          ctx.fill();
+          // Subtle darker rim for depth
+          ctx.strokeStyle = 'rgba(80, 100, 90, 0.4)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          // Craters — deterministic from moon.seed
+          let craterRng = moon.seed >>> 0;
+          const nextCrater = () => {
+            craterRng = (craterRng + 0x6D2B79F5) >>> 0;
+            let t = craterRng;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
+          const craterCount = 5 + Math.floor(nextCrater() * 4);
+          for (let c = 0; c < craterCount; c++) {
+            const angle = nextCrater() * Math.PI * 2;
+            const dist = nextCrater() * moon.radius * 0.7;
+            const cx = mx + Math.cos(angle) * dist;
+            const cy = my + Math.sin(angle) * dist;
+            const cr = moon.radius * (0.08 + nextCrater() * 0.12);
+            ctx.fillStyle = 'rgba(90, 110, 100, 0.35)';
+            ctx.beginPath();
+            ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Soft highlight on the upper-left for a light source illusion
+          const highlight = ctx.createRadialGradient(
+            mx - moon.radius * 0.4, my - moon.radius * 0.4, 0,
+            mx - moon.radius * 0.4, my - moon.radius * 0.4, moon.radius * 0.8
+          );
+          highlight.addColorStop(0, 'rgba(220, 240, 230, 0.25)');
+          highlight.addColorStop(1, 'rgba(220, 240, 230, 0)');
+          ctx.fillStyle = highlight;
+          ctx.beginPath();
+          ctx.arc(mx, my, moon.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
       }
 
       // Draw level with camera offset
