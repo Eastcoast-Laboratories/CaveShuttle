@@ -1,0 +1,3 @@
+- Neuer Aim-Modus für Neigungssteuerung
+- Wenn man in den Weltraum ohne Pod fliegt, wird nur eine Himmelsrückkehr-Warnung angezeigt und man respawned ohne Lebensverlust
+- Wenn der Treibstoff ausgeht, kommen nur noch in kurzen Abständen Schubpulse

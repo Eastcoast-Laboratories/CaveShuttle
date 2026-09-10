@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.1 — September 10, 2026
+
+- Neuer Aim-Modus für Neigungssteuerung
+- Wenn man in den Weltraum ohne Pod fliegt, wird nur eine Himmelsrückkehr-Warnung angezeigt und man respawned ohne Lebensverlust
+- Wenn der Treibstoff ausgeht, kommen nur noch in kurzen Abständen Schubpulse
+
+
 ## 5.0 — September 01, 2026
 
 - Das geführte Tutorial wurde erweitert

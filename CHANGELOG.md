@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.1 — September 10, 2026
+
+- Add aim mode for tilt steering
+- When flying into space without pod, just add sky return warning and respawn without life penalty
+- When fuel runs out, the ship only thrusts at short intervals
+
+
 ## 5.0 — September 01, 2026
 
 - Improved the guided tutorial

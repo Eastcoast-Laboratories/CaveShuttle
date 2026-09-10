@@ -1,0 +1,3 @@
+- Add aim mode for tilt steering
+- When flying into space without pod, just add sky return warning and respawn without life penalty
+- When fuel runs out, the ship only thrusts at short intervals
