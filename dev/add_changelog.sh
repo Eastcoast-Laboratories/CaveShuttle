@@ -54,6 +54,7 @@ check_length() {
 DE_CHANGES=$(cat << EOF
 - Neuer Aim-Modus für Neigungssteuerung
 - Wenn man in den Weltraum ohne Pod fliegt, wird nur eine Himmelsrückkehr-Warnung angezeigt und man respawned ohne Lebensverlust
+- Wenn der Treibstoff ausgeht, kommen nur noch in kurzen Abständen Schubpulse
 EOF
 )
 
@@ -61,6 +62,7 @@ EOF
 EN_CHANGES=$(cat << EOF
 - Add aim mode for tilt steering
 - When flying into space without pod, just add sky return warning and respawn without life penalty
+- When fuel runs out, the ship only thrusts at short intervals
 EOF
 )
 

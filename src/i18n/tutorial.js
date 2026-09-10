@@ -22,7 +22,7 @@ export const tutorialTranslations = {
     menuHint: 'Einstellungen & Tutorial',
     bonusTitle: 'Tipp',
     
-    bonus: 'Zerstörte Reaktoren bringen zusätzliche Punkte.',
+    bonus: 'Zerstörte Bunker bringen zusätzliche Punkte.',
     menuText: 'Tippe oben rechts auf das Menü-Symbol ☰, um Lautstärke, Touch-Button-Transparenz, Level-Packs und dieses Tutorial zu öffnen.',
     dismiss: 'Los geht\'s!',
     keys: {
@@ -100,7 +100,7 @@ export const tutorialTranslations = {
     touchHint: 'The touch buttons can be toggled on/off in the menu.',
 
     bonusTitle: 'Hint',
-    bonus: 'Destroyed reactors grant bonus points.',
+    bonus: 'Destroyed bunkers grant bonus points.',
 
     menuHint: 'Settings & Tutorial',
     menuText: 'Tap the ☰ menu icon in the top-right to access sound, touch-button transparency, level packs and this tutorial.',
