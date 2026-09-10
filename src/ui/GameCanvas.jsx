@@ -1581,23 +1581,28 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             }
           }
 
-          // Generate alien moon: random position, size, color, and craters per level.
+          // Generate 1-3 alien moons: random count, position, size, color, and craters per level.
           // Placed in the lower sky region the player actually sees when flying up,
           // between the level top (y=0) and the sky threshold.
-          const moonRadius = 18 + rng() * 20; // 18-38 px radius
-          const moonX = rng() * (lenx * 16 - moonRadius * 4) + moonRadius * 2;
+          const moonCount = 1 + Math.floor(rng() * 3); // 1-3 moons
           const skyTop = Math.min(skyThresholdY, -100); // at least 100px above level top
-          const moonY = skyTop + rng() * (0 - skyTop); // between skyTop and level top (y=0)
-          const moonSeed = (rng() * 4294967296) >>> 0;
-          // Random alien color: hue 0-360, low saturation, medium lightness
-          const moonHue = rng() * 360;
-          const moonSat = 15 + rng() * 25; // 15-40% saturation
-          const moonLight = 60 + rng() * 15; // 60-75% lightness
-          const moonColor = `hsl(${moonHue}, ${moonSat}%, ${moonLight}%)`;
-          const moonRimColor = `hsl(${moonHue}, ${moonSat}%, ${Math.max(20, moonLight - 30)}%)`;
-          const moonCraterColor = `hsla(${moonHue}, ${moonSat}%, ${Math.max(15, moonLight - 35)}%, 0.35)`;
-          const moonHighlightColor = `hsla(${moonHue}, ${Math.min(60, moonSat + 20)}%, ${Math.min(90, moonLight + 15)}%, 0.25)`;
-          setMoons([{ x: moonX, y: moonY, radius: moonRadius, seed: moonSeed, color: moonColor, rimColor: moonRimColor, craterColor: moonCraterColor, highlightColor: moonHighlightColor }]);
+          const newMoons = [];
+          for (let mi = 0; mi < moonCount; mi++) {
+            const moonRadius = 18 + rng() * 20; // 18-38 px radius
+            const moonX = rng() * (lenx * 16 - moonRadius * 4) + moonRadius * 2;
+            const moonY = skyTop + rng() * (0 - skyTop); // between skyTop and level top (y=0)
+            const moonSeed = (rng() * 4294967296) >>> 0;
+            // Random alien color: hue 0-360, low saturation, medium lightness
+            const moonHue = rng() * 360;
+            const moonSat = 15 + rng() * 25; // 15-40% saturation
+            const moonLight = 60 + rng() * 15; // 60-75% lightness
+            const moonColor = `hsl(${moonHue}, ${moonSat}%, ${moonLight}%)`;
+            const moonRimColor = `hsl(${moonHue}, ${moonSat}%, ${Math.max(20, moonLight - 30)}%)`;
+            const moonCraterColor = `hsla(${moonHue}, ${moonSat}%, ${Math.max(15, moonLight - 35)}%, 0.35)`;
+            const moonHighlightColor = `hsla(${moonHue}, ${Math.min(60, moonSat + 20)}%, ${Math.min(90, moonLight + 15)}%, 0.25)`;
+            newMoons.push({ x: moonX, y: moonY, radius: moonRadius, seed: moonSeed, color: moonColor, rimColor: moonRimColor, craterColor: moonCraterColor, highlightColor: moonHighlightColor });
+          }
+          setMoons(newMoons);
         } else {
           setMoons([]);
         }
