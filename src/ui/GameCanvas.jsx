@@ -54,6 +54,25 @@ import { getTouchButtons, TOP_GAP, drawTouchButton } from '../core/touch-buttons
 import { vibrate } from '../core/haptics.js';
 import { ReplayLogger, REPLAY_INPUT_BITS, REPLAY_P2_INPUT_BITS } from '../game/replay-logger.js';
 
+// Hash-based value noise for star twinkling.
+// Returns pseudo-random value in [-1, 1] for integer input.
+function hashNoise1D(i) {
+  let h = (i * 374761393 + 668265263) | 0;
+  h = (h ^ (h >> 13)) * 1274126177;
+  return ((h ^ (h >> 16)) >>> 0) / 4294967296 * 2 - 1;
+}
+
+// Smooth-interpolated 1D value noise in [-1, 1].
+// Each integer step is one noise "cell"; smoothstep interpolation between cells.
+function valueNoise1D(t) {
+  const i = Math.floor(t);
+  const frac = t - i;
+  const smooth = frac * frac * (3 - 2 * frac);
+  const a = hashNoise1D(i);
+  const b = hashNoise1D(i + 1);
+  return a * (1 - smooth) + b * smooth;
+}
+
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
 // zero channels become 30 so black pods turn gray instead of green.
 function ensureBrightPodColor(rgb, minChannel = 64) {
@@ -1482,14 +1501,26 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
             return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
           };
-          const makeStar = (x, y) => ({
-            x,
-            y,
-            size: rng() * 1.5 + 0.5,
-            brightness: rng() * 0.6 + 0.4, // 0.4 - 1.0 base brightness
-            flickerSpeed: rng() * 0.004 + 0.001,
-            flickerOffset: rng() * Math.PI * 2
-          });
+          const makeStar = (x, y) => {
+            // Star color distribution: ~65% white, ~17% yellowish, ~13% bluish, ~5% orange/red
+            const colorRoll = rng();
+            let color;
+            if (colorRoll < 0.65) color = '#ffffff';
+            else if (colorRoll < 0.82) color = '#fff8e0';
+            else if (colorRoll < 0.95) color = '#d0e0ff';
+            else color = '#ffd0a0';
+            return {
+              x,
+              y,
+              size: rng() * 1.5 + 0.5,
+              brightness: rng() * 0.6 + 0.4, // 0.4 - 1.0 base brightness
+              color,
+              // Per-star phase offsets for three noise octaves
+              flickerSeed0: rng() * 1000,
+              flickerSeed1: rng() * 1000,
+              flickerSeed2: rng() * 1000
+            };
+          };
 
           const span = yBottom - yTop;
           if (span > 0) {
@@ -3693,13 +3724,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         for (let si = 0; si < stars.length; si++) {
           const star = stars[si];
           if (star.x < starMinX || star.x > starMaxX || star.y < starMinY || star.y > starMaxY) continue;
-          // Slight flicker around the star's base brightness
-          const flicker = 0.7 + 0.3 * Math.sin(time * star.flickerSpeed + star.flickerOffset);
-          const alpha = Math.max(0, Math.min(1, star.brightness * flicker));
+          // Multi-octave value noise twinkling: fast 8 Hz jitter + 2 Hz mid + 0.3 Hz slow drift
+          const flicker =
+            0.10 * valueNoise1D(time * 0.008 + star.flickerSeed0) +
+            0.05 * valueNoise1D(time * 0.002 + star.flickerSeed1) +
+            0.02 * valueNoise1D(time * 0.0003 + star.flickerSeed2);
+          const alpha = Math.max(0, Math.min(1, star.brightness + flicker));
           ctx.globalAlpha = alpha;
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = star.color;
           ctx.beginPath();
-          ctx.arc(star.x - cameraRef.current.x, star.y - cameraRef.current.y, star.size, 0, Math.PI * 2);
+          // Only the largest stars shrink when dimming; smaller ones keep their size
+          const sizeScale = star.size > 1.5 ? Math.max(0.3, 1 + flicker * 3) : 1;
+          ctx.arc(star.x - cameraRef.current.x, star.y - cameraRef.current.y, star.size * sizeScale, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalAlpha = 1;
