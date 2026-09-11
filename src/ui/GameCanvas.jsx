@@ -73,6 +73,150 @@ function valueNoise1D(t) {
   return a * (1 - smooth) + b * smooth;
 }
 
+// 2D hash for procedural moon surface noise.
+function hashNoise2D(x, y) {
+  let h = (x * 374761393 + y * 668265263) | 0;
+  h = (h ^ (h >> 13)) * 1274126177;
+  return ((h ^ (h >> 16)) >>> 0) / 4294967296;
+}
+
+// Draw a realistic procedural moon onto a canvas context.
+// Renders spherical shading, foreshortened craters with shadow/highlight rims,
+// and surface noise — all clipped to the moon disk.
+function drawMoon(ctx, cx, cy, radius, seed, hue, sat, light) {
+  ctx.save();
+
+  // Clip to the moon disk
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.clip();
+
+  // Light direction: upper-left
+  const lightX = -0.5, lightY = -0.5;
+  const lightLen = Math.sqrt(lightX * lightX + lightY * lightY);
+  const lx = lightX / lightLen, ly = lightY / lightLen;
+
+  // Spherical shading: radial gradient offset toward the light source
+  const gradOffsetX = cx + lx * radius * 0.5;
+  const gradOffsetY = cy + ly * radius * 0.5;
+  const sphereGrad = ctx.createRadialGradient(
+    gradOffsetX, gradOffsetY, 0,
+    gradOffsetX, gradOffsetY, radius * 1.5
+  );
+  const baseColor = `hsl(${hue}, ${sat}%, ${light}%)`;
+  const darkColor = `hsl(${hue}, ${sat}%, ${Math.max(8, light - 45)}%)`;
+  sphereGrad.addColorStop(0, baseColor);
+  sphereGrad.addColorStop(0.7, `hsl(${hue}, ${sat}%, ${Math.max(15, light - 25)}%)`);
+  sphereGrad.addColorStop(1, darkColor);
+  ctx.fillStyle = sphereGrad;
+  ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+
+  // Surface noise: subtle per-pixel variation for roughness
+  const noiseSize = Math.ceil(radius * 2);
+  if (noiseSize > 0) {
+    const noiseCanvas = document.createElement('canvas');
+    noiseCanvas.width = noiseSize;
+    noiseCanvas.height = noiseSize;
+    const nctx = noiseCanvas.getContext('2d');
+    const imgData = nctx.createImageData(noiseSize, noiseSize);
+    const data = imgData.data;
+    for (let py = 0; py < noiseSize; py++) {
+      for (let px = 0; px < noiseSize; px++) {
+        const idx = (py * noiseSize + px) * 4;
+        const n = (hashNoise2D(px + seed, py + seed * 7) - 0.5) * 30;
+        data[idx] = n;
+        data[idx + 1] = n;
+        data[idx + 2] = n;
+        data[idx + 3] = 40;
+      }
+    }
+    nctx.putImageData(imgData, 0, 0);
+    ctx.globalCompositeOperation = 'overlay';
+    ctx.drawImage(noiseCanvas, cx - radius, cy - radius);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Craters: seeded PRNG for deterministic crater layout
+  let crng = seed >>> 0;
+  const nextCrater = () => {
+    crng = (crng + 0x6D2B79F5) >>> 0;
+    let t = crng;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  const craterCount = 8 + Math.floor(nextCrater() * 8);
+  for (let c = 0; c < craterCount; c++) {
+    // Crater center in normalized sphere coordinates [-1, 1]
+    const u = (nextCrater() - 0.5) * 1.7; // keep within disk
+    const v = (nextCrater() - 0.5) * 1.7;
+    const distFromCenter = Math.sqrt(u * u + v * v);
+    if (distFromCenter > 0.95) continue;
+
+    // Foreshortening: craters near the limb appear as ellipses
+    const foreshorten = Math.sqrt(Math.max(0, 1 - distFromCenter * distFromCenter));
+    const craterR = radius * (0.06 + nextCrater() * 0.18);
+    const cxScreen = cx + u * radius;
+    const cyScreen = cy + v * radius;
+
+    // Shadow direction follows the light source
+    const shadowDx = -lx;
+    const shadowDy = -ly;
+
+    // Crater floor: slightly darker
+    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${Math.max(10, light - 30)}%, 0.5)`;
+    ctx.beginPath();
+    ctx.ellipse(cxScreen, cyScreen, craterR, craterR * foreshorten, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Shadow wall: dark crescent on the side away from light
+    const shadowOffset = craterR * 0.4;
+    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${Math.max(5, light - 50)}%, 0.6)`;
+    ctx.beginPath();
+    ctx.ellipse(
+      cxScreen + shadowDx * shadowOffset,
+      cyScreen + shadowDy * shadowOffset,
+      craterR * 0.85,
+      craterR * 0.85 * foreshorten,
+      0, 0, Math.PI * 2
+    );
+    ctx.fill();
+
+    // Illuminated rim: bright crescent on the side facing light
+    const rimOffset = craterR * 0.3;
+    ctx.fillStyle = `hsla(${hue}, ${Math.min(60, sat + 15)}%, ${Math.min(90, light + 20)}%, 0.4)`;
+    ctx.beginPath();
+    ctx.ellipse(
+      cxScreen + lx * rimOffset,
+      cyScreen + ly * rimOffset,
+      craterR * 1.05,
+      craterR * 1.05 * foreshorten,
+      0, 0, Math.PI * 2
+    );
+    ctx.fill();
+
+    // Re-draw crater floor on top to create the rim ring effect
+    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${Math.max(12, light - 25)}%, 0.7)`;
+    ctx.beginPath();
+    ctx.ellipse(cxScreen, cyScreen, craterR * 0.8, craterR * 0.8 * foreshorten, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Terminator shadow: dark crescent on the side away from light
+  const termGrad = ctx.createRadialGradient(
+    gradOffsetX, gradOffsetY, radius * 0.3,
+    gradOffsetX, gradOffsetY, radius * 1.6
+  );
+  termGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  termGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
+  termGrad.addColorStop(1, `hsla(${hue}, ${sat}%, 5%, 0.7)`);
+  ctx.fillStyle = termGrad;
+  ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
+
+  ctx.restore();
+}
+
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
 // zero channels become 30 so black pods turn gray instead of green.
 function ensureBrightPodColor(rgb, minChannel = 64) {
@@ -723,10 +867,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             y: -100 - Math.random() * 400,
             radius: r,
             seed: (Math.random() * 4294967296) >>> 0,
-            color: `hsl(${hue}, ${sat}%, ${light}%)`,
-            rimColor: `hsl(${hue}, ${sat}%, ${Math.max(20, light - 30)}%)`,
-            craterColor: `hsla(${hue}, ${sat}%, ${Math.max(15, light - 35)}%, 0.35)`,
-            highlightColor: `hsla(${hue}, ${Math.min(60, sat + 20)}%, ${Math.min(90, light + 15)}%, 0.25)`,
+            hue,
+            sat,
+            light,
           });
         }
         setMoons(cheatMoons);
@@ -1596,11 +1739,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             const moonHue = rng() * 360;
             const moonSat = 15 + rng() * 25; // 15-40% saturation
             const moonLight = 60 + rng() * 15; // 60-75% lightness
-            const moonColor = `hsl(${moonHue}, ${moonSat}%, ${moonLight}%)`;
-            const moonRimColor = `hsl(${moonHue}, ${moonSat}%, ${Math.max(20, moonLight - 30)}%)`;
-            const moonCraterColor = `hsla(${moonHue}, ${moonSat}%, ${Math.max(15, moonLight - 35)}%, 0.35)`;
-            const moonHighlightColor = `hsla(${moonHue}, ${Math.min(60, moonSat + 20)}%, ${Math.min(90, moonLight + 15)}%, 0.25)`;
-            newMoons.push({ x: moonX, y: moonY, radius: moonRadius, seed: moonSeed, color: moonColor, rimColor: moonRimColor, craterColor: moonCraterColor, highlightColor: moonHighlightColor });
+            newMoons.push({ x: moonX, y: moonY, radius: moonRadius, seed: moonSeed, hue: moonHue, sat: moonSat, light: moonLight });
           }
           setMoons(newMoons);
         } else {
@@ -3800,49 +3939,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const my = moon.y - cameraRef.current.y;
           // Cull if fully off-screen
           if (mx + moon.radius > 0 && mx - moon.radius < viewWidth && my + moon.radius > 0 && my - moon.radius < viewHeight) {
-            ctx.save();
-            // Moon body — alien color per level
-            ctx.fillStyle = moon.color;
-            ctx.beginPath();
-            ctx.arc(mx, my, moon.radius, 0, Math.PI * 2);
-            ctx.fill();
-            // Subtle darker rim for depth
-            ctx.strokeStyle = moon.rimColor;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            // Craters — deterministic from moon.seed
-            let craterRng = moon.seed >>> 0;
-            const nextCrater = () => {
-              craterRng = (craterRng + 0x6D2B79F5) >>> 0;
-              let t = craterRng;
-              t = Math.imul(t ^ (t >>> 15), t | 1);
-              t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-              return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-            };
-            const craterCount = 5 + Math.floor(nextCrater() * 4);
-            for (let c = 0; c < craterCount; c++) {
-              const angle = nextCrater() * Math.PI * 2;
-              const dist = nextCrater() * moon.radius * 0.7;
-              const cx = mx + Math.cos(angle) * dist;
-              const cy = my + Math.sin(angle) * dist;
-              const cr = moon.radius * (0.08 + nextCrater() * 0.12);
-              ctx.fillStyle = moon.craterColor;
-              ctx.beginPath();
-              ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            // Soft highlight on the upper-left for a light source illusion
-            const highlight = ctx.createRadialGradient(
-              mx - moon.radius * 0.4, my - moon.radius * 0.4, 0,
-              mx - moon.radius * 0.4, my - moon.radius * 0.4, moon.radius * 0.8
-            );
-            highlight.addColorStop(0, moon.highlightColor);
-            highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
-            ctx.fillStyle = highlight;
-            ctx.beginPath();
-            ctx.arc(mx, my, moon.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+            drawMoon(ctx, mx, my, moon.radius, moon.seed, moon.hue, moon.sat, moon.light);
           }
         }
       }
