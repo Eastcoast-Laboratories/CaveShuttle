@@ -5,19 +5,19 @@ Each moon has: Perlin noise surface texture, realistic craters with
 shadow/highlight rims, spherical lighting, and a random alien color tint.
 
 Usage:
-  python3 dev/generate_moons.py                          # default set (moons/)
-  python3 dev/generate_moons.py --output moons2 --count 87 --seed-offset 777777 --style exotic
+  python3 dev/generate_moons.py
+  python3 dev/generate_moons.py --output moons2 --count 87 \
+      --seed-offset 777777 --style exotic
 
 Output: public/<output>/moon_000.png ... (128x128 each)
 """
 
 import os
-import sys
 import math
 import random
 import argparse
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image
 from noise import pnoise2
 
 DEFAULT_OUTPUT = 'moons'
@@ -82,20 +82,16 @@ def add_craters(texture, size, seed, crater_count, light_dir):
             continue
 
         # Foreshortening: craters near the limb are elliptical
-        foreshorten = math.sqrt(max(0, 1 - dist_from_center * dist_from_center))
+        foreshorten = math.sqrt(
+            max(0, 1 - dist_from_center * dist_from_center))
 
         # Crater radius in pixels
         crater_r = size * (0.04 + rng.random() * 0.12)
         ring_r = crater_r * 1.15
-        inner_r = crater_r * 0.7
 
         # Screen position
         sx = size * 0.5 + cx * size * 0.5
         sy = size * 0.5 + cy * size * 0.5
-
-        # Shadow direction (away from light)
-        sh_dx = -lx
-        sh_dy = -ly
 
         # Process pixels in crater bounding box
         x0 = max(0, int(sx - ring_r - 2))
@@ -108,12 +104,16 @@ def add_craters(texture, size, seed, crater_count, light_dir):
                 dx = px - sx
                 dy = py - sy
                 # Elliptical distance with foreshortening
-                d = math.sqrt((dx / ring_r) ** 2 + (dy / (ring_r * foreshorten)) ** 2)
+                d = math.sqrt(
+                    (dx / ring_r) ** 2 +
+                    (dy / (ring_r * foreshorten)) ** 2)
                 if d > 1.0:
                     continue
 
                 # Distance from crater center (normalized 0-1)
-                d_inner = math.sqrt((dx / crater_r) ** 2 + (dy / (crater_r * foreshorten)) ** 2)
+                d_inner = math.sqrt(
+                    (dx / crater_r) ** 2 +
+                    (dy / (crater_r * foreshorten) ** 2))
 
                 # Direction from crater center to pixel
                 if d > 0:
@@ -201,11 +201,14 @@ def render_moon_standard(size, seed):
     light_dir = (-0.6, -0.6)
 
     # Generate surface texture
-    texture = generate_surface_texture(size, seed % 1000, base_rgb, octaves=6, freq=8.0)
+    texture = generate_surface_texture(
+        size, seed % 1000, base_rgb, octaves=6, freq=8.0)
 
     # Add craters (8-20 per moon)
     crater_count = 8 + rng.randint(0, 12)
-    texture = add_craters(texture, size, seed * 7 + 13, crater_count, light_dir)
+    texture = add_craters(
+        texture, size,
+        seed * 7 + 13, crater_count, light_dir)
 
     # Apply spherical shading
     texture = apply_spherical_shading(texture, size, light_dir)
@@ -224,12 +227,13 @@ def render_moon_exotic(size, seed):
     rng = random.Random(seed)
 
     # Restricted hue palette: warm tones (0-60 = red/orange/yellow-brown)
-    # and cool tones (180-260 = cyan/blue). No green (90-150), no purple/pink (270-340).
+    # and cool tones (180-260 = cyan/blue).
+    # No green (90-150), no purple/pink (270-340).
     hue_ranges = [(0, 60), (180, 260)]
     hue_range = hue_ranges[rng.randint(0, 1)]
     hue = hue_range[0] + rng.random() * (hue_range[1] - hue_range[0])
-    sat = 0.08 + rng.random() * 0.22  # 8-30% saturation (muted, not flashy)
-    light = 0.30 + rng.random() * 0.25  # 30-55% lightness (darker)
+    sat = 0.08 + rng.random() * 0.22  # 8-30% saturation
+    light = 0.30 + rng.random() * 0.25  # 30-55% lightness
     base_rgb = hsl_to_rgb(hue, sat, light)
 
     # Light direction: varies per moon for variety
@@ -237,14 +241,19 @@ def render_moon_exotic(size, seed):
     light_dir = (math.cos(light_angle) * 0.6, math.sin(light_angle) * 0.6)
 
     # Higher frequency noise for rougher texture
-    texture = generate_surface_texture(size, seed % 1000, base_rgb, octaves=8, freq=16.0)
+    texture = generate_surface_texture(
+        size, seed % 1000, base_rgb, octaves=8, freq=16.0)
 
     # Fewer but larger craters (4-10)
     crater_count = 4 + rng.randint(0, 6)
-    texture = add_craters(texture, size, seed * 7 + 13, crater_count, light_dir)
+    texture = add_craters(
+        texture, size,
+        seed * 7 + 13, crater_count, light_dir)
 
     # Add a second layer of small craters for detail
-    texture = add_craters(texture, size, seed * 13 + 99, 15 + rng.randint(0, 10), light_dir)
+    small_craters = 15 + rng.randint(0, 10)
+    texture = add_craters(
+        texture, size, seed * 13 + 99, small_craters, light_dir)
 
     # Apply spherical shading
     texture = apply_spherical_shading(texture, size, light_dir)
@@ -268,10 +277,13 @@ def render_moon_comic(size, seed):
     base_rgb = hsl_to_rgb(hue, sat, light)
 
     # Derive 3 cel-shade bands from base color
-    light_rgb = hsl_to_rgb(hue, sat, min(0.85, light + 0.20))
+    light_rgb = hsl_to_rgb(
+        hue, sat, min(0.85, light + 0.20))
     mid_rgb = base_rgb
-    dark_rgb = hsl_to_rgb(hue, sat, max(0.15, light - 0.30))
-    shadow_rgb = hsl_to_rgb(hue, sat, max(0.05, light - 0.45))
+    dark_rgb = hsl_to_rgb(
+        hue, sat, max(0.15, light - 0.30))
+    shadow_rgb = hsl_to_rgb(
+        hue, sat, max(0.05, light - 0.45))
 
     # Light direction: upper-left
     light_dir = (-0.6, -0.6)
@@ -285,8 +297,10 @@ def render_moon_comic(size, seed):
         for x in range(size):
             nx = x / size * freq
             ny = y / size * freq
-            n = pnoise2(nx, ny, octaves=3, persistence=0.5,
-                        lacunarity=2.0, repeatx=size, repeaty=size, base=noise_seed)
+            n = pnoise2(
+                nx, ny, octaves=3, persistence=0.5,
+                lacunarity=2.0, repeatx=size,
+                repeaty=size, base=noise_seed)
             n = (n + 1) * 0.5  # 0-1
             # Quantize to 3 bands for flat comic look
             if n > 0.55:
@@ -322,7 +336,8 @@ def render_moon_comic(size, seed):
             texture[y, x, 1] *= shade
             texture[y, x, 2] *= shade
 
-    # Comic craters: flat circles with hard edges, 2-tone (dark floor + bright rim)
+    # Comic craters: flat circles with hard edges,
+    # 2-tone (dark floor + bright rim)
     crater_rng = random.Random(seed * 17 + 42)
     crater_count = 4 + crater_rng.randint(0, 6)
     for _ in range(crater_count):
@@ -345,7 +360,9 @@ def render_moon_comic(size, seed):
             for px in range(x0, x1):
                 ddx = px - sx
                 ddy = py - sy
-                d = math.sqrt((ddx / crater_r) ** 2 + (ddy / (crater_r * foreshorten)) ** 2)
+                d = math.sqrt(
+                    (ddx / crater_r) ** 2 +
+                    (ddy / (crater_r * foreshorten)) ** 2)
                 if d > 1.0:
                     continue
                 # Direction from center
@@ -403,7 +420,6 @@ def render_moon_retro(size, seed):
 
     # Generate at low resolution for authentic pixel-art look
     low_res = 32
-    scale = size // low_res
 
     # Restricted palette: warm and cool tones, no purple/pink/green
     hue_ranges = [(0, 60), (180, 260)]
@@ -433,8 +449,10 @@ def render_moon_retro(size, seed):
             nx = x / low_res * freq
             ny = y / low_res * freq
             # Multi-octave noise
-            n = pnoise2(nx, ny, octaves=4, persistence=0.5,
-                        lacunarity=2.0, repeatx=low_res, repeaty=low_res, base=noise_seed)
+            n = pnoise2(
+                nx, ny, octaves=4, persistence=0.5,
+                lacunarity=2.0, repeatx=low_res,
+                repeaty=low_res, base=noise_seed)
             n = (n + 1) * 0.5  # 0-1
             # Map to biome
             biome_idx = min(4, int(n * 5))
@@ -492,7 +510,9 @@ def render_moon_retro(size, seed):
             for px in range(x0, x1):
                 ddx = px - sx
                 ddy = py - sy
-                d = math.sqrt((ddx / crater_r) ** 2 + (ddy / (crater_r * foreshorten)) ** 2)
+                d = math.sqrt(
+                    (ddx / crater_r) ** 2 +
+                    (ddy / (crater_r * foreshorten)) ** 2)
                 if d > 1.0:
                     continue
                 if d > 0:
@@ -514,7 +534,7 @@ def render_moon_retro(size, seed):
 
     # Upscale to full size with nearest-neighbor (pixel-art look)
     low_img = Image.fromarray(np.clip(low_tex, 0, 255).astype(np.uint8), 'RGB')
-    full_img = low_img.resize((size, size), Image.NEAREST)
+    full_img = low_img.resize((size, size), Image.Resampling.NEAREST)
     texture = np.array(full_img, dtype=np.float32)
 
     return texture
@@ -539,14 +559,25 @@ def make_alpha_mask(size):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate procedural moon PNGs')
-    parser.add_argument('--output', default=DEFAULT_OUTPUT, help='Output subdirectory under public/')
-    parser.add_argument('--count', type=int, default=DEFAULT_COUNT, help='Number of moons to generate')
-    parser.add_argument('--seed-offset', type=int, default=DEFAULT_SEED_OFFSET, help='Seed offset for generation')
-    parser.add_argument('--style', default=DEFAULT_STYLE, choices=['standard', 'exotic', 'comic', 'retro'], help='Moon visual style')
+    parser = argparse.ArgumentParser(
+        description='Generate procedural moon PNGs')
+    parser.add_argument(
+        '--output', default=DEFAULT_OUTPUT,
+        help='Output subdirectory under public/')
+    parser.add_argument(
+        '--count', type=int, default=DEFAULT_COUNT,
+        help='Number of moons to generate')
+    parser.add_argument(
+        '--seed-offset', type=int, default=DEFAULT_SEED_OFFSET,
+        help='Seed offset for generation')
+    parser.add_argument(
+        '--style', default=DEFAULT_STYLE,
+        choices=['standard', 'exotic', 'comic', 'retro'],
+        help='Moon visual style')
     args = parser.parse_args()
 
-    output_dir = os.path.join(os.path.dirname(__file__), '..', 'public', args.output)
+    output_dir = os.path.join(
+        os.path.dirname(__file__), '..', 'public', args.output)
     os.makedirs(output_dir, exist_ok=True)
 
     # Select render function based on style
@@ -562,7 +593,9 @@ def main():
     tex_size = 128
     alpha_mask = make_alpha_mask(tex_size)
 
-    print(f"Generating {args.count} {args.style} moon textures ({tex_size}x{tex_size}) into public/{args.output}/...")
+    print(
+        f"Generating {args.count} {args.style} moon textures "
+        f"({tex_size}x{tex_size}) into public/{args.output}/...")
     print(f"Seed offset: {args.seed_offset}")
 
     for i in range(args.count):
