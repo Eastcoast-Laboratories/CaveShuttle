@@ -1604,9 +1604,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const skyTop = Math.min(skyThresholdY, -100); // at least 100px above level top
           const newMoons = [];
           // Pick from available moon indices (skips deleted PNGs automatically)
-          // Ensures no duplicate moons are selected within the same level.
+          // Ensures no duplicate moons AND no duplicate tints within the same level.
+          // Tint is determined by moon index % 4: 0=yellow, 1=brown, 2=red, 3=blue
+          const MOON_TINTS = ['gray-yellow', 'gray-brown', 'gray-red', 'gray-blue'];
           const availableIndices = Array.from(moonAvailableRef.current);
           const usedIndices = new Set();
+          const usedTints = new Set();
           const pickMoonIndex = () => {
             const pool = availableIndices.length > 0 ? availableIndices : null;
             let idx;
@@ -1619,8 +1622,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                 idx = Math.floor(rng() * MOON_IMAGE_COUNT);
               }
               attempts++;
-            } while (usedIndices.has(idx) && attempts < 50);
+            } while (
+              (usedIndices.has(idx) || usedTints.has(idx % 4)) &&
+              attempts < 50
+            );
             usedIndices.add(idx);
+            usedTints.add(idx % 4);
             return idx;
           };
           for (let mi = 0; mi < moonCount; mi++) {
@@ -1635,6 +1642,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           console.log('[MOONS] Level', currentLevel, 'selected', moonCount, 'moons:',
             newMoons.map(m =>
               `moon_${String(m.imageIndex).padStart(3, '0')}.png ` +
+              `(tint=${MOON_TINTS[m.imageIndex % 4]}) ` +
               `at x=${Math.round(m.x)} y=${Math.round(m.y)} r=${Math.round(m.radius)}`
             ).join(', '));
           setMoons(newMoons);

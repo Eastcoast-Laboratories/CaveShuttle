@@ -412,14 +412,13 @@ BAYER_4x4 = np.array([
 
 
 def render_moon_retro(size, seed):
-    """Retro 16-bit pixel-art moon: low-res generation with Bayer dithering,
-    biome-based palette, nearest-neighbor upscaling.
+    """Retro moon: biome-based palette, Bayer dithering, smooth upscaling.
     Inspired by TekEngine Pixel Planet Creator and Deep-Fold PixelPlanets.
     """
     rng = random.Random(seed)
 
-    # Generate at low resolution for authentic pixel-art look
-    low_res = 32
+    # Generate at medium resolution, then smooth-upscale for antialiased look
+    low_res = 128
 
     # Restricted palette: warm and cool tones, no purple/pink/green
     hue_ranges = [(0, 60), (180, 260)]
@@ -522,19 +521,34 @@ def render_moon_retro(size, seed):
                     pdx = pdy = 0
                 dot = pdx * lx + pdy * ly
 
-                if d < 0.7:
-                    # Dark flat floor
-                    low_tex[py, px] = np.array(biomes[0]) * 0.5
-                else:
-                    # Rim: bright or dark depending on light
-                    if dot > 0:
-                        low_tex[py, px] = np.array(biomes[4]) * 1.1
-                    else:
-                        low_tex[py, px] = np.array(biomes[0]) * 0.3
+                # Smooth crater depth: deepest at center, tapering to 0 at rim
+                depth = max(0, 1.0 - d)
+
+                # Shadow intensity: stronger on the side away from light,
+                # tapering naturally toward the rim
+                shadow_strength = max(0, -dot) * depth
+
+                # Highlight intensity: bright on the side facing light,
+                # only at the rim edge
+                rim_factor = max(0, d - 0.6) / 0.4
+                highlight_strength = max(0, dot) * rim_factor
+
+                # Apply: darken by shadow, brighten by highlight
+                floor_rgb = np.array(biomes[0]) * 0.5
+                shadow_rgb_val = np.array(biomes[0]) * 0.25
+                highlight_rgb = np.array(biomes[4]) * 1.15
+
+                # Blend: floor color with shadow, then add highlight
+                color = floor_rgb * (1 - shadow_strength) + \
+                    shadow_rgb_val * shadow_strength
+                color = color * (1 - highlight_strength) + \
+                    highlight_rgb * highlight_strength
+
+                low_tex[py, px] = color
 
     # Upscale to full size with nearest-neighbor (pixel-art look)
     low_img = Image.fromarray(np.clip(low_tex, 0, 255).astype(np.uint8), 'RGB')
-    full_img = low_img.resize((size, size), Image.Resampling.NEAREST)
+    full_img = low_img.resize((size, size), Image.Resampling.BILINEAR)
     texture = np.array(full_img, dtype=np.float32)
 
     return texture
