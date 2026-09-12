@@ -73,150 +73,6 @@ function valueNoise1D(t) {
   return a * (1 - smooth) + b * smooth;
 }
 
-// 2D hash for procedural moon surface noise.
-function hashNoise2D(x, y) {
-  let h = (x * 374761393 + y * 668265263) | 0;
-  h = (h ^ (h >> 13)) * 1274126177;
-  return ((h ^ (h >> 16)) >>> 0) / 4294967296;
-}
-
-// Draw a realistic procedural moon onto a canvas context.
-// Renders spherical shading, foreshortened craters with shadow/highlight rims,
-// and surface noise — all clipped to the moon disk.
-function drawMoon(ctx, cx, cy, radius, seed, hue, sat, light) {
-  ctx.save();
-
-  // Clip to the moon disk
-  ctx.beginPath();
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-  ctx.clip();
-
-  // Light direction: upper-left
-  const lightX = -0.5, lightY = -0.5;
-  const lightLen = Math.sqrt(lightX * lightX + lightY * lightY);
-  const lx = lightX / lightLen, ly = lightY / lightLen;
-
-  // Spherical shading: radial gradient offset toward the light source
-  const gradOffsetX = cx + lx * radius * 0.5;
-  const gradOffsetY = cy + ly * radius * 0.5;
-  const sphereGrad = ctx.createRadialGradient(
-    gradOffsetX, gradOffsetY, 0,
-    gradOffsetX, gradOffsetY, radius * 1.5
-  );
-  const baseColor = `hsl(${hue}, ${sat}%, ${light}%)`;
-  const darkColor = `hsl(${hue}, ${sat}%, ${Math.max(8, light - 45)}%)`;
-  sphereGrad.addColorStop(0, baseColor);
-  sphereGrad.addColorStop(0.7, `hsl(${hue}, ${sat}%, ${Math.max(15, light - 25)}%)`);
-  sphereGrad.addColorStop(1, darkColor);
-  ctx.fillStyle = sphereGrad;
-  ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
-
-  // Surface noise: subtle per-pixel variation for roughness
-  const noiseSize = Math.ceil(radius * 2);
-  if (noiseSize > 0) {
-    const noiseCanvas = document.createElement('canvas');
-    noiseCanvas.width = noiseSize;
-    noiseCanvas.height = noiseSize;
-    const nctx = noiseCanvas.getContext('2d');
-    const imgData = nctx.createImageData(noiseSize, noiseSize);
-    const data = imgData.data;
-    for (let py = 0; py < noiseSize; py++) {
-      for (let px = 0; px < noiseSize; px++) {
-        const idx = (py * noiseSize + px) * 4;
-        const n = (hashNoise2D(px + seed, py + seed * 7) - 0.5) * 30;
-        data[idx] = n;
-        data[idx + 1] = n;
-        data[idx + 2] = n;
-        data[idx + 3] = 40;
-      }
-    }
-    nctx.putImageData(imgData, 0, 0);
-    ctx.globalCompositeOperation = 'overlay';
-    ctx.drawImage(noiseCanvas, cx - radius, cy - radius);
-    ctx.globalCompositeOperation = 'source-over';
-  }
-
-  // Craters: seeded PRNG for deterministic crater layout
-  let crng = seed >>> 0;
-  const nextCrater = () => {
-    crng = (crng + 0x6D2B79F5) >>> 0;
-    let t = crng;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-
-  const craterCount = 8 + Math.floor(nextCrater() * 8);
-  for (let c = 0; c < craterCount; c++) {
-    // Crater center in normalized sphere coordinates [-1, 1]
-    const u = (nextCrater() - 0.5) * 1.7; // keep within disk
-    const v = (nextCrater() - 0.5) * 1.7;
-    const distFromCenter = Math.sqrt(u * u + v * v);
-    if (distFromCenter > 0.95) continue;
-
-    // Foreshortening: craters near the limb appear as ellipses
-    const foreshorten = Math.sqrt(Math.max(0, 1 - distFromCenter * distFromCenter));
-    const craterR = radius * (0.06 + nextCrater() * 0.18);
-    const cxScreen = cx + u * radius;
-    const cyScreen = cy + v * radius;
-
-    // Shadow direction follows the light source
-    const shadowDx = -lx;
-    const shadowDy = -ly;
-
-    // Crater floor: slightly darker
-    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${Math.max(10, light - 30)}%, 0.5)`;
-    ctx.beginPath();
-    ctx.ellipse(cxScreen, cyScreen, craterR, craterR * foreshorten, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Shadow wall: dark crescent on the side away from light
-    const shadowOffset = craterR * 0.4;
-    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${Math.max(5, light - 50)}%, 0.6)`;
-    ctx.beginPath();
-    ctx.ellipse(
-      cxScreen + shadowDx * shadowOffset,
-      cyScreen + shadowDy * shadowOffset,
-      craterR * 0.85,
-      craterR * 0.85 * foreshorten,
-      0, 0, Math.PI * 2
-    );
-    ctx.fill();
-
-    // Illuminated rim: bright crescent on the side facing light
-    const rimOffset = craterR * 0.3;
-    ctx.fillStyle = `hsla(${hue}, ${Math.min(60, sat + 15)}%, ${Math.min(90, light + 20)}%, 0.4)`;
-    ctx.beginPath();
-    ctx.ellipse(
-      cxScreen + lx * rimOffset,
-      cyScreen + ly * rimOffset,
-      craterR * 1.05,
-      craterR * 1.05 * foreshorten,
-      0, 0, Math.PI * 2
-    );
-    ctx.fill();
-
-    // Re-draw crater floor on top to create the rim ring effect
-    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${Math.max(12, light - 25)}%, 0.7)`;
-    ctx.beginPath();
-    ctx.ellipse(cxScreen, cyScreen, craterR * 0.8, craterR * 0.8 * foreshorten, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Terminator shadow: dark crescent on the side away from light
-  const termGrad = ctx.createRadialGradient(
-    gradOffsetX, gradOffsetY, radius * 0.3,
-    gradOffsetX, gradOffsetY, radius * 1.6
-  );
-  termGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  termGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
-  termGrad.addColorStop(1, `hsla(${hue}, ${sat}%, 5%, 0.7)`);
-  ctx.fillStyle = termGrad;
-  ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
-
-  ctx.restore();
-}
-
 // Ensures the pod is never drawn too dark; non-zero channels are doubled,
 // zero channels become 30 so black pods turn gray instead of green.
 function ensureBrightPodColor(rgb, minChannel = 64) {
@@ -503,6 +359,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
   const [podStartPosition, setPodStartPosition] = useState(null);
   const [stars, setStars] = useState([]);
   const [moons, setMoons] = useState([]);
+  const moonImagesRef = useRef([]);
   const [levelColors, setLevelColors] = useState(null);
   const particleSystem = useRef(new ParticleSystem());
   const [lives, setLives] = useState(initialLives);
@@ -853,25 +710,37 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           return;
         }
       }
-      // Ctrl+Alt+Shift+Win+M spawns 30 alien moons
+      // Ctrl+Alt+Shift+Win+M spawns 30 alien moons from the pre-generated pool
       if ((e.key === 'm' || e.key === 'M') && e.ctrlKey && e.altKey && e.shiftKey && e.metaKey) {
         console.log('[SHORTCUT] Moon cheat: spawning 30 moons');
+        const availableIndices = Array.from(moonAvailableRef.current);
+        const usedCheatIndices = new Set();
+        const pickCheatIndex = () => {
+          let idx;
+          let attempts = 0;
+          do {
+            if (availableIndices.length > 0) {
+              idx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            } else {
+              idx = Math.floor(Math.random() * MOON_IMAGE_COUNT);
+            }
+            attempts++;
+          } while (usedCheatIndices.has(idx) && attempts < 50);
+          usedCheatIndices.add(idx);
+          return idx;
+        };
         const cheatMoons = [];
         for (let i = 0; i < 30; i++) {
           const r = 18 + Math.random() * 20;
-          const hue = Math.random() * 360;
-          const sat = 15 + Math.random() * 25;
-          const light = 60 + Math.random() * 15;
           cheatMoons.push({
             x: Math.random() * (level ? level.layout[0].length * 16 : 800),
             y: -100 - Math.random() * 400,
             radius: r,
-            seed: (Math.random() * 4294967296) >>> 0,
-            hue,
-            sat,
-            light,
+            imageIndex: pickCheatIndex(),
           });
         }
+        console.log('[MOONS] Cheat spawned 30 moons:',
+          cheatMoons.map(m => `moon_${String(m.imageIndex).padStart(3, '0')}.png`).join(', '));
         setMoons(cheatMoons);
         e.preventDefault();
         return;
@@ -1727,20 +1596,39 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Generate 1-3 alien moons: random count, position, size, color, and craters per level.
           // Placed in the lower sky region the player actually sees when flying up,
           // between the level top (y=0) and the sky threshold.
+          // Picks 1-3 moons from the pre-generated 100 moon PNG pool (deterministic per level).
           const moonCount = 1 + Math.floor(rng() * 3); // 1-3 moons
           const skyTop = Math.min(skyThresholdY, -100); // at least 100px above level top
           const newMoons = [];
+          // Pick from available moon indices (skips deleted PNGs automatically)
+          // Ensures no duplicate moons are selected within the same level.
+          const availableIndices = Array.from(moonAvailableRef.current);
+          const usedIndices = new Set();
+          const pickMoonIndex = () => {
+            const pool = availableIndices.length > 0 ? availableIndices : null;
+            let idx;
+            let attempts = 0;
+            do {
+              if (pool) {
+                idx = pool[Math.floor(rng() * pool.length)];
+              } else {
+                // Images may still be loading; fall back to full range
+                idx = Math.floor(rng() * MOON_IMAGE_COUNT);
+              }
+              attempts++;
+            } while (usedIndices.has(idx) && attempts < 50);
+            usedIndices.add(idx);
+            return idx;
+          };
           for (let mi = 0; mi < moonCount; mi++) {
             const moonRadius = 18 + rng() * 20; // 18-38 px radius
             const moonX = rng() * (lenx * 16 - moonRadius * 4) + moonRadius * 2;
             const moonY = skyTop + rng() * (0 - skyTop); // between skyTop and level top (y=0)
-            const moonSeed = (rng() * 4294967296) >>> 0;
-            // Random alien color: hue 0-360, low saturation, medium lightness
-            const moonHue = rng() * 360;
-            const moonSat = 15 + rng() * 25; // 15-40% saturation
-            const moonLight = 60 + rng() * 15; // 60-75% lightness
-            newMoons.push({ x: moonX, y: moonY, radius: moonRadius, seed: moonSeed, hue: moonHue, sat: moonSat, light: moonLight });
+            const pickedIndex = pickMoonIndex();
+            newMoons.push({ x: moonX, y: moonY, radius: moonRadius, imageIndex: pickedIndex });
           }
+          console.log('[MOONS] Level', currentLevel, 'selected', moonCount, 'moons:',
+            newMoons.map(m => `moon_${String(m.imageIndex).padStart(3, '0')}.png`).join(', '));
           setMoons(newMoons);
         } else {
           setMoons([]);
@@ -1819,6 +1707,41 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         mineRedImageRef.current = redImg;
       };
     };
+  }, []);
+
+  // Pre-load 100 pre-generated realistic moon PNGs once on mount.
+  // The PNGs are generated by dev/generate_moons.py and stored in public/moons/.
+  const MOON_IMAGE_COUNT = 100;
+  const moonAvailableRef = useRef(new Set());
+  useEffect(() => {
+    // Load retro pixel-art moon pool (moons4/)
+    // Tracks which indices actually loaded so deleted PNGs are skipped automatically.
+    const images = [];
+    const available = moonAvailableRef.current;
+    let loaded = 0;
+    let failed = 0;
+    const onLoad = (idx) => {
+      available.add(idx);
+      loaded++;
+      if (loaded + failed === MOON_IMAGE_COUNT) {
+        console.log('[MOONS] Loaded:', loaded, 'Failed:', failed, 'Available indices:', available.size);
+      }
+    };
+    const onError = (idx) => {
+      failed++;
+      console.warn('[MOONS] moon_' + String(idx).padStart(3, '0') + '.png not found, skipping');
+      if (loaded + failed === MOON_IMAGE_COUNT) {
+        console.log('[MOONS] Loaded:', loaded, 'Failed:', failed, 'Available indices:', available.size);
+      }
+    };
+    for (let i = 0; i < MOON_IMAGE_COUNT; i++) {
+      const img = new Image();
+      img.src = `/moons/moon_${String(i).padStart(3, '0')}.png`;
+      img.onload = () => onLoad(i);
+      img.onerror = () => onError(i);
+      images[i] = img;
+    }
+    moonImagesRef.current = images;
   }, []);
 
   // Render logic is stored in a ref so the requestAnimationFrame loop can stay stable
@@ -3932,14 +3855,26 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       // Draw alien moons (distant, parallax-free, drawn before level tiles)
+      // Uses pre-generated retro pixel-art moon PNGs from public/moons/
       if (level && tilesetLoaded && moons.length > 0) {
+        const moonImages = moonImagesRef.current;
+        const available = Array.from(moonAvailableRef.current);
         for (let mi = 0; mi < moons.length; mi++) {
           const moon = moons[mi];
           const mx = moon.x - cameraRef.current.x;
           const my = moon.y - cameraRef.current.y;
           // Cull if fully off-screen
           if (mx + moon.radius > 0 && mx - moon.radius < viewWidth && my + moon.radius > 0 && my - moon.radius < viewHeight) {
-            drawMoon(ctx, mx, my, moon.radius, moon.seed, moon.hue, moon.sat, moon.light);
+            // If the selected image is missing (deleted), substitute an available one
+            let img = moonImages[moon.imageIndex];
+            if (!img || !img.complete || img.naturalWidth === 0) {
+              if (available.length > 0) {
+                img = moonImages[available[(moon.imageIndex + mi) % available.length]];
+              }
+            }
+            if (img && img.complete && img.naturalWidth > 0) {
+              ctx.drawImage(img, mx - moon.radius, my - moon.radius, moon.radius * 2, moon.radius * 2);
+            }
           }
         }
       }
