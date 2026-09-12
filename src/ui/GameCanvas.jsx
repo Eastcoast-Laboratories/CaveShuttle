@@ -740,7 +740,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           });
         }
         console.log('[MOONS] Cheat spawned 30 moons:',
-          cheatMoons.map(m => `moon_${String(m.imageIndex).padStart(3, '0')}.png`).join(', '));
+          cheatMoons.map(m =>
+            `moon_${String(m.imageIndex).padStart(3, '0')}.png ` +
+            `at x=${Math.round(m.x)} y=${Math.round(m.y)} r=${Math.round(m.radius)}`
+          ).join(', '));
         setMoons(cheatMoons);
         e.preventDefault();
         return;
@@ -1622,13 +1625,18 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           };
           for (let mi = 0; mi < moonCount; mi++) {
             const moonRadius = 18 + rng() * 20; // 18-38 px radius
-            const moonX = rng() * (lenx * 16 - moonRadius * 4) + moonRadius * 2;
+            // Bias moon X toward the right side: 55-95% of the level width
+            const rightBias = 0.55 + rng() * 0.40;
+            const moonX = rightBias * (lenx * 16 - moonRadius * 4) + moonRadius * 2;
             const moonY = skyTop + rng() * (0 - skyTop); // between skyTop and level top (y=0)
             const pickedIndex = pickMoonIndex();
             newMoons.push({ x: moonX, y: moonY, radius: moonRadius, imageIndex: pickedIndex });
           }
           console.log('[MOONS] Level', currentLevel, 'selected', moonCount, 'moons:',
-            newMoons.map(m => `moon_${String(m.imageIndex).padStart(3, '0')}.png`).join(', '));
+            newMoons.map(m =>
+              `moon_${String(m.imageIndex).padStart(3, '0')}.png ` +
+              `at x=${Math.round(m.x)} y=${Math.round(m.y)} r=${Math.round(m.radius)}`
+            ).join(', '));
           setMoons(newMoons);
         } else {
           setMoons([]);
