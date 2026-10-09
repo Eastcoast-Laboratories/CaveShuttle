@@ -48,3 +48,6 @@ test-results/*
 # Dev certificates
 .dev-certs/
 */keystore.properties
+
+# Apple signing material (never commit)
+dev/xcode/
