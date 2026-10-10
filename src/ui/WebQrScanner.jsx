@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import jsQR from 'jsqr'
 
-// Web-based QR code scanner using getUserMedia + BarcodeDetector API.
-// Used as a fallback when the native Capacitor BarcodeScanner is not available
-// (i.e. when running in a regular browser instead of the native app).
+// Web-based QR code scanner using getUserMedia.
+// Detection uses the native BarcodeDetector API where available (Chromium)
+// and falls back to jsQR canvas decoding elsewhere — iOS WKWebView has no
+// BarcodeDetector, so the jsQR path is what runs on iOS.
 export default function WebQrScanner({ onScan, onClose }) {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
@@ -12,23 +14,25 @@ export default function WebQrScanner({ onScan, onClose }) {
 
   useEffect(() => {
     let detector = null
+    let canvas = null
+    let ctx = null
     let cancelled = false
 
     async function start() {
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          const msg = 'Camera not available. HTTPS is required for camera access. Use copy/paste instead.'
+          const msg = 'Camera not available. Use copy/paste instead.'
           console.error('[WEB_QR]', msg)
           setErrorMsg(msg)
           return
         }
-        if (!('BarcodeDetector' in window)) {
-          const msg = 'BarcodeDetector API not supported in this browser. Use copy/paste instead.'
-          console.error('[WEB_QR]', msg)
-          setErrorMsg(msg)
-          return
+        if ('BarcodeDetector' in window) {
+          detector = new window.BarcodeDetector({ formats: ['qr_code'] })
+        } else {
+          console.log('[WEB_QR] BarcodeDetector unavailable, using jsQR fallback')
+          canvas = document.createElement('canvas')
+          ctx = canvas.getContext('2d', { willReadFrequently: true })
         }
-        detector = new window.BarcodeDetector({ formats: ['qr_code'] })
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment' },
         })
@@ -48,19 +52,38 @@ export default function WebQrScanner({ onScan, onClose }) {
       }
     }
 
+    function detectJsQr() {
+      const video = videoRef.current
+      if (!video || !ctx || video.readyState < 2 || !video.videoWidth) return null
+      const scale = Math.min(1, 640 / video.videoWidth)
+      const w = Math.max(1, Math.floor(video.videoWidth * scale))
+      const h = Math.max(1, Math.floor(video.videoHeight * scale))
+      canvas.width = w
+      canvas.height = h
+      ctx.drawImage(video, 0, 0, w, h)
+      const img = ctx.getImageData(0, 0, w, h)
+      const code = jsQR(img.data, w, h)
+      return code?.data || null
+    }
+
     function scanLoop() {
-      if (cancelled || !detector || !videoRef.current) return
+      if (cancelled || !videoRef.current) return
       rafRef.current = requestAnimationFrame(async () => {
         try {
-          const barcodes = await detector.detect(videoRef.current)
-          if (barcodes && barcodes.length > 0) {
-            const value = barcodes[0].rawValue || barcodes[0].displayValue
-            if (value) {
-              cleanup()
-              setScanning(false)
-              onScan(value)
-              return
+          let value = null
+          if (detector) {
+            const barcodes = await detector.detect(videoRef.current)
+            if (barcodes && barcodes.length > 0) {
+              value = barcodes[0].rawValue || barcodes[0].displayValue
             }
+          } else {
+            value = detectJsQr()
+          }
+          if (value) {
+            cleanup()
+            setScanning(false)
+            onScan(value)
+            return
           }
         } catch {
           // detect can throw if video is not ready yet; just retry

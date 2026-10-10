@@ -68,6 +68,11 @@ export default function LocalLobby({ onBack }) {
 
   const t = localLobbyTranslations[language]
   const isNative = capacitorManager.isNativePlatform()
+  // The @capacitor-mlkit/barcode-scanning plugin is not bundled on iOS
+  // (no SPM support) — Capacitor.isPluginAvailable() is false there, so the
+  // web-based jsQR scanner is used instead of the native plugin.
+  const nativeScanAvailable = isNative &&
+    (capacitorManager.Capacitor?.isPluginAvailable?.('BarcodeScanner') ?? false)
 
   const localIp = state.localOffer ? extractLocalIp(state.localOffer) : null
 
@@ -84,7 +89,7 @@ export default function LocalLobby({ onBack }) {
 
   async function handleScanOffer() {
     setScanError('')
-    if (!isNative) {
+    if (!nativeScanAvailable) {
       setWebScanMode('offer')
       return
     }
@@ -139,7 +144,7 @@ export default function LocalLobby({ onBack }) {
 
   async function handleScanAnswer() {
     setScanError('')
-    if (!isNative) {
+    if (!nativeScanAvailable) {
       setWebScanMode('answer')
       return
     }
