@@ -113,6 +113,7 @@ update_version() {
 
   # Update Android versionCode in build.gradle
   GRADLE_FILE="caveshuttle/app/build.gradle"
+  NEW_CODE=""
   if [ -f "$GRADLE_FILE" ]; then
     CURRENT_CODE=$(grep -oP 'versionCode\s+\K\d+' "$GRADLE_FILE")
     if [ -n "$CURRENT_CODE" ]; then
@@ -120,6 +121,23 @@ update_version() {
       echo "Updating Android versionCode: $CURRENT_CODE → $NEW_CODE"
       sed -i "s/versionCode $CURRENT_CODE/versionCode $NEW_CODE/" "$GRADLE_FILE"
       sed -i "s/versionName \"[^\"]*\"/versionName \"$NEW_VERSION\"/" "$GRADLE_FILE"
+    fi
+  fi
+
+  # Update iOS versions in the Xcode project — same numbers as Android:
+  # MARKETING_VERSION = versionName, CURRENT_PROJECT_VERSION = versionCode
+  PBX_FILE="ios/App/App.xcodeproj/project.pbxproj"
+  if [ -f "$PBX_FILE" ]; then
+    if [ -z "$NEW_CODE" ]; then
+      CURRENT_CODE=$(grep -oP 'CURRENT_PROJECT_VERSION = \K\d+' "$PBX_FILE" | head -1)
+      if [ -n "$CURRENT_CODE" ]; then
+        NEW_CODE=$((CURRENT_CODE + 1))
+      fi
+    fi
+    if [ -n "$NEW_CODE" ]; then
+      echo "Updating iOS: MARKETING_VERSION → $NEW_VERSION, CURRENT_PROJECT_VERSION → $NEW_CODE"
+      sed -i "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = $NEW_VERSION/" "$PBX_FILE"
+      sed -i "s/CURRENT_PROJECT_VERSION = [^;]*/CURRENT_PROJECT_VERSION = $NEW_CODE/" "$PBX_FILE"
     fi
   fi
 }
