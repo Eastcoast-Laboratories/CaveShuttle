@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
-# CaveShuttle iOS build on the Scaleway Mac mini (m1@62.210.150.197).
+# CaveShuttle iOS build on the Scaleway Mac mini ("$MAC_HOST").
 # macOS 26.6.1 arm64, Xcode 26.5 already installed, license accepted.
 # Signing state: see ~/.config/devin/skills/ios-build-scaleway-mac/SKILL.md
 # (team SVFZHJF78U, both identities in login.keychain-db).
 # CaveShuttle is Capacitor 8 + SPM — no .xcworkspace, build App.xcodeproj.
 # Reference/proven workflow: /var/www/Roboyard/dev/macos-build-setup.sh
+#
+# Host credentials live in dev/.env (gitignored — see dev/.env.example):
+#   MAC_HOST           ssh target user@host
+#   MAC_PASSWORD_FILE  local file holding the macOS login password
+#   APPLE_ID           the Apple ID logged into Xcode on the Mac
+# Laptop-side:  source dev/.env  before copy-pasting the rsync/scp lines.
+# Mac-side:   export MAC_PASSWORD=$(tr -d '\n' < "$MAC_PASSWORD_FILE") locally
+#             and pass it through the ssh command (never write it to a file).
 
 # ----------------------------------------------------------------------
 # 1) Node.js user-local (required for npm + @capacitor/cli — Capacitor 8).
@@ -29,7 +37,7 @@ npm --version
 #     --exclude .git/ --exclude node_modules/ --exclude dist/ \
 #     --exclude '*/build/' --exclude .gradle/ --exclude local.properties \
 #     --exclude playwright-report/ --exclude test-results/ \
-#     /var/www/CaveShuttle/ m1@62.210.150.197:~/repos/CaveShuttle/
+#     /var/www/CaveShuttle/ "$MAC_HOST":~/repos/CaveShuttle/
 
 # ----------------------------------------------------------------------
 # 3) Web build + Capacitor sync (webDir is dist/, build runs sync-levelpack-meta).
@@ -60,7 +68,7 @@ xcrun simctl launch booted de.z11.caveshuttle
 sleep 10
 xcrun simctl io booted screenshot /var/tmp/caveshuttle-ios.png
 # copy back to the laptop and LOOK at it:
-#   scp m1@62.210.150.197:/var/tmp/caveshuttle-ios.png /var/tmp/devin/
+#   scp "$MAC_HOST":/var/tmp/caveshuttle-ios.png /var/tmp/devin/
 # crash reports (if it dies): ~/Library/Logs/DiagnosticReports/*.ips
 
 # ----------------------------------------------------------------------
@@ -108,14 +116,15 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App \
 security unlock-keychain -p "$MAC_PASSWORD" ~/Library/Keychains/login.keychain-db
 xcodebuild -exportArchive -archivePath build/App.xcarchive \
   -exportPath build/ipa -exportOptionsPlist dev/ExportOptions.plist
-# → build/ipa/App.ipa — copy back: scp m1@62.210.150.197:~/repos/CaveShuttle/build/ipa/App.ipa build/ios/CaveShuttle.ipa
+# → build/ipa/App.ipa — copy back: scp "$MAC_HOST":~/repos/CaveShuttle/build/ipa/App.ipa build/ios/CaveShuttle.ipa
 # Upload: Xcode Organizer / Transporter app / xcrun altool --upload-app
 #   (needs App Store Connect API key or app-specific password)
 
-# KNOWN ISSUE: destination=upload in ExportOptions.plist fails with
-# "Error Downloading App Information" while the app record does not exist
-# yet in App Store Connect. Use destination=export (current dev/ExportOptions.plist),
-# upload the .ipa later once the app is created at appstoreconnect.apple.com.
+# NOTE: destination=upload in ExportOptions.plist uploads the .ipa straight to
+# App Store Connect (auth via the Xcode-logged-in $APPLE_ID) — it needs
+# the app record to EXIST there first (else "Error Downloading App
+# Information"). First verified working upload: 2026-10-10, app id 6821246830.
+# For a local .ipa without upload use destination=export.
 #
 # ExportOptions.plist lives in dev/ (see dev/ExportOptions.plist):
 #   method app-store-connect, signingStyle manual, teamID SVFZHJF78U,

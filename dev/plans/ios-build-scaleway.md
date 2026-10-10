@@ -11,7 +11,8 @@ This file only contains the CaveShuttle-specific steps and ordering.
   `webDir: dist`, Android path `./caveshuttle`)
 - `ios/App/` already exists (incl. `App.xcodeproj` + `CapApp-SPM`) — do NOT
   `npx cap add ios` again
-- Remote: `m1@62.210.150.197`, repo goes to `~/repos/CaveShuttle`
+- Remote: `$MAC_HOST` (defined in `dev/.env`, gitignored — `m1@<scaleway-ip>`),
+  repo goes to `~/repos/CaveShuttle`
 - Signing is READY: Apple Development + Apple Distribution identities are in
   the Mac's login keychain (team `SVFZHJF78U`, paid program)
 - Reference for the workflow: `/var/www/Roboyard/dev/macos-build-setup.sh`
