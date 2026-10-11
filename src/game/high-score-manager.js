@@ -160,6 +160,14 @@ export class HighScoreManager {
     return { success: true, profile };
   }
 
+  // Names can arrive with stray whitespace (typed input, network peers,
+  // imported data). Storage and backend sync only ever see trimmed values.
+  static _normalizeRecordNames(record) {
+    if (typeof record.name === 'string') record.name = record.name.trim();
+    if (typeof record.player2Name === 'string') record.player2Name = record.player2Name.trim();
+    return record;
+  }
+
   // --- Run context ---
 
   static createRunContext({ packId, packVersion, startLevel, mode }) {
@@ -247,6 +255,7 @@ export class HighScoreManager {
   // --- Record management ---
 
   static addLevelRecord(record) {
+    this._normalizeRecordNames(record);
     const validationError = this._validateLevelRecord(record);
     if (validationError) {
       console.error('[HIGHSCORE] Invalid LevelScoreRecord:', validationError, record);
@@ -273,6 +282,7 @@ export class HighScoreManager {
   }
 
   static addRunRecord(record) {
+    this._normalizeRecordNames(record);
     const validationError = this._validateRunRecord(record);
     if (validationError) {
       console.error('[HIGHSCORE] Invalid RunScoreRecord:', validationError, record);
@@ -429,19 +439,21 @@ export class HighScoreManager {
   static updateRecordNames({ levelAttemptIds, runId, name, player2Name }) {
     const data = this._getHighscoreData();
     let changed = false;
+    const cleanName = typeof name === 'string' ? name.trim() : name;
+    const cleanPlayer2Name = typeof player2Name === 'string' ? player2Name.trim() : player2Name;
 
     const ids = Array.isArray(levelAttemptIds) ? levelAttemptIds : [];
     for (const attemptId of ids) {
       const record = data.levelRecords.find(r => r.attemptId === attemptId);
       if (!record) continue;
-      if (name !== undefined && record.name !== name) { record.name = name; changed = true; }
-      if (player2Name !== undefined && record.player2Name !== player2Name) { record.player2Name = player2Name; changed = true; }
+      if (cleanName !== undefined && record.name !== cleanName) { record.name = cleanName; changed = true; }
+      if (cleanPlayer2Name !== undefined && record.player2Name !== cleanPlayer2Name) { record.player2Name = cleanPlayer2Name; changed = true; }
     }
     if (runId) {
       const runRecord = data.runRecords.find(r => r.runId === runId);
       if (runRecord) {
-        if (name !== undefined && runRecord.name !== name) { runRecord.name = name; changed = true; }
-        if (player2Name !== undefined && runRecord.player2Name !== player2Name) { runRecord.player2Name = player2Name; changed = true; }
+        if (cleanName !== undefined && runRecord.name !== cleanName) { runRecord.name = cleanName; changed = true; }
+        if (cleanPlayer2Name !== undefined && runRecord.player2Name !== cleanPlayer2Name) { runRecord.player2Name = cleanPlayer2Name; changed = true; }
       }
     }
 
@@ -490,6 +502,8 @@ export class HighScoreManager {
     ) {
       return { success: false, error: 'Missing or invalid highscore data' };
     }
+    for (const record of payload.highscoreData.levelRecords) this._normalizeRecordNames(record);
+    for (const record of payload.highscoreData.runRecords) this._normalizeRecordNames(record);
     safeSet(PLAYER_PROFILE_KEY, payload.playerProfile);
     this._setHighscoreData(payload.highscoreData);
     return { success: true };
@@ -517,6 +531,7 @@ export class HighScoreManager {
     if (!isPlainObject(remoteRecord) || !remoteRecord.attemptId) {
       return { success: false, error: 'Invalid level record' };
     }
+    this._normalizeRecordNames(remoteRecord);
     const validationError = this._validateLevelRecord(remoteRecord);
     if (validationError) {
       console.error('[HS_SYNC] Level record validation failed:', validationError);
@@ -539,6 +554,7 @@ export class HighScoreManager {
     if (!isPlainObject(remoteRecord) || !remoteRecord.runId) {
       return { success: false, error: 'Invalid run record' };
     }
+    this._normalizeRecordNames(remoteRecord);
     const validationError = this._validateRunRecord(remoteRecord);
     if (validationError) {
       console.error('[HS_SYNC] Run record validation failed:', validationError);
