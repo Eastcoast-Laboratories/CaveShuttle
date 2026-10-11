@@ -38,7 +38,7 @@ import {
   RESPAWN_IMMUNITY_MS,
   REACTOR_TILES, REACTOR_MELTDOWN_TRIGGER_MS, REACTOR_MELTDOWN_ESCAPE_MS,
   REACTOR_HIT_TIMEOUT_MS, SCORE_REACTOR_ESCAPE,
-  VIBRATE_ROTATE, VIBRATE_ROTATE_STOP, VIBRATE_THRUST, VIBRATE_THRUST_STOP,
+  VIBRATE_ROTATE, VIBRATE_THRUST, VIBRATE_THRUST_STOP,
   VIBRATE_FIRE, VIBRATE_POD,
   SHIP_COLLISION_RADIUS, POD_COLLISION_RADIUS,
   STAR_FIELD_SEED,
@@ -225,6 +225,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     tiltSensorRef,
     language,
   } = useSettings();
+  // Tilt steering is disabled in local two-player mode: both players share one
+  // screen/device, so tilting it would fight the other player's view. Network
+  // multiplayer keeps tilt because each player holds their own device.
+  const tiltActive = tiltSteering && !(twoPlayer && !networkRole);
   // [PORTRAIT_VIEWPORT] Width stays fixed at GAME_WIDTH (preserves the horizontal
   // tile scale and touch-button layout tuned for it). In portrait orientation the
   // vertical viewport is expanded to match the screen's aspect ratio, so more of
@@ -483,7 +487,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       console.log('[TILT_STUTTER] Entered stutter magnitude at', tiltMagnitude.toFixed(1) + '°, phase: ON');
     };
 
-    if (!tiltSteering) {
+    if (!tiltActive) {
+      if (tiltSteering) {
+        console.log('[TILT] Disabled: local two-player mode shares one device');
+      }
       tiltRotateLeftRef.current = false;
       tiltRotateRightRef.current = false;
       tiltThrustRef.current = false;
@@ -665,7 +672,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       window.removeEventListener('deviceorientation', handleOrientation);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- ship.angle/vx/vy change every frame; effect should only re-run when tilt settings change
-  }, [tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, tiltSensorRef]);
+  }, [tiltActive, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, tiltSensorRef]);
 
   // [SOUND] Initialize the sound manager once and load all audio buffers.
   useEffect(() => {
@@ -901,7 +908,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // positions even after orientation/resize without relying on event state.
       const { ratio, topOffset, bottomOffset, topGap } = getLiveTouchGeom(canvas, width, height);
       const podDocked = podRef.current && podRef.current.towed;
-      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, twoPlayer, podDocked, tiltSteering, networkRole, bottomOffset).find((b) => {
+      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, twoPlayer, podDocked, tiltActive, networkRole, bottomOffset).find((b) => {
         const angle = b.angle || 0;
         const origin = b.origin || { x: 0, y: 0 };
         const cos = Math.cos(angle);
@@ -1015,7 +1022,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           return;
         }
         // In tilt steering mode or joystick-disabled mode, tapping anywhere (not on a button) activates fire
-        if ((tiltSteering || !joystickEnabled) && (!twoPlayer || networkRole)) {
+        if ((tiltActive || !joystickEnabled) && (!twoPlayer || networkRole)) {
           e.preventDefault();
           setFireActive(true);
           pointerButtonMap.current.set(e.pointerId, 'fire');
@@ -1174,7 +1181,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       window.removeEventListener('pointercancel', handlePointerUp);
       if (joystickTapTimerRef.current) clearTimeout(joystickTapTimerRef.current);
     };
-  }, [width, height, joystickActive, showTouchButtons, joystickEnabled, isMobile, twoPlayer, tiltSteering, networkRole]);
+  }, [width, height, joystickActive, showTouchButtons, joystickEnabled, isMobile, twoPlayer, tiltActive, networkRole]);
 
   useEffect(() => {
     const loadAssets = async () => {
@@ -2222,7 +2229,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
     // Advance stutter thrust on every animation frame. Sensor events only select the
     // magnitude band; rotation and sensor event frequency cannot restart or stall this clock.
-    if (tiltSteering && tiltMode === 'aim' && tiltAimStutterActiveRef.current) {
+    if (tiltActive && tiltMode === 'aim' && tiltAimStutterActiveRef.current) {
       const thrustOn = isTiltAimStutterThrustOn(tiltAimStutterPhaseStartRef.current, currentTime, tiltAimStutterTargetAngleRef.current);
       if (thrustOn !== tiltAimStutterThrustOnRef.current) {
         tiltAimStutterThrustOnRef.current = thrustOn;
@@ -2302,10 +2309,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     if (guidedTutorialStep) {
       const wallNow = performance.now();
       const shieldSignal = !!tractorBeamActive;
-      const thrustSignal = !!(keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+      const thrustSignal = !!(keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltActive && tiltThrustRef.current));
       const combinedSignal = shieldSignal && thrustSignal;
-      const rotateRightSignal = !!(keys['ArrowRight'] || ((!twoPlayer || networkRole === 'host') && (keys['d'] || keys['D'])) || rotateRightActive || (tiltSteering && tiltRotateRightRef.current));
-      const rotateLeftSignal = !!(keys['ArrowLeft'] || ((!twoPlayer || networkRole === 'host') && (keys['a'] || keys['A'])) || rotateLeftActive || (tiltSteering && tiltRotateLeftRef.current));
+      const rotateRightSignal = !!(keys['ArrowRight'] || ((!twoPlayer || networkRole === 'host') && (keys['d'] || keys['D'])) || rotateRightActive || (tiltActive && tiltRotateRightRef.current));
+      const rotateLeftSignal = !!(keys['ArrowLeft'] || ((!twoPlayer || networkRole === 'host') && (keys['a'] || keys['A'])) || rotateLeftActive || (tiltActive && tiltRotateLeftRef.current));
 
       let activeSignal = false;
       let holdTarget = 0;
@@ -2416,8 +2423,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           // Keyboard/button rotation (continuous)
           // Single player: arrow keys or WASD. Two-player: player 1 uses arrow keys,
           // player 2 uses WASD for the turret/pod, so WASD must not rotate the ship.
-          const shipRotateLeft = keys['ArrowLeft'] || ((!twoPlayer || networkRole === 'host') && (keys['a'] || keys['A'])) || rotateLeftActive || (tiltSteering && tiltRotateLeftRef.current);
-          const shipRotateRight = keys['ArrowRight'] || ((!twoPlayer || networkRole === 'host') && (keys['d'] || keys['D'])) || rotateRightActive || (tiltSteering && tiltRotateRightRef.current);
+          // Button/keyboard rotation is tracked separately from tilt rotation:
+          // haptic feedback fires only for button presses, never for tilt input.
+          const buttonRotateLeft = keys['ArrowLeft'] || ((!twoPlayer || networkRole === 'host') && (keys['a'] || keys['A'])) || rotateLeftActive;
+          const buttonRotateRight = keys['ArrowRight'] || ((!twoPlayer || networkRole === 'host') && (keys['d'] || keys['D'])) || rotateRightActive;
+          const shipRotateLeft = buttonRotateLeft || (tiltActive && tiltRotateLeftRef.current);
+          const shipRotateRight = buttonRotateRight || (tiltActive && tiltRotateRightRef.current);
           const isRotating = shipRotateLeft || shipRotateRight;
           // Record angle when rotation STARTS (transition from not rotating to rotating)
           if (isRotating && !wasRotatingRef.current) {
@@ -2460,7 +2471,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           }
           // Check if rotation stops
           if (!isRotating && wasRotatingRef.current) {
-            if (tiltSteering) vibrateIfEnabled(VIBRATE_ROTATE_STOP);
             // Reset rotation ramp for all sources (touch/keyboard also reset in their own handlers,
             // but this ensures tilt rotation resets the ramp so the next tilt gesture starts slow).
             touchRotateFastRef.current = false;
@@ -2489,8 +2499,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
             }
           }
           wasRotatingRef.current = isRotating;
-          // Track rotation direction for haptic feedback on direction change
-          const currentDir = shipRotateLeft ? 'left' : (shipRotateRight ? 'right' : null);
+          // Track rotation direction for haptic feedback on direction change —
+          // button/keyboard input only, tilt rotation stays silent.
+          const currentDir = buttonRotateLeft ? 'left' : (buttonRotateRight ? 'right' : null);
           if (currentDir && currentDir !== wasRotationDirRef.current) {
             vibrateIfEnabled(VIBRATE_ROTATE);
           }
@@ -2548,7 +2559,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         // Single player: arrow keys or WASD. Two-player: player 1 uses arrow keys.
         // In network mode the client receives ship acceleration from the host's snapshot.
         if (networkRole !== 'client') {
-          const rawAccelerating = ship.fuel > 0 && (keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+          const rawAccelerating = ship.fuel > 0 && (keys['ArrowUp'] || ((!twoPlayer || networkRole === 'host') && (keys['w'] || keys['W'])) || accelerateActive || (tiltActive && tiltThrustRef.current));
           // Low-fuel pulsing: when fuel is below the threshold, thrust is only allowed in
           // short pulses regardless of control mode. This gives the player a last chance to
           // make small adjustments before fuel runs out completely.
@@ -2567,7 +2578,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           if (isAccelerating && !wasAcceleratingRef.current) {
             vibrateIfEnabled(VIBRATE_THRUST);
           }
-          if (!isAccelerating && wasAcceleratingRef.current && tiltSteering) {
+          if (!isAccelerating && wasAcceleratingRef.current && tiltActive) {
             vibrateIfEnabled(VIBRATE_THRUST_STOP);
           }
           wasAcceleratingRef.current = isAccelerating;
@@ -2636,9 +2647,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Record input state to replay logger (for server-side score validation)
       if (replayLoggerRef.current.isActive() && !isDying) {
         let inputBitmask = 0;
-        if (keys['ArrowLeft'] || rotateLeftActive || (tiltSteering && tiltRotateLeftRef.current)) inputBitmask |= REPLAY_INPUT_BITS.ROTATE_LEFT;
-        if (keys['ArrowRight'] || rotateRightActive || (tiltSteering && tiltRotateRightRef.current)) inputBitmask |= REPLAY_INPUT_BITS.ROTATE_RIGHT;
-        if (keys['ArrowUp'] || accelerateActive || (tiltSteering && tiltThrustRef.current)) inputBitmask |= REPLAY_INPUT_BITS.THRUST;
+        if (keys['ArrowLeft'] || rotateLeftActive || (tiltActive && tiltRotateLeftRef.current)) inputBitmask |= REPLAY_INPUT_BITS.ROTATE_LEFT;
+        if (keys['ArrowRight'] || rotateRightActive || (tiltActive && tiltRotateRightRef.current)) inputBitmask |= REPLAY_INPUT_BITS.ROTATE_RIGHT;
+        if (keys['ArrowUp'] || accelerateActive || (tiltActive && tiltThrustRef.current)) inputBitmask |= REPLAY_INPUT_BITS.THRUST;
         if (fireActive || keys['x'] || keys['X'] || keys['Shift'] || multiTouchFireRef.current) inputBitmask |= REPLAY_INPUT_BITS.FIRE;
         if (tractorBeamActive) inputBitmask |= REPLAY_INPUT_BITS.TRACTOR_BEAM;
 
@@ -3801,7 +3812,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           const shipThrusting = networkRole === 'client'
             ? !frozen && !isDying && !!networkSnapshotRef.current?.ship?.accelerate
             : !frozen && !isDying &&
-              (keys['ArrowUp'] || (!twoPlayer && (keys['w'] || keys['W'])) || accelerateActive || (tiltSteering && tiltThrustRef.current));
+              (keys['ArrowUp'] || (!twoPlayer && (keys['w'] || keys['W'])) || accelerateActive || (tiltActive && tiltThrustRef.current));
           const podThrusting = !frozen && !isDying && twoPlayer && pod && pod.towed && !pod.onHolder && p2Thrust;
           sm.setLoop('shipThrust', shipThrusting);
           sm.setLoop('podThrust', podThrusting);
@@ -4447,7 +4458,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // fixed screen-pixel distance from the on-screen canvas top on any
       // aspect ratio, independent of resize/orientation event timing.
       const { ratio: liveRatio, topOffset: liveTopOffset, bottomOffset: liveBottomOffset, topGap: liveTopGap } = getLiveTouchGeom(canvasRef.current, width, height);
-      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, twoPlayer, pod && pod.towed, tiltSteering, networkRole, liveBottomOffset);
+      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, twoPlayer, pod && pod.towed, tiltActive, networkRole, liveBottomOffset);
       for (const btn of touchButtons) {
         let active = false;
         switch (btn.type) {
