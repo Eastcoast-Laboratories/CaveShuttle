@@ -13,6 +13,7 @@ import { useLanguage } from '../i18n/language-context.js';
 import { useSettings } from '../i18n/settings-context.js';
 import { hamburgerMenuTranslations } from '../i18n/hamburgerMenu.js';
 import { sliderToVolume, volumeToSlider } from './volume-mapping.js';
+import { storageKey } from '../core/storage-keys.js';
 
 function SettingsSlider({ label, value, onChange, disabled = false }) {
   return (
@@ -57,7 +58,18 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [showImportTextarea, setShowImportTextarea] = useState(false);
   const [dataTransferMsg, setDataTransferMsg] = useState(null);
   const [showVibrationHint, setShowVibrationHint] = useState(false);
-  const [showControls, setShowControls] = useState(false);
+  // Controls section is expanded by default; a manual collapse is persisted
+  // so the next menu open keeps the user's choice.
+  const [showControls, setShowControls] = useState(() => {
+    return localStorage.getItem(storageKey('menuShowControls')) !== 'false';
+  });
+  const toggleControls = () => {
+    setShowControls(prev => {
+      const next = !prev;
+      localStorage.setItem(storageKey('menuShowControls'), next.toString());
+      return next;
+    });
+  };
   const [showPrivacyOnline, setShowPrivacyOnline] = useState(false);
   const [showOrientation, setShowOrientation] = useState(false);
   const [showVibration, setShowVibration] = useState(false);
@@ -67,7 +79,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
   const [showDataTransfer, setShowDataTransfer] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) { setShowControls(false); setShowPrivacyOnline(false); setShowOrientation(false); }
+    if (!isOpen) { setShowPrivacyOnline(false); setShowOrientation(false); }
   }, [isOpen]);
 
   const handleToggleVibration = () => {
@@ -309,7 +321,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
         className="hamburger-section-title"
         style={{ cursor: 'pointer', userSelect: 'none' }}
         onPointerDown={(e) => e.stopPropagation()}
-        onClick={() => setShowControls(!showControls)}
+        onClick={toggleControls}
       >
         {showControls ? '▼' : '▶'} {t.controls}
       </h3>
