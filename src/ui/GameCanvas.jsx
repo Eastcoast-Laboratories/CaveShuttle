@@ -223,6 +223,9 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     tiltMode,
     orientationMode,
     tiltSensorRef,
+    tiltCalibrateRequestRef,
+    setTiltNeutralBeta,
+    setTiltNeutralGamma,
     language,
   } = useSettings();
   // Tilt steering is disabled in local two-player mode: both players share one
@@ -549,6 +552,15 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
       if (tiltSensorRef) {
         tiltSensorRef.current = { beta: screenBeta, gamma: screenGamma, alpha };
+      }
+
+      // Activation calibration: apply this live event as the neutral position,
+      // same values the calibrate button would read from tiltSensorRef now.
+      if (tiltCalibrateRequestRef && tiltCalibrateRequestRef.current) {
+        tiltCalibrateRequestRef.current = false;
+        setTiltNeutralBeta(screenBeta);
+        setTiltNeutralGamma(screenGamma);
+        console.log('[TILT] Activation calibration applied: beta', screenBeta.toFixed(1) + '°', 'gamma', screenGamma.toFixed(1) + '°');
       }
 
       // Screen gamma: relative to calibrated neutral gamma.

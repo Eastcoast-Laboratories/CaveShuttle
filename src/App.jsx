@@ -58,6 +58,7 @@ function App() {
     player2Name, setPlayer2Name,
     currentPackId, setCurrentPackId,
     tiltSensorRef,
+    tiltCalibrateRequestRef,
     ensureOneControlActive,
     collectSettings,
   } = useSettings();
@@ -1069,7 +1070,12 @@ function App() {
     onSetTiltMode: (mode) => {
       const next = mode !== 'off';
       setTiltSteering(next);
-      if (next) setJoystickEnabled(false);
+      if (next) {
+        setJoystickEnabled(false);
+        // The sensor ref holds stale data while tilt is off — request a
+        // calibration that the next live deviceorientation event applies.
+        tiltCalibrateRequestRef.current = true;
+      }
       if (mode === 'aim' || mode === 'classic') setTiltMode(mode);
       ensureOneControlActive(showTouchButtons, joystickEnabled, next, 'tilt');
     },

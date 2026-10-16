@@ -115,6 +115,9 @@ export function SettingsProvider({ children }) {
   const [currentPackId, setCurrentPackId] = useState('default');
 
   const tiltSensorRef = useRef({ beta: 0, gamma: 0, alpha: 0 });
+  // Set when tilt steering is activated; consumed by the next deviceorientation
+  // event to calibrate the neutral position from live sensor data.
+  const tiltCalibrateRequestRef = useRef(false);
 
   // localStorage persistence
   useEffect(() => { localStorage.setItem(storageKey('showTouchButtons'), JSON.stringify(showTouchButtons)); }, [showTouchButtons]);
@@ -208,6 +211,7 @@ export function SettingsProvider({ children }) {
     player2Name, setPlayer2Name,
     currentPackId, setCurrentPackId,
     tiltSensorRef,
+    tiltCalibrateRequestRef,
     ensureOneControlActive,
     collectSettings,
   }), [
