@@ -510,6 +510,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     }
 
     const handleOrientation = (e) => {
+      // Events with null beta/gamma carry no position data — ignore them so
+      // a pending activation calibration stays armed for the first real
+      // reading instead of locking the neutral to (0,0).
+      if (e.beta == null && e.gamma == null) return;
       const rawBeta = e.beta || 0;  // front-to-back tilt (-180 to 180)
       const rawGamma = e.gamma || 0; // left-to-right tilt (-90 to 90)
       const alpha = e.alpha || 0; // compass direction
