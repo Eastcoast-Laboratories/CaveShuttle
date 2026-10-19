@@ -221,6 +221,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
     twoPlayer, soundVolume, touchButtonOpacity, vibrationEnabled,
     tiltSteering, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated,
     tiltMode,
+    tiltAutoThrust,
     orientationMode,
     tiltSensorRef,
     tiltCalibrateRequestRef,
@@ -509,6 +510,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       resetStutter('classic');
     }
 
+    // Steering-only mode: drop any tilt-driven thrust state immediately on
+    // toggle so a live stutter cycle cannot keep thrusting until the next
+    // sensor event arrives.
+    if (!tiltAutoThrust) {
+      tiltThrustRef.current = false;
+      resetStutter('steering-only');
+    }
+
     const handleOrientation = (e) => {
       // Events with null beta/gamma carry no position data — ignore them so
       // a pending activation calibration stays armed for the first real
@@ -644,10 +653,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           if (isBraking) {
             resetStutter('braking', tiltMagnitude);
             tiltThrustRef.current = true;
-          } else {
+          } else if (tiltAutoThrust) {
             enterStutter(tiltMagnitude);
             tiltAimStutterTargetAngleRef.current = targetAngle;
             tiltThrustRef.current = tiltAimStutterThrustOnRef.current;
+          } else {
+            tiltThrustRef.current = false;
           }
         } else if (magnitudeBand === TILT_AIM_BAND.LIGHT) {
           resetStutter(magnitudeBand, tiltMagnitude);
@@ -671,6 +682,14 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
         const TILT_THRUST_THRESHOLD = 10;
         tiltThrustRef.current = betaDelta < -TILT_THRUST_THRESHOLD;
       }
+
+      // Steering-only mode: tilt never engages thrust — the on-screen
+      // thrust button is the manual control then. The stutter clock is also
+      // torn down so its per-frame advance cannot re-arm tiltThrustRef.
+      if (!tiltAutoThrust) {
+        tiltThrustRef.current = false;
+        resetStutter('steering-only');
+      }
     };
 
     // Request permission on iOS 13+ (DeviceOrientationEvent.requestPermission)
@@ -688,7 +707,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       window.removeEventListener('deviceorientation', handleOrientation);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- ship.angle/vx/vy change every frame; effect should only re-run when tilt settings change
-  }, [tiltActive, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, tiltSensorRef]);
+  }, [tiltActive, tiltNeutralBeta, tiltNeutralGamma, tiltSteeringRotated, tiltMode, tiltAutoThrust, tiltSensorRef]);
 
   // [SOUND] Initialize the sound manager once and load all audio buffers.
   useEffect(() => {
@@ -924,7 +943,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // positions even after orientation/resize without relying on event state.
       const { ratio, topOffset, bottomOffset, topGap } = getLiveTouchGeom(canvas, width, height);
       const podDocked = podRef.current && podRef.current.towed;
-      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, twoPlayer, podDocked, tiltActive, networkRole, bottomOffset).find((b) => {
+      return getTouchButtons(width, height, ratio, topOffset, topGap, showTouchButtons, twoPlayer, podDocked, tiltActive, networkRole, bottomOffset, tiltAutoThrust).find((b) => {
         const angle = b.angle || 0;
         const origin = b.origin || { x: 0, y: 0 };
         const cos = Math.cos(angle);
@@ -1197,7 +1216,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       window.removeEventListener('pointercancel', handlePointerUp);
       if (joystickTapTimerRef.current) clearTimeout(joystickTapTimerRef.current);
     };
-  }, [width, height, joystickActive, showTouchButtons, joystickEnabled, isMobile, twoPlayer, tiltActive, networkRole]);
+  }, [width, height, joystickActive, showTouchButtons, joystickEnabled, isMobile, twoPlayer, tiltActive, tiltAutoThrust, networkRole]);
 
   useEffect(() => {
     const loadAssets = async () => {
@@ -2245,7 +2264,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
 
     // Advance stutter thrust on every animation frame. Sensor events only select the
     // magnitude band; rotation and sensor event frequency cannot restart or stall this clock.
-    if (tiltActive && tiltMode === 'aim' && tiltAimStutterActiveRef.current) {
+    if (tiltActive && tiltMode === 'aim' && tiltAutoThrust && tiltAimStutterActiveRef.current) {
       const thrustOn = isTiltAimStutterThrustOn(tiltAimStutterPhaseStartRef.current, currentTime, tiltAimStutterTargetAngleRef.current);
       if (thrustOn !== tiltAimStutterThrustOnRef.current) {
         tiltAimStutterThrustOnRef.current = thrustOn;
@@ -4474,7 +4493,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // fixed screen-pixel distance from the on-screen canvas top on any
       // aspect ratio, independent of resize/orientation event timing.
       const { ratio: liveRatio, topOffset: liveTopOffset, bottomOffset: liveBottomOffset, topGap: liveTopGap } = getLiveTouchGeom(canvasRef.current, width, height);
-      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, twoPlayer, pod && pod.towed, tiltActive, networkRole, liveBottomOffset);
+      const touchButtons = getTouchButtons(width, height, liveRatio, liveTopOffset, liveTopGap, showTouchButtons, twoPlayer, pod && pod.towed, tiltActive, networkRole, liveBottomOffset, tiltAutoThrust);
       for (const btn of touchButtons) {
         let active = false;
         switch (btn.type) {

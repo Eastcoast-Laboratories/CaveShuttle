@@ -48,3 +48,40 @@ current position must be applied once as the calibration, as if the
 button had been pressed (DRY)."
 
 "Apply copilot-style-review."
+
+## 26-10-19
+
+"We need a new option under 'Steuerung' below the tilt settings, above
+the calibrate button: 'auto-thrust (Aim)' / 'Tilt Back to thrust
+(Rotate)' — the label changes with Aim/Rotate mode. When the switch is
+off, the thrust button is also visible in tilt mode on the right where
+it usually is, and the fire button becomes visible top-right where it
+usually is; the shield button on the left then stretches over the whole
+height since tilt is only used for steering."
+
+"The fire button is now narrower than the normal one — it must be as
+wide as the thrust button."
+
+"The stutter thrust still engages when the switch is off in aim mode."
+
+"hamburgerMenu.js tiltModeHint: 'auto-thrust at 90% rotation' must be
+removed from the help text when it is off, so the text has to be split.
+tiltHint: 'tilt back to thrust.' must also be removed then."
+
+"The text can actually be removed entirely, since it is already shown
+below in the toggle."
+
+"'tilt direction = target heading' must remain even when auto thrust is
+off."
+
+"'tap anywhere to fire' is duplicated when tilt is on (was already the
+case before, unrelated to the new button)."
+
+"When the tutorial is completed it should say 'now you're on your own'
+or similar, and instead of 'next level' something fitting. Suggest 5
+proposals."
+
+"5"
+
+"The title still says 'level 1 complete' and the button says 'next
+level', and it starts level 2 after the tutorial."

@@ -38,6 +38,10 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   const typeMap = options.typeMap || {};
   const showFire = options.showFire !== false;
   const showThrust = options.showThrust !== false;
+  // manualThrust (tilt mode only): tilt is steering-only, so the thrust and
+  // fire buttons stay visible in their usual right-side positions and the
+  // POD button moves to the left edge spanning full height.
+  const manualThrust = options.manualThrust === true;
 
   // Base button sizes based on BUTTON_SIZE_FACTOR. Thrust is the largest.
   const baseRotateWidth = sizeFactor * 1.6;
@@ -135,7 +139,16 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
   // Special / POD (tractor beam) button.
   // Visible when touch buttons are shown, forced visible, or tilt steering is active.
   if (includePod && (tiltSteeringMode || forceVisible || showTouchButtons)) {
-    if (tiltSteeringMode || (!showTouchButtons && !forceVisible)) {
+    if (tiltSteeringMode && manualThrust) {
+      // Tilt steering-only layout: POD button fills full height at the far left
+      // edge — the right side keeps the manual thrust and fire buttons.
+      const podX = buttonMargin;
+      const podY = topEdge + HUD_HEIGHT - 80; // positioned 80px shifted up, because the image is rendered at the bottom of the button
+      const podH = h - podY - buttonMargin;
+      buttons.push(
+        { type: podType, x: podX, y: podY, w: specialWidth * 1.7, h: podH, label: 'CARGO', font: `${14 * sizeScale}px Arial`, color: 'rgba(0, 0, 0, 0.2)', activeColor: 'rgba(0, 0, 0, 0.5)', hitX: podX - buttonHitMargin, hitY: podY - buttonHitMargin, hitW: specialWidth * 1.7 + buttonHitMargin * 2, hitH: podH + buttonHitMargin * 2 }
+      );
+    } else if (tiltSteeringMode || (!showTouchButtons && !forceVisible)) {
       // In tilt steering mode: POD button fills full height at the far right edge
       const podX = w - specialWidth * 1.7 - buttonMargin;
       const podY = topEdge + HUD_HEIGHT - 80; // positioned 80px shifted up, because the image is rendered at the bottom of the button
@@ -162,15 +175,18 @@ export function getTouchButtonRects(w, h, ratio, topOffset = 0, topGap = TOP_GAP
     }
   }
 
+  // Fire and thrust stay visible in tilt steering-only mode (manualThrust).
+  const showManualCluster = !tiltSteeringMode ? (forceVisible || showTouchButtons) : manualThrust;
+
   // Fire button (directly below thrust) - visible when showTouchButtons and showFire
-  if (!tiltSteeringMode && showFire && (forceVisible || showTouchButtons)) {
+  if (showFire && showManualCluster) {
     buttons.push(
       { type: typeMap.fire || 'fire', x: fireX, y: fireY, w: fireWidth, h: fireHeight, label: '⌖', font: `${24 * sizeScale}px Arial`, color: 'rgba(255, 0, 0, 0.2)', activeColor: 'rgba(255, 0, 0, 0.5)', hitX: fireX - buttonHitMargin, hitY: fireY - buttonHitMargin, hitW: fireWidth + buttonHitMargin * 2, hitH: fireHeight + buttonHitMargin * 2 }
     );
   }
 
   // Thrust button (largest, top-right corner) - only visible when showTouchButtons and showThrust
-  if (!tiltSteeringMode && showThrust && (forceVisible || showTouchButtons)) {
+  if (showThrust && showManualCluster) {
     buttons.push(
       { type: typeMap.accelerate || 'accelerate', x: thrustX, y: thrustY, w: thrustWidth, h: thrustHeight, label: '↑', font: `${32 * sizeScale}px Arial`, color: 'rgba(0, 255, 0, 0.2)', activeColor: 'rgba(0, 255, 0, 0.5)', hitX: thrustX - buttonHitMargin, hitY: thrustY - buttonHitMargin, hitW: thrustWidth + buttonHitMargin * 2, hitH: thrustHeight + buttonHitMargin * 2 }
     );
@@ -263,13 +279,15 @@ export function getSideStripButtons(w, h, topGap, topOffset, isRight, sizeScale,
 // - Single-player: getTouchButtonRects builds the right-cluster layout.
 // - Two-player: getSideStripButtons builds the P1 (right) and P2 (left)
 //   vertical strips; this is where all 2-player buttons are defined.
-export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, twoPlayer = false, podDocked = false, tiltSteering = false, networkRole = null, bottomOffset = 0) {
+export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, showTouchButtons = true, twoPlayer = false, podDocked = false, tiltSteering = false, networkRole = null, bottomOffset = 0, tiltAutoThrust = true) {
   if (!twoPlayer && !networkRole) {
     if (tiltSteering) {
       return getTouchButtonRects(w, h, ratio, topOffset, topGap, showTouchButtons, {
         maximizeThrustHeight: true,
         maximizeRotateHeight: true,
         tiltSteering: true,
+        manualThrust: !tiltAutoThrust,
+        doubleFireWidth: true,
         bottomOffset,
       });
     }
@@ -292,6 +310,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
         maximizeRotateHeight: true,
         showFire: podDocked,
         tiltSteering,
+        manualThrust: !tiltAutoThrust,
         bottomOffset,
       });
     } else {
@@ -302,6 +321,7 @@ export function getTouchButtons(w, h, ratio, topOffset = 0, topGap = TOP_GAP, sh
         includePod: false,
         showThrust: podDocked,
         tiltSteering,
+        manualThrust: !tiltAutoThrust,
         bottomOffset,
         typeMap: {
           rotateLeft: 'p2RotateLeft',

@@ -41,7 +41,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
     touchButtonOpacity, setTouchButtonOpacity,
     vibrationEnabled, setVibrationEnabled,
     tiltSteering, tiltSteeringRotated, setTiltSteeringRotated,
-    tiltMode,
+    tiltMode, tiltAutoThrust, setTiltAutoThrust,
     orientationMode, setOrientationMode,
     analyticsEnabled, setAnalyticsEnabled,
     onlineSyncEnabled,
@@ -358,7 +358,7 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
                 {joystickEnabled ? t.on : t.off}
               </button>
             </div>
-            {!joystickEnabled && (
+            {!joystickEnabled && !tiltSteering && (
               <p className="hamburger-hint">
                 {t.tapAnywhereToFire}
               </p>
@@ -381,8 +381,23 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
             </div>
             {tiltSteering && (
               <>
-                <p className="hamburger-hint">{tiltMode === 'aim' ? t.tiltModeHint : t.tiltHint}</p>
+                <p className="hamburger-hint">{tiltMode === 'aim'
+                  ? (tiltAutoThrust ? t.tiltModeHint : t.tiltModeHintNoThrust)
+                  : (tiltAutoThrust ? t.tiltHint : t.tiltHintNoThrust)}</p>
                 <p className="hamburger-hint">{t.tapToFire}</p>
+                <div className="hamburger-toggle-row">
+                  <span className="toggle-label">{tiltMode === 'aim' ? t.tiltAutoThrustAim : t.tiltAutoThrustClassic}</span>
+                  <button
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={() => {
+                      console.log('[TOGGLE] Tilt Auto-Thrust:', tiltAutoThrust ? 'ON -> OFF' : 'OFF -> ON');
+                      setTiltAutoThrust(!tiltAutoThrust);
+                    }}
+                    className={`hamburger-toggle-btn ${tiltAutoThrust ? 'on' : 'off'}`}
+                  >
+                    {tiltAutoThrust ? t.on : t.off}
+                  </button>
+                </div>
                 <button
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={onCalibrateTilt}
