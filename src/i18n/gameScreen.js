@@ -10,6 +10,8 @@ export const gameScreenTranslations = {
     // Level complete / game over overlay
     gameOver: 'GAME OVER',
     levelComplete: 'LEVEL {n} COMPLETE',
+    tutorialCompleteTitle: 'Tutorial abgeschlossen',
+    tutorialStartGame: 'Spiel starten',
     scoreLabel: 'Punkte',
 
     // New highscore banner
@@ -57,6 +59,8 @@ export const gameScreenTranslations = {
     // Level complete / game over overlay
     gameOver: 'GAME OVER',
     levelComplete: 'LEVEL {n} COMPLETE',
+    tutorialCompleteTitle: 'Tutorial complete',
+    tutorialStartGame: 'Start Game',
     scoreLabel: 'Score',
 
     // New highscore banner

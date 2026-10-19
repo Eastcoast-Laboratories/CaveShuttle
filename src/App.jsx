@@ -138,11 +138,23 @@ function App() {
   // Pending guided-tutorial restart type, set on death and consumed on respawn.
   // 'fromStart' -> materializing (full restart); 'escapeThrust' -> escapeThrustAction.
   const pendingGuidedRestartRef = useRef(null);
+  // Latched for the whole run once it started as a guided tutorial — stays
+  // true across deaths/respawns and the null-step windows between steps.
+  // Tutorial runs never write highscore records and completion restarts
+  // level 1 instead of advancing to level 2.
+  const guidedTutorialRunRef = useRef(false);
   // Persistence (Variant B): a pending guided tutorial survives reload.
-  const [guidedTutorialPending, setGuidedTutorialPending] = useState(() => {
-    const stored = localStorage.getItem(storageKey('guidedTutorialPending'));
-    return stored === 'true';
-  });
+  // A ref is used because the flag is set and read within the same
+  // synchronous call chain (handleStartGuidedLevel -> handleStartGame),
+  // where a state update would still be stale.
+  const guidedTutorialPendingRef = useRef(
+    localStorage.getItem(storageKey('guidedTutorialPending')) === 'true'
+  );
+  const setGuidedTutorialPending = (pending) => {
+    guidedTutorialPendingRef.current = pending;
+    if (pending) localStorage.setItem(storageKey('guidedTutorialPending'), 'true');
+    else localStorage.removeItem(storageKey('guidedTutorialPending'));
+  };
 
   // Remember the last played level across reloads.
   useEffect(() => {
@@ -252,11 +264,13 @@ function App() {
     // Guided tutorial: if a pending guided tutorial exists, restart from step 1
     // so the player gets the full tutorial flow on a fresh level start.
     // Never start guided tutorial in multiplayer.
-    if (guidedTutorialPending && !twoPlayer && !networkRole) {
+    guidedTutorialRunRef.current = false;
+    if (guidedTutorialPendingRef.current && !twoPlayer && !networkRole) {
+      guidedTutorialRunRef.current = true;
       setGuidedTutorialStep('materializing');
       setGuidedHoldProgress({ ms: 0, target: 0 });
     }
-  }, [installedPacks, currentPackId, twoPlayer, guidedTutorialPending, networkRole]);
+  }, [installedPacks, currentPackId, twoPlayer, networkRole]);
 
   const handlePlayAgain = useCallback(() => {
     if (networkRole && networkManager) {
@@ -266,6 +280,13 @@ function App() {
   }, [networkRole, networkManager, level, handleStartLevel]);
 
   const handleNextLevel = useCallback(() => {
+    // A completed guided-tutorial run restarts level 1 as a fresh normal
+    // run instead of advancing to level 2 (tutorial runs never count).
+    if (guidedTutorialRunRef.current) {
+      console.log('[TUTORIAL_GUIDE] tutorial run finished — restarting level 1');
+      handleStartLevel(1);
+      return;
+    }
     if (networkRole && networkManager) {
       networkManager.sendEvent({ type: 'nextlevel' });
     }
@@ -287,7 +308,7 @@ function App() {
     setLevelScoreBreakdown({ bunker: 0, button: 0, pod: 0, reactor: 0, fuel: 0, level: 0, timeBonus: 0, time: 0, scoringVersion: '' });
     setBonusLifePopup(null);
     setGameSession(prev => prev + 1); // Force full GameCanvas reset to reset ship position and velocity
-  }, [networkRole, networkManager, installedPacks, currentPackId, level]);
+  }, [networkRole, networkManager, installedPacks, currentPackId, level, handleStartLevel]);
 
   useEffect(() => {
     if (gameState === 'menu' && networkRole && networkState.state !== 'lobby' && networkState.state !== 'ready') {
@@ -377,8 +398,10 @@ function App() {
     levelRecordIdsRef.current = [];
     gameOverSavedRef.current = false;
     // Never start tutorial or guided tutorial in multiplayer
-    if (!isTwoPlayer && !role && guidedTutorialPending) {
+    guidedTutorialRunRef.current = false;
+    if (!isTwoPlayer && !role && guidedTutorialPendingRef.current) {
       // Resume a pending guided tutorial run from a previous session.
+      guidedTutorialRunRef.current = true;
       setGuidedTutorialStep('materializing');
       setGuidedHoldProgress({ ms: 0, target: 0 });
     } else if (!isTwoPlayer && !role && !tutorialDismissed) {
@@ -411,7 +434,6 @@ function App() {
     setTutorialDismissed(true);
     localStorage.setItem(storageKey('tutorialDismissed'), 'true');
     setGuidedTutorialPending(true);
-    localStorage.setItem(storageKey('guidedTutorialPending'), 'true');
     setGuidedTutorialStep('materializing');
     setGuidedHoldProgress({ ms: 0, target: 0 });
     tutorialBackgroundRef.current = null;
@@ -505,7 +527,6 @@ function App() {
       // Last step: end guided tutorial.
       setGuidedTutorialStep(null);
       setGuidedTutorialPending(false);
-      localStorage.removeItem(storageKey('guidedTutorialPending'));
     } else {
       setGuidedTutorialStep(VISIBLE_GUIDED_STEPS[idx + 1]);
     }
@@ -530,13 +551,13 @@ function App() {
 
   const handleLevelComplete = (completedLevel, levelTimeMs, levelWidth, levelHeight, networkData) => {
     setPodDocked(false);
+    const wasTutorialRun = guidedTutorialRunRef.current;
 
     // Guided tutorial: reaching the wormhole completes the tutorial.
     if (guidedTutorialStep === 'playingUntilWormhole') {
       console.log('[TUTORIAL_GUIDE] wormhole reached, guided tutorial complete');
       setGuidedTutorialStep(null);
       setGuidedTutorialPending(false);
-      localStorage.removeItem(storageKey('guidedTutorialPending'));
     }
 
     // Client mode: use the host's calculated data directly
@@ -567,6 +588,17 @@ function App() {
     setLevelScore(levelTotalScore);
     setLevelScoreBreakdown(breakdownFull);
     checkBonusLifeThresholds();
+
+    // Guided-tutorial runs are training — never written to the highscores,
+    // never synced. The score breakdown above still feeds the overlay.
+    if (wasTutorialRun) {
+      console.log('[TUTORIAL_GUIDE] tutorial run completed — skipping highscore records');
+      setNewHighscore({ level: false, run: false, levelRank: null, runRank: null });
+      const updated = markLevelCompleted(currentPackId, completedLevel);
+      setCompletedLevels(updated);
+      setGameState('levelcomplete');
+      return;
+    }
 
     const run = runContextRef.current;
     const recordResult = HighScoreManager.addLevelRecord({
@@ -670,7 +702,8 @@ function App() {
     gameOverSavedRef.current = true;
     const run = runContextRef.current;
     const currentLevelValue = level;
-    if (run) {
+    // Guided-tutorial runs are training — never written to the highscores.
+    if (run && !guidedTutorialRunRef.current) {
       const failResult = HighScoreManager.addLevelRecord({
         runId: run.runId,
         packId: run.packId,
@@ -1341,7 +1374,7 @@ function App() {
               {/* Level complete overlay - centered over canvas */}
               {gameState === 'levelcomplete' && (
                 <EndOverlay
-                  title={t.levelComplete.replace('{n}', level)}
+                  title={guidedTutorialRunRef.current ? t.tutorialCompleteTitle : t.levelComplete.replace('{n}', level)}
                   breakdown={scoreBreakdown}
                   total={levelScore}
                   totalLabel={t.scoreLabel}
@@ -1390,7 +1423,7 @@ function App() {
                       </div>
                     ) : (
                       <button onClick={handleNextLevel} style={{ padding: '16px 32px', fontSize: '16px', fontWeight: '600', color: '#fff', background: 'linear-gradient(135deg, #00ff88, #00cc66)', border: 'none', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: '0 4px 20px rgba(0, 255, 136, 0.3)' }} onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.5)'; }} onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.3)'; }}>
-                        {t.nextLevel}
+                        {guidedTutorialRunRef.current ? t.tutorialStartGame : t.nextLevel}
                       </button>
                     )
                   }
