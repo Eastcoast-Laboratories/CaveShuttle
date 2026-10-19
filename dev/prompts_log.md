@@ -85,3 +85,15 @@ proposals."
 
 "The title still says 'level 1 complete' and the button says 'next
 level', and it starts level 2 after the tutorial."
+
+"In the HUD and the hamburger menu icon top-right in game, all px must
+be replaced with VH or VW — maybe min(vh, vw)? On an iPhone with very
+high DPI the hamburger icon is tiny, and there are probably other
+problems too."
+
+"The hamburger icon is now too far down, roughly one icon height too
+low — move it up by exactly the icon's height."
+
+"No, it is simply positioned wrong: it now docks exactly at the HUD's
+bottom edge and extends downward — it must extend upward instead, and
+the menu that opens must start exactly where the hamburger icon sits."

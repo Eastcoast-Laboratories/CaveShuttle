@@ -32,6 +32,17 @@
   max-height: calc(100vh - clamp(25px, 5.5vmin, 45px));
 }
 
+/* In game, the menu anchors exactly below the HUD bar whose height is
+   --hud-chrome-h (the hamburger icon's height), so it opens directly
+   underneath the icon. */
+.app.game-screen .hamburger-menu {
+  top: var(--hud-chrome-h);
+}
+
+.app.game-screen .hamburger-menu.mobile {
+  max-height: calc(100vh - var(--hud-chrome-h));
+}
+
 .hamburger-menu{
   div, span{
     font-family: arial;

@@ -1217,59 +1217,26 @@ function App() {
       {/* In-game hamburger and editor button (in-game layout; editor only in test mode).
           Non-game screens use the unified TopRightMenu instead. */}
       {isGameScreen && (
-        <>
+        <div className="ingame-top-right">
           {/* Level editor button - only visible in editor test mode */}
           {ENABLE_LEVEL_EDITOR && isEditorTestMode && (
             <button
+              className="editor-test-btn"
               onClick={() => setGameState('editor')}
-              style={{
-                position: 'fixed',
-                top: '2px',
-                right: '55px',
-                marginTop: '4px',
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6644ff, #4422cc)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                color: '#fff',
-                fontSize: '12px',
-                cursor: 'pointer',
-                padding: '0',
-                zIndex: 3000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: '600'
-              }}
               title="Level Editor"
             >
               ✎
             </button>
           )}
 
-          {/* Hamburger button - outside all containers with position fixed.
-              Size is relative to screen dimensions via vmin so it scales
-              down naturally on small displays. */}
+          {/* Hamburger button (sizes live in index.css and scale via vmin) */}
           <button
             id="hamburger-button"
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            style={{
-              position: 'fixed',
-              top: '0',
-              right: '22px',
-              background: 'none',
-              border: 'none',
-              color: '#fff',
-              fontSize: 'clamp(12px, 3vmin, 24px)',
-              cursor: 'pointer',
-              padding: 'clamp(2px, 0.5vmin, 4px)',
-              zIndex: 3000,
-            }}
           >
             ☰
           </button>
-        </>
+        </div>
       )}
 
       {/* Game canvas, HUD and overlays - only during active gameplay */}
@@ -1298,23 +1265,14 @@ function App() {
           </div>
 
           {networkDisconnectMessage && (
-            <div style={{
-              position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)',
-              background: 'rgba(220, 40, 40, 0.95)', color: '#fff', padding: '12px 24px',
-              borderRadius: '8px', fontSize: '14px', fontWeight: '600', zIndex: 100,
-              display: 'flex', alignItems: 'center', gap: '12px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
-            }}>
+            <div className="net-disconnect-banner">
               <span>{networkDisconnectMessage}</span>
-              <button onClick={() => setNetworkDisconnectMessage(null)} style={{
-                background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#fff',
-                borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '12px',
-              }}>✕</button>
+              <button className="net-disconnect-close" onClick={() => setNetworkDisconnectMessage(null)}>✕</button>
             </div>
           )}
 
           {/* Canvas wrapper for scaled canvas and centered overlays */}
-          <div id="canvas-wrapper" style={{ flex: 1, width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px' }}>
+          <div id="canvas-wrapper" style={{ flex: 1, width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(6px, 1.5vmin, 12px)' }}>
             <div id="canvas-container" style={{ position: 'relative', width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%' }}>
               <GameCanvas
                 key={`game-${gameSession}`}
