@@ -97,3 +97,13 @@ low — move it up by exactly the icon's height."
 "No, it is simply positioned wrong: it now docks exactly at the HUD's
 bottom edge and extends downward — it must extend upward instead, and
 the menu that opens must start exactly where the hamburger icon sits."
+
+"The HUD needs a bit less padding top and bottom — space is wasted
+there; it can be slimmer with the same font size."
+
+"But now the hamburger menu is still like before the shrinking — make
+the padding a variable so it can be used to shift the hamburger menu
+along."
+
+"The menu starts at the right place now, but the hamburger icon is
+still too far down by half."

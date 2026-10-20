@@ -17,11 +17,12 @@
 }
 
 :root {
-  /* Height of the in-game top-right chrome (hamburger icon: font size +
-     vertical padding). The HUD bar grows to at least this height so the
-     icon sits inside it, and the in-game hamburger menu anchors directly
-     below it. */
-  --hud-chrome-h: calc(clamp(26px, 7vmin, 34px) + 2 * clamp(6px, 1vmin, 10px));
+  /* HUD bar metrics: vertical padding and the tallest font in the bar
+     determine its outer height, which is where the in-game hamburger
+     menu anchors. */
+  --hud-pad-y: 0.3vmin;
+  --hud-max-font: clamp(13px, 3.4vmin, 17px);
+  --hud-bar-h: calc(var(--hud-max-font) * 1.2 + 2 * var(--hud-pad-y) + 1px);
 }
 
 body {
@@ -80,8 +81,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: var(--hud-chrome-h);
-  padding: 0.5vmin 1vmin;
+  padding: var(--hud-pad-y) 1vmin;
   box-sizing: border-box;
   background: rgba(0, 0, 0, 0.8);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -97,6 +97,7 @@ body {
   color: #fff;
   font-family: 'Commodore 64 Thin', 'Courier New', monospace;
   font-size: clamp(11px, 3vmin, 14px);
+  line-height: 1.2;
 }
 
 #hud-stats.hud-stats--landscape {
@@ -117,7 +118,7 @@ body {
 
 .hud-score-value {
   font-family: 'Commodore 64', 'Courier New', monospace;
-  font-size: clamp(13px, 3.4vmin, 17px);
+  font-size: var(--hud-max-font);
   font-weight: 700;
 }
 
@@ -174,11 +175,13 @@ body {
 /* In-game top-right chrome (hamburger button and the editor test button
    next to it). Sizes scale with the smaller viewport edge (vmin) and are
    clamped so they stay tappable on small phones without blowing up on
-   large desktops. */
+   large desktops. The wrapper is exactly --hud-bar-h tall with centered
+   items, so the icon always sits inside the HUD bar vertically. */
 .ingame-top-right {
   position: fixed;
   top: 0;
   right: clamp(10px, 2.5vmin, 22px);
+  height: var(--hud-bar-h);
   display: flex;
   align-items: center;
   gap: clamp(8px, 2vmin, 14px);
@@ -189,20 +192,21 @@ body {
   background: none;
   border: none;
   color: #fff;
-  font-size: clamp(26px, 7vmin, 34px);
+  font-size: clamp(16px, 4vmin, 24px);
   line-height: 1;
   cursor: pointer;
-  padding: clamp(6px, 1vmin, 10px);
+  padding: var(--hud-pad-y) clamp(5px, 1.2vmin, 8px);
+  margin-top: -1vh;
 }
 
 .editor-test-btn {
-  width: clamp(20px, 5.5vmin, 28px);
-  height: clamp(20px, 5.5vmin, 28px);
+  width: clamp(14px, 3.2vmin, 20px);
+  height: clamp(14px, 3.2vmin, 20px);
   border-radius: 50%;
   background: linear-gradient(135deg, #6644ff, #4422cc);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  font-size: clamp(11px, 2.8vmin, 14px);
+  font-size: clamp(9px, 2.2vmin, 11px);
   cursor: pointer;
   padding: 0;
   display: flex;
