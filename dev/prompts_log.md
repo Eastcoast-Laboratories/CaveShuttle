@@ -127,3 +127,6 @@ print the text, not update anything."
 
 "The hamburger button needs to be a bit wider, and pressing the button
 again must close the menu."
+
+"When fuel is nearly empty the timer sound plays, but after collecting
+fuel again it does not stop even though the danger is over."

@@ -2723,10 +2723,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
               if (transfer > 0) {
                 depot.fuel -= transfer;
                 ship.fuel += transfer;
-                if (fuelEmptyTimeRef.current) {
-                  fuelEmptyTimeRef.current = null;
-                  console.log('[FUEL_DEPOT] Fuel empty timer cancelled after refueling');
-                }
                 isRefueling = true;
                 console.log('[FUEL_DEPOT] Refueled', transfer.toFixed(2), 'depot fuel left:', depot.fuel.toFixed(2));
               }
@@ -3583,11 +3579,19 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
 
       if (fuelEmptyTimeRef.current && !isDying) {
-        const elapsed = gameNow - fuelEmptyTimeRef.current;
-        if (elapsed >= FUEL_EMPTY_DESTROY_DELAY_MS) {
+        if (ship.fuel > 0) {
+          // Fuel recovered (depot refuel, network snapshot, ...) — cancel the
+          // countdown and silence the warning sound.
           fuelEmptyTimeRef.current = null;
-          console.log('[FUEL_EMPTY] Delay expired, destroying ship (bypasses god mode)');
-          destroyShip({ fuelEmpty: true });
+          if (soundManager.current) soundManager.current.stopOnce('noFuel');
+          console.log('[FUEL_EMPTY] Countdown cancelled, fuel recovered');
+        } else {
+          const elapsed = gameNow - fuelEmptyTimeRef.current;
+          if (elapsed >= FUEL_EMPTY_DESTROY_DELAY_MS) {
+            fuelEmptyTimeRef.current = null;
+            console.log('[FUEL_EMPTY] Delay expired, destroying ship (bypasses god mode)');
+            destroyShip({ fuelEmpty: true });
+          }
         }
       }
 
