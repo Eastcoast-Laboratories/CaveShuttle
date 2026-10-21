@@ -107,3 +107,20 @@ along."
 
 "The menu starts at the right place now, but the hamburger icon is
 still too far down by half."
+
+## 26-10-20
+
+"index.css: I additionally adjusted margin-top: -1vh — now it looks
+good, I hope I didn't revert everything?"
+
+"add_changelog.sh DE_CHANGES — is anything to add since 5.1?"
+
+"add --help and -h option that shows all options and add an option to
+update the major version."
+
+"I think updating the version number is not add_changelog's job but
+mobile-build's instead — build it so it says mobile-build must be
+called instead, not add_changelog. The option should stay but only
+print the text, not update anything."
+
+"Make version-bump.sh also work standalone with a --help option."

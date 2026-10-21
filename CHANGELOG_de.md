@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.0 — Oktober 21, 2026
+
+- Jeder Level hat seinen eigenen Mond irgendwo im Hintergrund
+- Funkelnde Sterne mit Farbvariation und Größenpulsieren
+- Anpassungen für iOS
+- Neue Option: Neigung nur zum Steuern möglich
+- Neige-Steuerung kalibriert sich beim Aktivieren automatisch
+
+
 ## 5.1 — September 10, 2026
 
 - Neuer Aim-Modus für Neigungssteuerung

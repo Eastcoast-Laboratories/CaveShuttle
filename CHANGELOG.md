@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.0 — Oktober 21, 2026
+
+- Each level has its own moon somewhere in the background
+- Twinkling stars with color variation and size pulsing
+- Adjustments for iOS
+- New Option: Tilt can steer only
+- Tilt steering auto-calibrates when activated
+
+
 ## 5.1 — September 10, 2026
 
 - Add aim mode for tilt steering

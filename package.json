@@ -1,7 +1,7 @@
 {
   "name": "caveshuttle",
   "private": true,
-  "version": "5.2",
+  "version": "6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

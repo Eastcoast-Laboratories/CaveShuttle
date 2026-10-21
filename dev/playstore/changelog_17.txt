@@ -1,0 +1,16 @@
+# Play Store Changelogs für Version 6.0
+
+<en-GB>
+- Each level has its own moon somewhere in the background
+- Twinkling stars with color variation and size pulsing
+- Adjustments for iOS
+- New Option: Tilt can steer only
+- Tilt steering auto-calibrates when activated
+</en-GB>
+<de-DE>
+- Jeder Level hat seinen eigenen Mond irgendwo im Hintergrund
+- Funkelnde Sterne mit Farbvariation und Größenpulsieren
+- Anpassungen für iOS
+- Neue Option: Neigung nur zum Steuern möglich
+- Neige-Steuerung kalibriert sich beim Aktivieren automatisch
+</de-DE>

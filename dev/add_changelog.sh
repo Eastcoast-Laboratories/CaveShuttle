@@ -1,12 +1,38 @@
 #!/bin/bash
 
-# Parse command line arguments — this script takes no options
+# Show help information
+show_help() {
+  echo "Usage: bash dev/add_changelog.sh [options]"
+  echo ""
+  echo "Writes fastlane changelogs, the Play Store changelog file and"
+  echo "updates CHANGELOG.md + CHANGELOG_de.md from the DE_CHANGES /"
+  echo "EN_CHANGES blocks in this script."
+  echo ""
+  echo "Options:"
+  echo "  -h, --help    Show this help message"
+  echo "  -m, --major   Version bumping lives in mobile-build.sh, not here —"
+  echo "                this option only prints the correct command"
+  echo ""
+  echo "To bump the version, use: bash dev/mobile-build.sh -u (minor) or -m (major)"
+  echo ""
+  exit "${1:-0}"
+}
+
 for arg in "$@"; do
-  echo "ERROR: Unknown option: $arg"
-  echo "Usage: bash dev/add_changelog.sh"
-  echo "This script reads the version from package.json and build.gradle."
-  echo "To bump the version, use: bash dev/mobile-build.sh -u; bash dev/add_changelog.sh"
-  exit 1
+  case "$arg" in
+    -h|--help)
+      show_help
+      ;;
+    -m|--major)
+      echo "Version bumping is mobile-build.sh's job, not add_changelog.sh."
+      echo "Run instead: bash dev/mobile-build.sh -u or -m"
+      exit 1
+      ;;
+    *)
+      echo "ERROR: Unknown option: $arg"
+      show_help 1
+      ;;
+  esac
 done
 
 cd /var/www/CaveShuttle
@@ -52,15 +78,21 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Jeder Level hat seinen eiegenen Mond irgendwo im hintergrund
+- Jeder Level hat seinen eigenen Mond irgendwo im Hintergrund
+- Funkelnde Sterne mit Farbvariation und Größenpulsieren
 - Anpassungen für iOS
+- Neue Option: Neigung nur zum Steuern möglich
+- Neige-Steuerung kalibriert sich beim Aktivieren automatisch
 EOF
 )
 
 # English Changelog
 EN_CHANGES=$(cat << EOF
 - Each level has its own moon somewhere in the background
+- Twinkling stars with color variation and size pulsing
 - Adjustments for iOS
+- New Option: Tilt can steer only
+- Tilt steering auto-calibrates when activated
 EOF
 )
 

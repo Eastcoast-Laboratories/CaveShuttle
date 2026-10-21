@@ -1,0 +1,5 @@
+- Each level has its own moon somewhere in the background
+- Twinkling stars with color variation and size pulsing
+- Adjustments for iOS
+- New Option: Tilt can steer only
+- Tilt steering auto-calibrates when activated
