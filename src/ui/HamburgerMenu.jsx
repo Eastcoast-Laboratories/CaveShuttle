@@ -168,6 +168,10 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
     if (!isOpen) return;
 
     const handleClickOutside = (event) => {
+      // The toggle buttons close via their own onClick; treating them as
+      // outside clicks would close the menu on pointerdown and reopen it
+      // on the following click event.
+      if (event.target.closest('#hamburger-button, #top-right-hamburger-button')) return;
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         onClose();
       }

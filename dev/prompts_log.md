@@ -124,3 +124,6 @@ called instead, not add_changelog. The option should stay but only
 print the text, not update anything."
 
 "Make version-bump.sh also work standalone with a --help option."
+
+"The hamburger button needs to be a bit wider, and pressing the button
+again must close the menu."
