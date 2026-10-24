@@ -151,3 +151,7 @@ instead of 'press left or right' it must ask to tilt in that direction."
 tutorial starts should be split into multiple pages with a next button
 at the bottom and dots showing the current page, so it always fits on
 a phone landscape screen."
+
+26-10-24 "The Play Store links in the game on the start page and in
+the level complete dialog should get different referrer links, so you
+can see who used which."

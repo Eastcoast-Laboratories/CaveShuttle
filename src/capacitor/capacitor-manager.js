@@ -4,6 +4,14 @@
 // Play Store URL for the Android app, used by Menu and browser-level-limit.
 export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=de.z11.caveshuttle';
 
+// Play link with campaign attribution: the referrer value carries UTM
+// parameters so Play Console shows which in-game placement drove the
+// store visit/install. campaign = placement name, e.g. 'start_page'.
+export function playStoreUrl(campaign) {
+  const referrer = `utm_source=game&utm_medium=badge&utm_campaign=${campaign}`;
+  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(referrer)}`;
+}
+
 export class CapacitorManager {
   constructor(capacitor = null) {
     this.Capacitor = capacitor || (typeof window !== 'undefined' && window.Capacitor) || {

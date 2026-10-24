@@ -4,7 +4,7 @@ import Datenschutz from './Datenschutz';
 import AccountDeletion from './AccountDeletion';
 import HighscoresPage from './HighscoresPage';
 import { ENABLE_LEVEL_EDITOR } from '../core/constants.js';
-import { capacitorManager, PLAY_STORE_URL } from '../capacitor/capacitor-manager.js';
+import { capacitorManager, playStoreUrl } from '../capacitor/capacitor-manager.js';
 import { useLanguage } from '../i18n/language-context.js';
 import { useSettings } from '../i18n/settings-context.js';
 import { getMenuTranslations } from '../i18n/menu.js';
@@ -336,7 +336,7 @@ export default function Menu({ onStart, onMultiplayer, onOpenLevelEditor, instal
 
         {isWebBrowser && (
           <a
-            href={PLAY_STORE_URL}
+            href={playStoreUrl('start_page')}
             target="_blank"
             rel="noopener noreferrer"
             style={{

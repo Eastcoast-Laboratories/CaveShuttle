@@ -27,7 +27,7 @@ import {
   BROWSER_MENU_MAX_LEVEL,
   VISIBLE_GUIDED_STEPS,
 } from './core/constants.js';
-import { capacitorManager, PLAY_STORE_URL } from './capacitor/capacitor-manager.js';
+import { capacitorManager, playStoreUrl } from './capacitor/capacitor-manager.js';
 import { ScoringSystem } from './game/scoring.js';
 import { HighScoreManager } from './game/high-score-manager.js';
 import { autoAccountManager } from './game/auto-account.js';
@@ -1359,7 +1359,7 @@ function App() {
                           {t.browserLimitText.replace('{total}', (installedPacks.find(p => p.id === currentPackId)?.meta?.levelCount || 6))}
                         </p>
                         <a
-                          href={PLAY_STORE_URL}
+                          href={playStoreUrl('level_complete')}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ display: 'inline-block' }}
