@@ -54,7 +54,9 @@ export function SettingsProvider({ children }) {
 
   const [tiltSteering, setTiltSteering] = useState(() => {
     const stored = localStorage.getItem(storageKey('tiltSteering'));
-    return stored === 'true';
+    // Default on for fresh installs; the persist effect below writes the
+    // value on first mount, so stored is only null before the first launch.
+    return stored !== 'false';
   });
 
   const [tiltNeutralBeta, setTiltNeutralBeta] = useState(() => {
@@ -85,7 +87,9 @@ export function SettingsProvider({ children }) {
   // thrust and fire buttons stay visible in tilt mode.
   const [tiltAutoThrust, setTiltAutoThrust] = useState(() => {
     const stored = localStorage.getItem(storageKey('tiltAutoThrust'));
-    return stored !== 'false';
+    // Default off for fresh installs: tilt steers only and the manual
+    // thrust/fire buttons stay visible.
+    return stored === 'true';
   });
 
   const [orientationMode, setOrientationMode] = useState(() => {

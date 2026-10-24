@@ -140,3 +140,6 @@ when you are one player of a two-player composition."
 
 26-10-24 "The label 'Global' in the highscore view is not very clear —
 suggest something more meaningful" (chose: Local/Online pair)
+
+26-10-24 "commit that, then: on the first game start, tilt steering
+should default to ON and auto thrust to OFF."
