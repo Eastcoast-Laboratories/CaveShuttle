@@ -102,6 +102,115 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
     if (e.target === e.currentTarget) onDismiss();
   };
 
+  const [page, setPage] = useState(0);
+
+  // The overlay is split into pages so every step fits a landscape phone
+  // screen without scrolling; page count differs between mobile (has the
+  // tilt section) and desktop.
+  const pages = [
+    <React.Fragment key="objective">
+      <h2>{t.title}</h2>
+      <p className="tutorial-overlay__intro">{t.intro}</p>
+      <section>
+        <h3>{t.objective}</h3>
+        <p>
+          {renderTranslatedText(t.objectiveText)}
+        </p>
+        <img
+          src="/tutorial/pod_docked.png"
+          alt={t.objective}
+        />
+        <p className="tutorial-overlay__image-caption">{renderTranslatedText(t.dockingPodImageText)}</p>
+      </section>
+    </React.Fragment>,
+    <React.Fragment key="controls">
+      {!isMobile && (
+        <section>
+          <h3>{t.controls}</h3>
+          <div className="tutorial-overlay__controls">
+            <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> — {t.keys.accelerate}</div>
+            <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> — {t.keys.rotateLeft}</div>
+            <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> — {t.keys.rotateRight}</div>
+            <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel> — {t.keys.tractor}</div>
+            <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> — {t.keys.shoot}</div>
+          </div>
+        </section>
+      )}
+      <section>
+        <h3>{t.touchButtons}</h3>
+        <p>{t.touchHint}</p>
+        <div className="tutorial-overlay__touch-previews">
+          <TouchButtonPreview
+            buttonTypes={['rotateLeft', 'rotateRight']}
+            podIcon={podIcon}
+            label={`${t.keys.rotateLeft} / ${t.keys.rotateRight}`}
+          />
+          <TouchButtonPreview
+            buttonTypes={['accelerate']}
+            podIcon={podIcon}
+            label={t.touchLabels.thrust}
+          />
+          <div className="tutorial-overlay__touch-break" />
+          <TouchButtonPreview
+            buttonTypes={['fire']}
+            podIcon={podIcon}
+            crosshairIcon={crosshairIcon}
+            label={t.touchLabels.fire}
+          />
+          <TouchButtonPreview
+            buttonTypes={['pod']}
+            podIcon={podIcon}
+            label={t.touchLabels.pod}
+          />
+        </div>
+      </section>
+    </React.Fragment>,
+    ...(isMobile ? [(
+      <React.Fragment key="tilt">
+        <section>
+          <h3>{t.tiltSteering.title}</h3>
+          <p>{t.tiltSteering.hint}</p>
+          <div className="tutorial-overlay__controls">
+            <div className="tutorial-overlay__mode-title">{t.tiltSteering.aimTitle}</div>
+            <div>{t.tiltSteering.aimDirection}</div>
+            <div>{t.tiltSteering.aimThrust}</div>
+            <div className="tutorial-overlay__mode-title">{t.tiltSteering.rotateTitle}</div>
+            <div>{t.tiltSteering.rotateRotate}</div>
+            <div>{t.tiltSteering.rotateThrust}</div>
+            <div>{t.tiltSteering.fire}</div>
+            <div>{t.tiltSteering.pod}</div>
+          </div>
+        </section>
+      </React.Fragment>
+    )] : []),
+    <React.Fragment key="tips">
+      <section>
+        <h3>{t.bonusTitle}</h3>
+        <p>{t.bonus}</p>
+      </section>
+      <section>
+        <h3>{t.menuHint}</h3>
+        <p>{t.menuText}</p>
+      </section>
+      <button
+        onClick={onStartGuidedLevel || onDismiss}
+        className="tutorial-overlay__dismiss"
+      >
+        {canCancel ? guidedHints.restartLevel1 : t.dismiss}
+      </button>
+      {canCancel && onCancel && (
+        <button
+          onClick={onCancel}
+          className="tutorial-overlay__cancel"
+        >
+          {guidedHints.cancel}
+        </button>
+      )}
+    </React.Fragment>,
+  ];
+
+  const isLastPage = page === pages.length - 1;
+
   return (
     <div
       onClick={handleBackdropClick}
@@ -119,116 +228,40 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
         >
           {guidedHints.skip} {'\u23ED'}
         </button>
-        <h2>{t.title}</h2>
-        <p className="tutorial-overlay__intro">{t.intro}</p>
 
-        {/* Objective */}
-        <section>
-          <h3>{t.objective}</h3>
-          <p>
-            {renderTranslatedText(t.objectiveText)}
-          </p>
-          <img
-            src="/tutorial/pod_docked.png"
-            alt={t.objective}
-          />
-          <p className="tutorial-overlay__image-caption">{renderTranslatedText(t.dockingPodImageText)}</p>
-        </section>
+        <div className="tutorial-overlay__page">
+          {pages[page]}
+        </div>
 
-        {/* Desktop controls */}
-        {!isMobile && (
-          <section>
-            <h3>{t.controls}</h3>
-            <div className="tutorial-overlay__controls">
-              <div><KeyLabel>↑</KeyLabel> / <KeyLabel>W</KeyLabel> — {t.keys.accelerate}</div>
-              <div><KeyLabel>←</KeyLabel> / <KeyLabel>A</KeyLabel> — {t.keys.rotateLeft}</div>
-              <div><KeyLabel>→</KeyLabel> / <KeyLabel>D</KeyLabel> — {t.keys.rotateRight}</div>
-              <div><KeyLabel>Space</KeyLabel> / <KeyLabel>Ctrl</KeyLabel> — {t.keys.tractor}</div>
-              <div><KeyLabel>X</KeyLabel> / <KeyLabel>Shift</KeyLabel> — {t.keys.shoot}</div>
-            </div>
-          </section>
-        )}
-
-        {/* Touch button preview */}
-        <section>
-          <h3>{t.touchButtons}</h3>
-          <p>{t.touchHint}</p>
-          <div className="tutorial-overlay__touch-previews">
-            <TouchButtonPreview
-              buttonTypes={['rotateLeft', 'rotateRight']}
-              podIcon={podIcon}
-              label={`${t.keys.rotateLeft} / ${t.keys.rotateRight}`}
-            />
-            <TouchButtonPreview
-              buttonTypes={['accelerate']}
-              podIcon={podIcon}
-              label={t.touchLabels.thrust}
-            />
-            <div className="tutorial-overlay__touch-break" />
-            <TouchButtonPreview
-              buttonTypes={['fire']}
-              podIcon={podIcon}
-              crosshairIcon={crosshairIcon}
-              label={t.touchLabels.fire}
-            />
-            <TouchButtonPreview
-              buttonTypes={['pod']}
-              podIcon={podIcon}
-              label={t.touchLabels.pod}
-            />
+        <div className="tutorial-overlay__pager">
+          {page > 0 ? (
+            <button
+              className="tutorial-overlay__pager-btn"
+              onClick={() => setPage(page - 1)}
+            >
+              ‹ {t.back}
+            </button>
+          ) : <span className="tutorial-overlay__pager-spacer" />}
+          <div className="tutorial-overlay__dots" aria-label={t.pageIndicator(page + 1, pages.length)}>
+            {pages.map((_, i) => (
+              <button
+                key={i}
+                className={`tutorial-overlay__dot ${i === page ? 'active' : ''}`}
+                onClick={() => setPage(i)}
+                aria-label={t.pageIndicator(i + 1, pages.length)}
+                aria-current={i === page ? 'page' : undefined}
+              />
+            ))}
           </div>
-        </section>
-
-        {/* Tilt Steering (mobile only) */}
-        {isMobile && (
-          <section>
-            <h3>{t.tiltSteering.title}</h3>
-            <p>{t.tiltSteering.hint}</p>
-            <div className="tutorial-overlay__controls">
-              <div className="tutorial-overlay__mode-title">{t.tiltSteering.aimTitle}</div>
-              <div>{t.tiltSteering.aimDirection}</div>
-              <div>{t.tiltSteering.aimThrust}</div>
-              <div className="tutorial-overlay__mode-title">{t.tiltSteering.rotateTitle}</div>
-              <div>{t.tiltSteering.rotateRotate}</div>
-              <div>{t.tiltSteering.rotateThrust}</div>
-              <div>{t.tiltSteering.fire}</div>
-              <div>{t.tiltSteering.pod}</div>
-            </div>
-          </section>
-        )}
-
-        {/* Tip: Bonus */}
-        <section>
-          <h3>{t.bonusTitle}</h3>
-          <p>{t.bonus}</p>
-        </section>
-
-        {/* Menu hint */}
-        <section>
-          <h3>{t.menuHint}</h3>
-          <p>{t.menuText}</p>
-        </section>
-
-        {/* Dismiss / Start button */}
-        <button
-          onClick={onStartGuidedLevel || onDismiss}
-          className="tutorial-overlay__dismiss"
-        >
-          {canCancel ? guidedHints.restartLevel1 : t.dismiss}
-        </button>
-        {canCancel && onCancel && (
-          <button
-            onClick={onCancel}
-            className="tutorial-overlay__cancel"
-          >
-            {guidedHints.cancel}
-          </button>
-        )}
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
+          {!isLastPage ? (
+            <button
+              className="tutorial-overlay__pager-btn tutorial-overlay__pager-btn--next"
+              onClick={() => setPage(page + 1)}
+            >
+              {t.next} ›
+            </button>
+          ) : <span className="tutorial-overlay__pager-spacer" />}
+        </div>
       </div>
     </div>
   );

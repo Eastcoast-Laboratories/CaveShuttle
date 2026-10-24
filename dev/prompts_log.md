@@ -146,3 +146,8 @@ should default to ON and auto thrust to OFF."
 
 26-10-24 "commit that, then: in the tutorial, depending on the setting,
 instead of 'press left or right' it must ask to tilt in that direction."
+
+26-10-24 "commit that, then: the tutorial screen before the guided
+tutorial starts should be split into multiple pages with a next button
+at the bottom and dots showing the current page, so it always fits on
+a phone landscape screen."

@@ -21,10 +21,13 @@ export const tutorialTranslations = {
     
     menuHint: 'Einstellungen & Tutorial',
     bonusTitle: 'Tipp',
-    
+
     bonus: 'Zerstörte Bunker bringen zusätzliche Punkte.',
     menuText: 'Tippe oben rechts auf das Menü-Symbol ☰, um Lautstärke, Touch-Button-Transparenz, Level-Packs und dieses Tutorial zu öffnen.',
     dismiss: 'Los geht\'s!',
+    next: 'Weiter',
+    back: 'Zurück',
+    pageIndicator: (n, total) => `Seite ${n} von ${total}`,
     keys: {
       accelerate: 'Beschleunigen',
       rotateLeft: 'Links drehen',
@@ -111,6 +114,9 @@ export const tutorialTranslations = {
     menuText: 'Tap the ☰ menu icon in the top-right to access sound, touch-button transparency, level packs and this tutorial.',
 
     dismiss: 'Got it!',
+    next: 'Next',
+    back: 'Back',
+    pageIndicator: (n, total) => `Page ${n} of ${total}`,
     keys: {
       accelerate: 'Accelerate',
       rotateLeft: 'Rotate left',

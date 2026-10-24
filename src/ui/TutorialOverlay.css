@@ -18,7 +18,8 @@
   width: 100%;
   max-width: 640px;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
@@ -26,6 +27,88 @@
   color: #fff;
   font-family: system-ui, -apple-system, sans-serif;
   position: relative;
+}
+
+/* The active page fills the space between the skip button and the
+   pager footer; it scrolls internally only if a page still overflows
+   on very short landscape screens. */
+.tutorial-overlay__page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.tutorial-overlay__pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  flex-shrink: 0;
+}
+
+.tutorial-overlay__pager-spacer {
+  min-width: 70px;
+}
+
+.tutorial-overlay__pager-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ddd;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 70px;
+}
+
+.tutorial-overlay__pager-btn:hover,
+.tutorial-overlay__pager-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  outline: none;
+}
+
+.tutorial-overlay__pager-btn--next {
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  border: none;
+  color: #000;
+}
+
+.tutorial-overlay__pager-btn--next:hover,
+.tutorial-overlay__pager-btn--next:focus-visible {
+  background: linear-gradient(135deg, #33ffaa, #00dd77);
+  color: #000;
+}
+
+.tutorial-overlay__dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutorial-overlay__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.tutorial-overlay__dot:hover,
+.tutorial-overlay__dot:focus-visible {
+  background: rgba(255, 255, 255, 0.5);
+  outline: none;
+}
+
+.tutorial-overlay__dot.active {
+  background: #00ff88;
+  transform: scale(1.25);
 }
 
 .tutorial-overlay__skip-btn {
@@ -208,4 +291,60 @@
   flex-basis: 100%;
   width: 0;
   height: 0;
+}
+
+/* Short landscape screens (phones): tighten the card so each page
+   fits without scrolling whenever possible. */
+@media (max-height: 480px) {
+  .tutorial-overlay {
+    padding: 8px;
+  }
+
+  .tutorial-overlay__card {
+    max-height: 96vh;
+    padding: 12px 16px;
+  }
+
+  .tutorial-overlay h2 {
+    font-size: 17px;
+    margin-bottom: 6px;
+  }
+
+  .tutorial-overlay h3 {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .tutorial-overlay p,
+  .tutorial-overlay li,
+  .tutorial-overlay__controls {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .tutorial-overlay section {
+    margin-bottom: 12px;
+  }
+
+  .tutorial-overlay img {
+    max-height: 30vh;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .tutorial-overlay__touch-canvas {
+    max-height: 22vh;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .tutorial-overlay__pager {
+    padding-top: 8px;
+  }
+
+  .tutorial-overlay__pager-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
 }
