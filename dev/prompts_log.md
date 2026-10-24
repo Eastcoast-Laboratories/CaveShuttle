@@ -137,3 +137,6 @@ BUNKER 550 + BUTTON 100 but total says 700 pts)
 26-10-24 "In the local highscore your own name is highlighted with a
 CSS glow — that should also work in the global highscore, including
 when you are one player of a two-player composition."
+
+26-10-24 "The label 'Global' in the highscore view is not very clear —
+suggest something more meaningful" (chose: Local/Online pair)
