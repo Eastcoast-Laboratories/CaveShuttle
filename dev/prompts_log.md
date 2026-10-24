@@ -133,3 +133,7 @@ fuel again it does not stop even though the danger is over."
 
 26-10-24 "550 plus 100 is 700?" (screenshot: level breakdown shows
 BUNKER 550 + BUTTON 100 but total says 700 pts)
+
+26-10-24 "In the local highscore your own name is highlighted with a
+CSS glow — that should also work in the global highscore, including
+when you are one player of a two-player composition."

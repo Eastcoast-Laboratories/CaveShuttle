@@ -321,7 +321,7 @@ export default function HighscoresPage({ onBack, onPlay, installedPacks = [] }) 
                       <td className="rank-col"></td>
                       <td className="level-col">{i + 1}</td>
                       <td className="text-right">{String(entry.score).padStart(6, '0')}</td>
-                      <td className="uppercase">{entry.name}</td>
+                      <td className={`uppercase ${isOwnEntry(entry) ? 'own-name' : ''}`}>{getDisplayName(entry)}</td>
                       <td className="solid-col"></td>
                     </tr>
                   ))}
