@@ -13,7 +13,7 @@ export { VISIBLE_GUIDED_STEPS };
 //
 // State, progress and actions come from App/GameCanvas; this component has no
 // game-state logic of its own.
-export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTargetMs = 0, onSkip, onStepBack }) {
+export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTargetMs = 0, tiltRotate = false, tiltThrust = false, onSkip, onStepBack }) {
   const { language } = useLanguage();
   const t = tutorialTranslations[language] || tutorialTranslations.en;
   const hints = t.guidedHints;
@@ -24,6 +24,11 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
   const totalSteps = VISIBLE_GUIDED_STEPS.length;
   const hint = hints[step];
   if (!hint) return null;
+
+  // The hold instruction names the input the player actually uses: tilt
+  // variants exist for rotation steps (tiltRotate) and thrust steps when
+  // tilt auto-thrust is enabled (tiltThrust). All inputs still count.
+  const holdLabel = (tiltRotate && hint.holdTilt) || (tiltThrust && hint.holdTiltThrust) || hint.hold;
 
   const holdMs = Math.min(holdProgressMs, holdTargetMs);
   const canStepBack = stepIndex > 1;
@@ -56,7 +61,7 @@ export default function TutorialHintOverlay({ step, holdProgressMs = 0, holdTarg
         <span className="tutorial-hint-overlay__step">{hints.stepIndicator(stepIndex, totalSteps)}</span>
         <p className="tutorial-hint-overlay__text">{hint.text}</p>
         <div className="tutorial-hint-overlay__hold-row">
-          <span className="tutorial-hint-overlay__hold-label">{hint.hold}</span>
+          <span className="tutorial-hint-overlay__hold-label">{holdLabel}</span>
           <progress
             className="tutorial-hint-overlay__progress"
             value={holdMs}

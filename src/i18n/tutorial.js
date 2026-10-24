@@ -65,22 +65,27 @@ export const tutorialTranslations = {
       brakingInfo: {
         text: 'Drehe das Raumschiff leicht nach rechts, damit es sich in Richtung der runden Frachtkugel neigt.',
         hold: 'Halte den Rechts-Dreh-Button',
+        holdTilt: 'Neige das Gerät leicht nach rechts',
       },
       approachTractorAndThrustAction: {
         text: 'Aktiviere den Schub um etwas nach rechts zu driften.',
         hold: 'Halte den Schub',
+        holdTiltThrust: 'Neige das Gerät zurück für Schub',
       },
       rotateLeftAction: {
         text: 'Drehe das Raumschiff wieder nach links, damit die Nase wieder etwas nach links zeigt um vorzubereiten den Rechtsdrift zu stoppen.',
         hold: 'Halte den Links-Dreh-Button',
+        holdTilt: 'Neige das Gerät leicht nach links',
       },
       tractorAndThrustAction: {
         text: 'Aktiviere den Traktorstrahl und den Schub gleichzeitig, damit du nach dem Andocken nicht gleich abstürzt.',
         hold: 'Halte Traktorstrahl und Schub gleichzeitig',
+        holdTiltThrust: 'Halte den Traktorstrahl und neige das Gerät zurück',
       },
       escapeThrustAction: {
         text: 'Halte den Schub und fliege in den Weltraum bis zum Wurmloch.',
         hold: 'Halte den Schub',
+        holdTiltThrust: 'Neige das Gerät zurück und halte den Schub',
       },
       holdProgress: (ms, target) => `${Math.max(0, Math.round(ms))} / ${target} ms`,
     },
@@ -146,22 +151,27 @@ export const tutorialTranslations = {
       brakingInfo: {
         text: 'Rotate the ship slightly to the right so it tilts towards the round cargo pod.',
         hold: 'Hold the rotate-right button',
+        holdTilt: 'Tilt the device slightly to the right',
       },
       approachTractorAndThrustAction: {
         text: 'Activate thrust to drift slightly to the right.',
         hold: 'Hold thrust',
+        holdTiltThrust: 'Tilt the device back to thrust',
       },
       rotateLeftAction: {
         text: 'Rotate the ship back to the left so it prepares for the right drift to stop.',
         hold: 'Hold the rotate-left button',
+        holdTilt: 'Tilt the device slightly to the left',
       },
       tractorAndThrustAction: {
         text: 'Activate the tractor beam and thrust at the same time, so you don\'t crash right after docking.',
         hold: 'Hold tractor beam and thrust together',
+        holdTiltThrust: 'Hold the tractor beam and tilt the device back',
       },
       escapeThrustAction: {
         text: 'Hold thrust and fly up into space to the wormhole.',
         hold: 'Hold thrust',
+        holdTiltThrust: 'Tilt the device back and keep thrusting',
       },
       holdProgress: (ms, target) => `${Math.max(0, Math.round(ms))} / ${target} ms`,
     },

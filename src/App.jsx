@@ -45,10 +45,12 @@ function App() {
   const t = getGameScreenTranslations(language);
   const g = getGlobalTranslations(language);
   const {
+    isMobile,
     showTouchButtons, setShowTouchButtons,
     joystickEnabled, setJoystickEnabled,
     touchButtonOpacity, setTouchButtonOpacity,
     tiltSteering, setTiltSteering,
+    tiltAutoThrust,
     setTiltNeutralBeta,
     setTiltNeutralGamma,
     setTiltMode,
@@ -1428,6 +1430,8 @@ function App() {
           step={guidedTutorialStep}
           holdProgressMs={guidedHoldProgress.ms}
           holdTargetMs={guidedHoldProgress.target}
+          tiltRotate={tiltSteering && isMobile}
+          tiltThrust={tiltSteering && tiltAutoThrust && isMobile}
           onSkip={handleGuidedTutorialSkip}
           onStepBack={handleGuidedTutorialStepBack}
         />

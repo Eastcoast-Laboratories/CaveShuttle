@@ -143,3 +143,6 @@ suggest something more meaningful" (chose: Local/Online pair)
 
 26-10-24 "commit that, then: on the first game start, tilt steering
 should default to ON and auto thrust to OFF."
+
+26-10-24 "commit that, then: in the tutorial, depending on the setting,
+instead of 'press left or right' it must ask to tilt in that direction."
