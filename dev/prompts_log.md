@@ -130,3 +130,6 @@ again must close the menu."
 
 "When fuel is nearly empty the timer sound plays, but after collecting
 fuel again it does not stop even though the danger is over."
+
+26-10-24 "550 plus 100 is 700?" (screenshot: level breakdown shows
+BUNKER 550 + BUTTON 100 but total says 700 pts)

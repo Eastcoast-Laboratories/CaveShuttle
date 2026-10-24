@@ -21,7 +21,7 @@ import {
   JOYSTICK_THRESHOLD, JOYSTICK_VELOCITY_FACTOR, JOYSTICK_STOP_MS, JOYSTICK_TAP_FIRE_MS,
   DOOR_AUTO_CLOSE_MS, DOOR_SLIDE_MS_PER_COL,
   CAMERA_BOTTOM_OFFSET, PORTRAIT_ZOOM_MAX, PORTRAIT_ZOOM_FACTOR,
-  SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_POD_CONNECT,
+  SCORE_BUNKER_DESTROYED, SCORE_BUTTON_SLIDER, SCORE_MINE_DESTROYED, SCORE_POD_CONNECT,
   SHIELD_RADIUS, SHIELD_COLOR, SHIELD_FUEL_CONSUMPTION,
   FUEL_MAX, FUEL_DEPOT_CAPACITY, FUEL_DEPOT_INITIAL, FUEL_DEPOT_REFUEL_RATE,
   BUNKER_INDICATOR_OFFSETS,
@@ -3306,7 +3306,7 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
                   es.active = false;
                   particleSystem.current.spawnExplosion(es.x, es.y, 25, '#ff3333');
                   if (soundManager.current) soundManager.current.playOnce('explosion');
-                  if (onScoreChange) onScoreChange({ points: SCORE_BUNKER_DESTROYED, type: 'enemy-ship' });
+                  if (onScoreChange) onScoreChange({ points: SCORE_MINE_DESTROYED, type: 'mine' });
                   break; // one bullet can only hit one mine
                 }
               }

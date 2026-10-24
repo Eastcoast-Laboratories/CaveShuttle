@@ -18,6 +18,7 @@ import {
   SCORE_LEVEL_COMPLETE,
   SCORE_FUEL_REMAINING,
   SCORE_BUNKER_DESTROYED,
+  SCORE_MINE_DESTROYED,
   ENABLE_LEVEL_EDITOR,
   INITIAL_LIVES,
   SCORING_VERSION,
@@ -70,6 +71,7 @@ function App() {
   const [levelScore, setLevelScore] = useState(0);
   const [levelScoreBreakdown, setLevelScoreBreakdown] = useState({
     bunker: 0,
+    mine: 0,
     button: 0,
     pod: 0,
     reactor: 0,
@@ -878,6 +880,7 @@ function App() {
   const scoreBreakdown = useMemo(() => [
     { key: 'time', label: t.time, value: levelScoreBreakdown.time > 0 ? levelScoreBreakdown.time + g.seconds : 0 }, // use just 0 instead of 0s  so the filter below works for 0 time on game over too
     { key: 'bunker', label: levelScoreBreakdown.bunker > SCORE_BUNKER_DESTROYED ? t.bunkerDestroyedPlural : t.bunkerDestroyed, value: levelScoreBreakdown.bunker },
+    { key: 'mine', label: levelScoreBreakdown.mine > SCORE_MINE_DESTROYED ? t.mineDestroyedPlural : t.mineDestroyed, value: levelScoreBreakdown.mine },
     { key: 'button', label: t.buttonActivated, value: levelScoreBreakdown.button },
     { key: 'pod', label: t.podConnected, value: levelScoreBreakdown.pod },
     { key: 'fuel', label: t.fuelRemaining, value: levelScoreBreakdown.fuel },

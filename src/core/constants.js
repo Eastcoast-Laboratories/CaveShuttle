@@ -117,6 +117,7 @@ export const BUTTON_MARGIN_FACTOR = 10;
 // Scoring
 export const SCORE_LEVEL_COMPLETE = 1000; // for each live left when completing a level, maximum: LEVEL_NR*1000 (if more lives are left)
 export const SCORE_BUNKER_DESTROYED = 50;
+export const SCORE_MINE_DESTROYED = 50;
 export const SCORE_BUTTON_SLIDER = 100; // for each slider opened (only once)
 export const SCORE_POD_CONNECT = 100; // once the pod is collected
 export const SCORE_FUEL_REMAINING = 10; // per percent remaining when reaching the sky

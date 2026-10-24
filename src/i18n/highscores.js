@@ -43,6 +43,7 @@ export const highscoreTranslations = {
     // Score breakdown labels (used in HighscoresPage run detail popup)
     breakdownLabels: {
       bunker: 'Bunker',
+      mine: 'Mine',
       button: 'Button',
       pod: 'Frachtkugel',
       reactor: 'Reaktor-Flucht',
@@ -93,6 +94,7 @@ export const highscoreTranslations = {
     // Score breakdown labels (used in HighscoresPage run detail popup)
     breakdownLabels: {
       bunker: 'bunker',
+      mine: 'mine',
       button: 'button',
       pod: 'cargo pod',
       reactor: 'reactor escape',
