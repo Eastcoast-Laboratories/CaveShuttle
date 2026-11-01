@@ -30,6 +30,19 @@
   font-size: 10px;
 }
 
+.level-editor-btn-collapse {
+  padding: 4px 6px;
+  min-width: 22px;
+  background: linear-gradient(135deg, #335, #446);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 1;
+}
+
 .level-editor-btn-sidebar {
   padding: 4px 8px;
   background: linear-gradient(135deg, #335, #446);

@@ -162,12 +162,77 @@ body {
   margin-top: 0;
 }
 
+/* Sidebar collapse toggle: clicking shrinks the sidebar to a thin
+   strip so the canvas gets more room; a second click expands it. */
+.sidebar {
+  position: relative;
+}
+
+.sidebar-collapse-btn {
+  display: block;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin: 0 0 8px 0;
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  color: #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+/* The right toggle floats over the top-right corner of the sticky
+   top-bar, so it takes no layout space and stays pinned on scroll. */
+.right-sidebar .sidebar-collapse-btn {
+  position: absolute;
+  top: -10px;
+  right: 8px;
+  margin: 0;
+  z-index: 11;
+}
+
+.sidebar.collapsed {
+  width: 34px;
+  min-width: 34px;
+  padding: 15px 4px;
+  overflow: hidden;
+}
+
+.sidebar.collapsed > *:not(.sidebar-collapse-btn) {
+  display: none;
+}
+
+/* On the right sidebar the toggle is nested in .top-bar — keep the bar
+   visible (unstyled) so the toggle stays reachable in the strip. */
+.right-sidebar.collapsed .top-bar {
+  position: static;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border-bottom: none;
+}
+
+.right-sidebar.collapsed .top-bar > *:not(.sidebar-collapse-btn) {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn {
+  position: static;
+  margin: 0 auto;
+}
+
 /* Tool buttons */
 .tool-buttons {
   display: flex;
   flex-direction: row;
   gap: 6px;
   flex-wrap: wrap;
+  /* Clear the floating toolbar overlay from the parent document
+     (collapse/back/pack-builder buttons sit over the iframe's top-left). */
+  margin-top: 20px;
 }
 
 .tool-btn {

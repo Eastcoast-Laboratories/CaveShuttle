@@ -398,7 +398,25 @@ class LevelEditor {
     document.getElementById('scrollDownBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollDown(); });
     document.getElementById('scrollLeftBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollLeft(); });
     document.getElementById('scrollRightBtn').addEventListener('click', () => { this.hapticFeedback(); this.scrollRight(); });
-    
+
+    // Right sidebar collapse toggle: the glyph points toward the screen
+    // edge when expanded and into the canvas when collapsed. The left
+    // sidebar is collapsed from the parent toolbar via postMessage.
+    const wireCollapse = (btnId, sidebarSelector, collapsedGlyph, expandedGlyph) => {
+      const btn = document.getElementById(btnId);
+      const sidebar = document.querySelector(sidebarSelector);
+      if (!btn || !sidebar) return;
+      btn.addEventListener('click', () => {
+        this.hapticFeedback();
+        const collapsed = sidebar.classList.toggle('collapsed');
+        const key = collapsed ? 'expand' : 'collapse';
+        btn.textContent = collapsed ? collapsedGlyph : expandedGlyph;
+        btn.setAttribute('data-i18n-title', key);
+        if (window.editorI18n) btn.title = window.editorI18n.t(key);
+      });
+    };
+    wireCollapse('collapseRightBtn', '.right-sidebar', '◀', '▶');
+
     // Level controls
     document.getElementById('loadBtn').addEventListener('click', () => { this.hapticFeedback(); this.loadLevel(); });
     document.getElementById('newBtn').addEventListener('click', () => { this.hapticFeedback(); this.newLevel(); });
@@ -548,6 +566,9 @@ class LevelEditor {
         this.loadLevelFromString(event.data.levelData);
       } else if (event.data && event.data.type === 'TRIGGER_TEST') {
         this.testLevel();
+      } else if (event.data && event.data.type === 'SET_LEFT_SIDEBAR_COLLAPSED') {
+        const sidebar = document.querySelector('.left-sidebar');
+        if (sidebar) sidebar.classList.toggle('collapsed', !!event.data.collapsed);
       }
     });
   }

@@ -4,7 +4,6 @@
 - [ ] im editor die zufällige hügelige oberfläche ist tnoch nicht optimal
 - [ ] explosive obstacles
 - [ ] der feuer button ist ev. nicht mehr nötig oder eine neue option im menu, den auszublenden
-- [ ] der Level editor soll mit eingeklapptem rechten level publish-tool starten
 
 # to be discussed
 

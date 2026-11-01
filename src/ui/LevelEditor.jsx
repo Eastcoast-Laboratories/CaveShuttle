@@ -104,7 +104,8 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
   });
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -328,30 +329,49 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
 
   const toggleSidebar = () => setSidebarOpen(prev => !prev);
 
+  const toggleLeftSidebar = () => {
+    const next = !leftCollapsed;
+    setLeftCollapsed(next);
+    iframeRef.current?.contentWindow?.postMessage({ type: 'SET_LEFT_SIDEBAR_COLLAPSED', collapsed: next }, '*');
+  };
+
   return (
     <div className="level-editor-root">
       <div className="level-editor-toolbar">
-        <button onClick={onBack} className="level-editor-btn-back">
-          {t.backToMenu}
+        <button
+          onClick={toggleLeftSidebar}
+          className="level-editor-btn-collapse"
+          title={leftCollapsed ? t.expand : t.collapse}
+        >
+          {leftCollapsed ? '▶' : '◀'}
         </button>
-        <button onClick={toggleSidebar} className="level-editor-btn-sidebar">
-          {t.packBuilder}
-        </button>
+        {!leftCollapsed && (
+          <>
+            <button onClick={onBack} className="level-editor-btn-back">
+              {t.backToMenu}
+            </button>
+            <button onClick={toggleSidebar} className="level-editor-btn-sidebar">
+              {t.packBuilder}
+            </button>
+          </>
+        )}
       </div>
-      <div className="level-editor-language-switcher">
-        {['de', 'en'].map((lang) => (
-          <button
-            key={lang}
-            onClick={() => setLanguage(lang)}
-            className={language === lang ? 'active' : ''}
-          >
-            {lang === 'de' ? '🇩🇪' : '🇬🇧'}
-          </button>
-        ))}
-      </div>
+      {!leftCollapsed && (
+        <div className="level-editor-language-switcher">
+          {['de', 'en'].map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
+              className={language === lang ? 'active' : ''}
+            >
+              {lang === 'de' ? '🇩🇪' : '🇬🇧'}
+            </button>
+          ))}
+        </div>
+      )}
       <iframe
         ref={iframeRef}
-        src={`/level-editor/index.html?lang=${language}&v=4`}
+        src={`/level-editor/index.html?lang=${language}&v=6`}
         className="level-editor-iframe"
         title={t.levelEditorTitle}
       />

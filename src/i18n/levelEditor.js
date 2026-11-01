@@ -5,6 +5,8 @@ export const levelEditorTranslations = {
     // Toolbar
     backToMenu: '← Menu',
     packBuilder: 'Pack Builder',
+    collapse: 'Einklappen',
+    expand: 'Ausklappen',
 
     // Sidebar header
     howDoesItWork: 'Wie funktioniert der Pack Builder?',
@@ -69,6 +71,8 @@ export const levelEditorTranslations = {
     // Toolbar
     backToMenu: 'Back to Menu',
     packBuilder: 'Pack Builder',
+    collapse: 'Collapse',
+    expand: 'Expand',
 
     // Sidebar header
     howDoesItWork: 'How does the Pack Builder work?',

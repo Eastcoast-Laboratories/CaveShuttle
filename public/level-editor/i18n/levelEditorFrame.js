@@ -102,6 +102,10 @@
       info_bunkerChance: 'Wahrscheinlichkeit (0.0–1.0), dass ein Bunker-Platzierungsversuch erfolgreich ist. Leer = 1.0 (jeden Bunker platzieren) bei angegebener Anzahl, sonst 0.5 (zufällige Platzierung).',
       info_fuelChance: 'Wahrscheinlichkeit (0.0–1.0), dass ein Treibstoff-Platzierungsversuch erfolgreich ist. Gleiche Standardlogik wie Bunker-Wahrscheinlichkeit (1.0 mit Anzahl, 0.55 ohne).',
 
+      // Sidebar collapse toggle
+      collapse: 'Einklappen',
+      expand: 'Ausklappen',
+
       // Level option
       levelN: 'Level {n}',
     },
@@ -203,6 +207,10 @@
       info_fuel: 'Target number of fuel depots to place. Same multi-placement logic as bunkers: multiple fuel depots per corridor, best-effort fallback.',
       info_bunkerChance: 'Probability (0.0–1.0) that a given bunker placement attempt succeeds. If left empty while a bunker count is specified, defaults to 1.0 (try to place every bunker). If no count is specified, defaults to 0.5 (random placement).',
       info_fuelChance: 'Probability (0.0–1.0) that a given fuel placement attempt succeeds. Same defaulting logic as Bunker Chance (1.0 with count, 0.55 without).',
+
+      // Sidebar collapse toggle
+      collapse: 'Collapse',
+      expand: 'Expand',
 
       // Level option
       levelN: 'Level {n}',
