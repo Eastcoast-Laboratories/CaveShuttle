@@ -177,7 +177,7 @@ export class CaveNetworkManager extends EventEmitter {
       this._setState({
         players: [
           { role: 'host', ready: this.players[0]?.ready || false, name: this.players[0]?.name || this.playerName },
-          { role: 'client', ready: this.players[1]?.ready || false, name: data?.name || 'Player 2' },
+          { role: 'client', ready: this.players[1]?.ready || false, name: data?.name || this.t('coPilot') },
         ],
       })
       this.addStatus(this.t('peerJoined'))
@@ -193,7 +193,7 @@ export class CaveNetworkManager extends EventEmitter {
       const ready = !!data?.ready
       this.players = this.players.map(p => (p.role === role ? { ...p, ready } : p))
       this._setState({ players: [...this.players] })
-      const num = role === 'host' ? 1 : 2
+      const num = this.t(role === 'host' ? 'pilot' : 'coPilot')
       this.addStatus(ready ? this.t('peerReady', { num }) : this.t('peerNotReady', { num }))
     })
 

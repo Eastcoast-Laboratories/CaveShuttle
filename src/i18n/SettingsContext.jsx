@@ -54,9 +54,11 @@ export function SettingsProvider({ children }) {
 
   const [tiltSteering, setTiltSteering] = useState(() => {
     const stored = localStorage.getItem(storageKey('tiltSteering'));
-    // Default on for fresh installs; the persist effect below writes the
-    // value on first mount, so stored is only null before the first launch.
-    return stored !== 'false';
+    // Default on only for fresh installs on touch/mobile devices —
+    // desktops have no orientation sensor. The persist effect below
+    // writes the value on first mount, so stored is only null before
+    // the first launch.
+    return stored !== null ? stored === 'true' : isMobile;
   });
 
   const [tiltNeutralBeta, setTiltNeutralBeta] = useState(() => {

@@ -5,7 +5,7 @@ export const hamburgerMenuTranslations = {
     // Section titles
     selectLevel: 'Level wählen',
     playerName: 'Spielername',
-    player2Name: 'Spieler 2',
+    player2Name: 'Co-Pilot',
     controls: 'Steuerung',
     keyboard: 'Tastatur',
     sound: 'Sound',
@@ -76,8 +76,8 @@ export const hamburgerMenuTranslations = {
     shootWithPod: 'Schießen (mit Frachtkugel)',
     rotateTurret: 'Geschütz drehen',
     rotatePod: 'Frachtkugel drehen',
-    player1Ship: 'Spieler 1 — Schiff',
-    player2Pod: 'Spieler 2 — {role}',
+    player1Ship: 'Pilot — Schiff',
+    player2Pod: 'Co-Pilot — {role}',
     pod: 'Frachtkugel',
     turret: 'Geschütz',
 
@@ -106,7 +106,7 @@ export const hamburgerMenuTranslations = {
     // Section titles
     selectLevel: 'SELECT LEVEL',
     playerName: 'PLAYER NAME',
-    player2Name: 'PLAYER 2 NAME',
+    player2Name: 'CO-PILOT NAME',
     controls: 'CONTROLS',
     keyboard: 'KEYBOARD',
     sound: 'SOUND',
@@ -177,8 +177,8 @@ export const hamburgerMenuTranslations = {
     shootWithPod: 'Shoot (with Cargo Pod)',
     rotateTurret: 'Rotate Turret',
     rotatePod: 'Rotate Cargo Pod',
-    player1Ship: 'Player 1 — Ship',
-    player2Pod: 'Player 2 — {role}',
+    player1Ship: 'Pilot — Ship',
+    player2Pod: 'Co-Pilot — {role}',
     pod: 'Cargo Pod',
     turret: 'Turret',
 

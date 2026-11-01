@@ -209,7 +209,7 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
         {playerName !== undefined && (
           <div className="end-overlay-player-names">
             <div className="end-overlay-player-row">
-              <span className="end-overlay-player-label">{networkRole === 'host' ? t.player1 : t.yourName}</span>
+              <span className="end-overlay-player-label">{networkRole === 'host' ? t.player2 : t.yourName}</span>
               <PlayerNameInput
                 playerName={hsName || playerName}
                 onPlayerNameChange={onPlayerNameChange}
@@ -218,7 +218,7 @@ export default function EndOverlay({ title, breakdown, total, totalLabel, button
             </div>
             {twoPlayer && player2Name !== undefined && (
               <div className="end-overlay-player-row">
-                <span className="end-overlay-player-label">{networkRole === 'host' ? t.yourName : t.player2}</span>
+                <span className="end-overlay-player-label">{networkRole === 'host' ? t.yourName : (networkRole ? t.player1 : t.player2)}</span>
                 <PlayerNameInput
                   playerName={hsPlayer2Name || player2Name}
                   onPlayerNameChange={onPlayer2NameChange}

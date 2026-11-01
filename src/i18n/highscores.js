@@ -15,9 +15,9 @@ export const highscoreTranslations = {
     localTab: '🏠 Lokal',
 
     // Filter options
-    allPlayers: '1 und 2 Spieler',
-    onePlayer: '1 Spieler',
-    twoPlayer: '2 Spieler',
+    allPlayers: 'Solo & Co-Op',
+    onePlayer: 'Solo',
+    twoPlayer: 'Co-Op',
 
     // Buttons
     back: 'Zurück',
@@ -25,7 +25,7 @@ export const highscoreTranslations = {
     close: 'Schließen',
 
     // Player info
-    player: 'Spieler',
+    player: 'Pilot',
 
     // Empty states
     noRunHighscores: 'Noch keine Mission-Highscores.',
@@ -66,9 +66,9 @@ export const highscoreTranslations = {
     localTab: '🏠 Local',
 
     // Filter options
-    allPlayers: '1 and 2 Player',
-    onePlayer: '1 Player',
-    twoPlayer: '2 Player',
+    allPlayers: 'Solo & Co-Op',
+    onePlayer: 'Solo',
+    twoPlayer: 'Co-Op',
 
     // Buttons
     back: '← Back',
@@ -76,7 +76,7 @@ export const highscoreTranslations = {
     close: 'Close',
 
     // Player info
-    player: 'Player',
+    player: 'Pilot',
 
     // Empty states
     noRunHighscores: 'No campaign highscores yet.',

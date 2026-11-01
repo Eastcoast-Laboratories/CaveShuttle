@@ -155,3 +155,13 @@ a phone landscape screen."
 26-10-24 "The Play Store links in the game on the start page and in
 the level complete dialog should get different referrer links, so you
 can see who used which."
+
+26-10-24 "commit that, then: tilt steering must not be on by default
+on laptops — only on mobile devices and in mobile browsers."
+
+26-10-24 "When the 'Tippe überall zum Schießen.' hint disappears with
+joystick OFF, an empty line must remain as a placeholder — otherwise
+the tilt button jumps down when toggled on."
+
+26-11-01 "Multiplayer could also be called 'Co-Op' on the start screen; make a plan of what could be renamed instead of player 1 or 2 so it becomes clearer that it is Co-Op."
+26-11-01 "The word Co-Op only needs to be added in the frontend; the variable names can all stay."

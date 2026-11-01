@@ -362,13 +362,12 @@ export default function HamburgerMenu({ isOpen, onClose, levelButtons, onBackToM
                 {joystickEnabled ? t.on : t.off}
               </button>
             </div>
-            {!joystickEnabled && !tiltSteering && (
-              <p className="hamburger-hint">
-                {t.tapAnywhereToFire}
-              </p>
-            )}
-            {joystickEnabled && (
+            {joystickEnabled ? (
               <p className="hamburger-hint" dangerouslySetInnerHTML={{ __html: t.holdSwipeToSteer }} />
+            ) : (
+              // nbsp keeps the hint line's height when there is no text to
+              // show, so the tilt group below does not jump on toggle.
+              <p className="hamburger-hint">{tiltSteering ? '\u00A0' : t.tapAnywhereToFire}</p>
             )}
           </div>
 

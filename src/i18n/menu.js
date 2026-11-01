@@ -2,9 +2,9 @@
 export const menuTranslations = {
   de: {
     startGame: 'SPIEL STARTEN',
-    multiplayer: 'Mehrspieler',
-    onePlayer: '1 Spieler',
-    twoPlayer: '2 Spieler',
+    multiplayer: 'Co-Op',
+    onePlayer: 'Solo',
+    twoPlayer: 'Co-Op',
     tagline: 'Sichere die kostbare Fracht und entkomme aus den Höhlen',
     imprint: 'Impressum',
     privacy: 'Datenschutz',
@@ -16,9 +16,9 @@ export const menuTranslations = {
   },
   en: {
     startGame: 'START GAME',
-    multiplayer: 'Multiplayer',
-    onePlayer: '1 Player',
-    twoPlayer: '2 Player',
+    multiplayer: 'Co-Op',
+    onePlayer: 'Solo',
+    twoPlayer: 'Co-Op',
     tagline: 'Collect the precious cargo pod and escape the caves',
     imprint: 'Imprint',
     privacy: 'Privacy',

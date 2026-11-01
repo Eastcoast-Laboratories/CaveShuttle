@@ -51,3 +51,4 @@ test-results/*
 
 # Apple signing material (never commit)
 dev/xcode/
+dev/prompts_log.md

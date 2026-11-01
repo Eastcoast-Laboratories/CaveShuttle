@@ -59,8 +59,8 @@ test.describe('Production Multiplayer Debug', () => {
     await host.waitForTimeout(3000);
     await host.screenshot({ path: 'test-results/prod-host-01-initial.png' });
 
-    // Click Multiplayer (text-based, works for EN and DE)
-    await host.getByText('Multiplayer', { exact: false }).first().click();
+    // Click Co-Op (text-based, works for EN and DE)
+    await host.getByText('Co-Op', { exact: false }).first().click();
     await host.waitForTimeout(1000);
     await host.getByText('Online', { exact: false }).first().click();
     await host.waitForTimeout(2000);
@@ -106,7 +106,7 @@ test.describe('Production Multiplayer Debug', () => {
       // --- Client ---
       await client.goto(PROD_URL, { waitUntil: 'networkidle' });
       await client.waitForTimeout(3000);
-      await client.getByText('Multiplayer', { exact: false }).first().click();
+      await client.getByText('Co-Op', { exact: false }).first().click();
       await client.waitForTimeout(500);
       await client.getByText('Online', { exact: false }).first().click();
       await client.waitForTimeout(1000);

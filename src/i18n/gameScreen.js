@@ -20,9 +20,9 @@ export const gameScreenTranslations = {
     top10Rank: 'Highscore Rang {rank}',
 
     // Player name labels
-    player1: 'Spieler 1:',
+    player1: 'Pilot:',
     yourName: 'Dein Name:',
-    player2: 'Spieler 2:',
+    player2: 'Co-Pilot:',
 
     // Score breakdown labels (used in App.jsx scoreBreakdown)
     time: 'Zeit',
@@ -71,9 +71,9 @@ export const gameScreenTranslations = {
     top10Rank: 'Highscore Rank {rank}',
 
     // Player name labels
-    player1: 'Player 1:',
+    player1: 'Pilot:',
     yourName: 'Your name:',
-    player2: 'Player 2:',
+    player2: 'Co-Pilot:',
 
     // Score breakdown labels (used in App.jsx scoreBreakdown)
     time: 'Time',

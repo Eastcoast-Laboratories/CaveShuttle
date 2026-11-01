@@ -97,13 +97,13 @@ export default function LobbyRoom({ onStartGame, onLeave, onSyncHighscores }) {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {state.players.map((p, i) => (
+          {state.players.map((p) => (
             <div key={p.role} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '12px 16px', background: '#111', border: '1px solid #333', borderRadius: '8px',
             }}>
               <span style={{ color: '#fff' }}>
-                {t.player} {i + 1} {p.role === 'host' ? `(${t.host})` : ''}
+                {p.role === 'host' ? t.pilot : t.coPilot} {p.role === 'host' ? `(${t.host})` : ''}
                 {p.name ? `: ${p.name}` : ''}
               </span>
               <span style={{ color: p.ready ? '#0f0' : '#888' }}>

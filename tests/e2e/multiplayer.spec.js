@@ -34,8 +34,8 @@ test.describe('Online Multiplayer 2-Player Session', () => {
 
     // --- Host: open the app and create an online lobby -----------------------
     await host.goto('/');
-    await host.getByRole('button', { name: 'Multiplayer' }).click();
-    await host.getByRole('button', { name: 'Online Game' }).click();
+    await host.getByRole('button', { name: 'Co-Op' }).click();
+    await host.getByRole('button', { name: 'Online Co-Op' }).click();
     await host.getByRole('button', { name: 'Create Game' }).click();
     await host.getByRole('button', { name: 'Create Private Game' }).click();
 
@@ -50,9 +50,9 @@ test.describe('Online Multiplayer 2-Player Session', () => {
 
     // --- Client: open the app and join the lobby by code ---------------------
     await client.goto('/');
-    await client.getByRole('button', { name: 'Multiplayer' }).click();
-    await client.getByRole('button', { name: 'Online Game' }).click();
-    await client.getByRole('button', { name: 'Join Game' }).click();
+    await client.getByRole('button', { name: 'Co-Op' }).click();
+    await client.getByRole('button', { name: 'Online Co-Op' }).click();
+    await client.getByRole('button', { name: 'Join as Co-Pilot' }).click();
     await client.getByPlaceholder('LOBBY-CODE').fill(code);
     await client.getByRole('button', { name: 'Join' }).click();
 
@@ -60,8 +60,8 @@ test.describe('Online Multiplayer 2-Player Session', () => {
     await expect(host.locator('text=/Waiting Room/')).toBeVisible({ timeout: 30_000 });
     await expect(client.locator('text=/Waiting Room/')).toBeVisible({ timeout: 30_000 });
 
-    // Host should see that player 2 joined (the player list span, not a status line).
-    await expect(host.locator('span', { hasText: /^Player 2/ })).toBeVisible();
+    // Host should see that the co-pilot joined (the player list span, not a status line).
+    await expect(host.locator('span', { hasText: /^Co-Pilot/ })).toBeVisible();
 
     // --- Both mark ready -----------------------------------------------------
     await host.getByRole('button', { name: 'Ready', exact: true }).click();
@@ -80,14 +80,14 @@ test.describe('Online Multiplayer 2-Player Session', () => {
     // Give the game loop and network state sync a moment to run.
     await host.waitForTimeout(1500);
 
-    // --- Play together: host flies (player 1), client controls turret (player 2)
+    // --- Play together: host flies the ship (pilot), client controls turret (co-pilot)
     await host.locator(gameCanvas).click();
     await host.keyboard.down('ArrowUp');
     await host.waitForTimeout(400);
     await host.keyboard.up('ArrowUp');
 
     await client.locator(gameCanvas).click();
-    // Player 2 uses WASD to rotate the turret and Shift to fire; the client
+    // The co-pilot uses WASD to rotate the turret and Shift to fire; the client
     // relays these inputs to the host over the network channel.
     await client.keyboard.down('d');
     await client.waitForTimeout(300);
