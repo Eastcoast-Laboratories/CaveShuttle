@@ -211,6 +211,25 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
 
   const isLastPage = page === pages.length - 1;
 
+  // Swipe navigation: a dominant horizontal swipe flips one page
+  // (left = next, right = back), matching the pager buttons.
+  const swipeStartRef = useRef(null);
+  const handleTouchStart = (e) => {
+    const t = e.touches[0];
+    swipeStartRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleTouchEnd = (e) => {
+    if (!swipeStartRef.current) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - swipeStartRef.current.x;
+    const dy = t.clientY - swipeStartRef.current.y;
+    swipeStartRef.current = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0 && !isLastPage) setPage(page + 1);
+      else if (dx > 0 && page > 0) setPage(page - 1);
+    }
+  };
+
   return (
     <div
       onClick={handleBackdropClick}
@@ -218,6 +237,8 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         className="tutorial-overlay__card"
       >
         <button
