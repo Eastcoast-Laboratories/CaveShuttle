@@ -11,11 +11,11 @@
 
 .level-editor-toolbar {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 6px;
+  left: 6px;
   z-index: 10;
   display: flex;
-  gap: 6px;
+  gap: 3px;
   align-items: center;
 }
 
@@ -234,29 +234,3 @@
   display: none;
 }
 
-/* Language switcher inside editor */
-.level-editor-language-switcher {
-  position: fixed;
-  top: 10px;
-  left: 166px;
-  z-index: 3000;
-  display: flex;
-  gap: 2px;
-}
-
-.level-editor-language-switcher button {
-  background: #333;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 2px 3px;
-  cursor: pointer;
-  font-size: 10px;
-  height: 16px;
-
-}
-
-.level-editor-language-switcher button.active {
-  background: #00ff88;
-  color: #000;
-}

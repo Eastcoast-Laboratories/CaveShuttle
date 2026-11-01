@@ -5,6 +5,7 @@ import { levelEditorTranslations } from '../i18n/levelEditor.js';
 import { getAllPacks } from '../levels/levelpacks.js';
 import { getInstalledPacks } from '../core/progress-storage.js';
 import { autoAccountManager } from '../game/auto-account.js';
+import LanguageSwitcher from './LanguageSwitcher';
 import './level-editor.css';
 
 // CaveShuttle-specific imports are optional via props.
@@ -353,22 +354,10 @@ export default function LevelEditor({ onBack, onEditorTest, onPackImported, inst
             <button onClick={toggleSidebar} className="level-editor-btn-sidebar">
               {t.packBuilder}
             </button>
+            <LanguageSwitcher language={language} onLanguageChange={setLanguage} scale={0.7} />
           </>
         )}
       </div>
-      {!leftCollapsed && (
-        <div className="level-editor-language-switcher">
-          {['de', 'en'].map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              className={language === lang ? 'active' : ''}
-            >
-              {lang === 'de' ? '🇩🇪' : '🇬🇧'}
-            </button>
-          ))}
-        </div>
-      )}
       <iframe
         ref={iframeRef}
         src={`/level-editor/index.html?lang=${language}&v=6`}

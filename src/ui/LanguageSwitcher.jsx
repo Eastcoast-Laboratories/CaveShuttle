@@ -5,9 +5,10 @@ const LANGUAGES = [
   { code: 'en', flag: '🇬🇧', label: 'English' },
 ];
 
-export default function LanguageSwitcher({ language, onLanguageChange, style = {} }) {
+export default function LanguageSwitcher({ language, onLanguageChange, style = {}, scale = 1 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const px = (v) => `${Math.round(v * scale)}px`;
 
   useEffect(() => {
     if (!open) return;
@@ -30,10 +31,10 @@ export default function LanguageSwitcher({ language, onLanguageChange, style = {
           background: '#333',
           color: '#fff',
           border: 'none',
-          borderRadius: '6px',
-          padding: '4px 8px',
+          borderRadius: px(6),
+          padding: `${px(4)} ${px(8)}`,
           cursor: 'pointer',
-          fontSize: '18px',
+          fontSize: px(18),
           lineHeight: 1,
         }}
       >
@@ -45,13 +46,13 @@ export default function LanguageSwitcher({ language, onLanguageChange, style = {
             position: 'absolute',
             top: '100%',
             left: 0,
-            marginTop: '4px',
+            marginTop: px(4),
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px',
+            gap: px(4),
             background: '#222',
-            borderRadius: '6px',
-            padding: '4px',
+            borderRadius: px(6),
+            padding: px(4),
             zIndex: 1000,
           }}
         >
@@ -66,10 +67,10 @@ export default function LanguageSwitcher({ language, onLanguageChange, style = {
                 background: language === lang.code ? '#00ff88' : '#333',
                 color: language === lang.code ? '#000' : '#fff',
                 border: 'none',
-                borderRadius: '6px',
-                padding: '4px 8px',
+                borderRadius: px(6),
+                padding: `${px(4)} ${px(8)}`,
                 cursor: 'pointer',
-                fontSize: '18px',
+                fontSize: px(18),
                 lineHeight: 1,
                 textAlign: 'center',
               }}
