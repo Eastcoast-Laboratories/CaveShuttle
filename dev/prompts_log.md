@@ -165,3 +165,4 @@ the tilt button jumps down when toggled on."
 
 26-11-01 "Multiplayer could also be called 'Co-Op' on the start screen; make a plan of what could be renamed instead of player 1 or 2 so it becomes clearer that it is Co-Op."
 26-11-01 "The word Co-Op only needs to be added in the frontend; the variable names can all stay."
+26-11-01 "Remember: new features that affect gameplay or visuals are always added here (dev/add_changelog.sh DE_CHANGES/EN_CHANGES) — as short as possible, only if truly relevant, so no style changes or unimportant stuff."

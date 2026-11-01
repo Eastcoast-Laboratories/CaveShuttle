@@ -196,6 +196,10 @@ body {
   line-height: 1;
   cursor: pointer;
   padding: var(--hud-pad-y) clamp(8px, 2.2vmin, 14px);
+  /* Widen the touch target to the left by one full icon width (glyph +
+     side paddings) without moving the glyph — padding is clickable but
+     the icon stays anchored at the right screen edge. */
+  padding-left: calc(1em + 2 * clamp(8px, 2.2vmin, 14px));
   margin-top: -1vh;
 }
 

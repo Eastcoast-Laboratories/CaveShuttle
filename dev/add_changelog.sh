@@ -78,21 +78,14 @@ check_length() {
 
 # German Changelog
 DE_CHANGES=$(cat << EOF
-- Jeder Level hat seinen eigenen Mond irgendwo im Hintergrund
-- Funkelnde Sterne mit Farbvariation und Größenpulsieren
-- Anpassungen für iOS
-- Neue Option: Neigung nur zum Steuern möglich
-- Neige-Steuerung kalibriert sich beim Aktivieren automatisch
+- Multiplayer-Modus heißt jetzt "Co-Op"
+- Tutorial überarbeitet: Seiten mit Vor/Zurück, Hinweise passen zur Steuerung
 EOF
 )
-
 # English Changelog
 EN_CHANGES=$(cat << EOF
-- Each level has its own moon somewhere in the background
-- Twinkling stars with color variation and size pulsing
-- Adjustments for iOS
-- New Option: Tilt can steer only
-- Tilt steering auto-calibrates when activated
+- Multiplayer mode is now called "Co-Op"
+- Tutorial reworked: paged steps, hints match the active input method
 EOF
 )
 
