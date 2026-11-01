@@ -11,18 +11,14 @@
 }
 
 .player-name-input-field {
-  width: 163px;
+  flex: 1;
+  min-width: 0;
   padding: 6px 8px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid #555;
   border-radius: 6px;
   color: #fff;
   font-size: 14px;
-  transition: width 0.2s ease;
-}
-
-.player-name-input-row:has(.player-name-save-btn, .player-name-checkmark) .player-name-input-field {
-  width: 120px;
 }
 
 .player-name-input-field::placeholder {
