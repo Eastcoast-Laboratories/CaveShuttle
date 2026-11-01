@@ -568,7 +568,6 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       }
       if (Math.abs(screenGamma) > 90) {
         screenGamma = screenGamma > 0 ? screenGamma - 180 : screenGamma + 180;
-        screenBeta = -screenBeta;
       }
 
       // When tiltSteeringRotated is ON, swap beta and gamma so the player
