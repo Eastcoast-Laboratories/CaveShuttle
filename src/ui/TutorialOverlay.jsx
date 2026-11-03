@@ -69,7 +69,7 @@ function TouchButtonPreview({ buttonTypes, podIcon, crosshairIcon, label }) {
 
 export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel, onStartGuidedLevel }) {
   const { language } = useLanguage();
-  const { isMobile } = useSettings();
+  const { isMobile, tiltAutoThrust } = useSettings();
   const [podIcon, setPodIcon] = useState(null);
   const [crosshairIcon, setCrosshairIcon] = useState(null);
 
@@ -173,10 +173,10 @@ export default function TutorialOverlay({ onDismiss, canCancel = false, onCancel
           <div className="tutorial-overlay__controls">
             <div className="tutorial-overlay__mode-title">{t.tiltSteering.aimTitle}</div>
             <div>{t.tiltSteering.aimDirection}</div>
-            <div>{t.tiltSteering.aimThrust}</div>
+            {tiltAutoThrust && <div>{t.tiltSteering.aimThrust}</div>}
             <div className="tutorial-overlay__mode-title">{t.tiltSteering.rotateTitle}</div>
             <div>{t.tiltSteering.rotateRotate}</div>
-            <div>{t.tiltSteering.rotateThrust}</div>
+            {tiltAutoThrust && <div>{t.tiltSteering.rotateThrust}</div>}
             <div>{t.tiltSteering.fire}</div>
             <div>{t.tiltSteering.pod}</div>
           </div>
