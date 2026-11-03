@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.1 — November 03, 2026
+
+- Multiplayer-Modus heißt jetzt "Co-Op"
+- Tutorial überarbeitet: Seiten mit Vor/Zurück, Hinweise passen zur Steuerung
+- Neigungssteuerung: funktioniert auch liegend (Bildschirm nach unten) und kalibriert 5 s nach Umdrehen automatisch neu
+
+
 ## 6.0 — Oktober 21, 2026
 
 - Jeder Level hat seinen eigenen Mond irgendwo im Hintergrund

@@ -1,0 +1,3 @@
+- Multiplayer mode is now called "Co-Op"
+- Tutorial reworked: paged steps, hints match the active input method
+- Tilt steering: works lying face-down and auto-recalibrates 5 s after flipping the phone

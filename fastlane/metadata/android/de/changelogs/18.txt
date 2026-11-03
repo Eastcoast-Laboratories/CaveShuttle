@@ -1,0 +1,3 @@
+- Multiplayer-Modus heißt jetzt "Co-Op"
+- Tutorial überarbeitet: Seiten mit Vor/Zurück, Hinweise passen zur Steuerung
+- Neigungssteuerung: funktioniert auch liegend (Bildschirm nach unten) und kalibriert 5 s nach Umdrehen automatisch neu

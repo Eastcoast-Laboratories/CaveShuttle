@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.1 — November 03, 2026
+
+- Multiplayer mode is now called "Co-Op"
+- Tutorial reworked: paged steps, hints match the active input method
+- Tilt steering: works lying face-down and auto-recalibrates 5 s after flipping the phone
+
+
 ## 6.0 — Oktober 21, 2026
 
 - Each level has its own moon somewhere in the background
