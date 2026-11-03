@@ -518,6 +518,12 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       resetStutter('steering-only');
     }
 
+    // Auto-recalibration: flipping the phone face-down or back arms a
+    // short dwell timer; when it expires the current pose becomes the new
+    // neutral — same as pressing calibrate.
+    let lastFaceDown = null;
+    let autoCalStart = 0;
+
     const handleOrientation = (e) => {
       // Events with null beta/gamma carry no position data — ignore them so
       // a pending activation calibration stays armed for the first real
@@ -554,6 +560,10 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
           screenGamma = rawGamma;
           break;
       }
+
+      // Read face-down on the unfolded screen axes — the fold below maps
+      // them back to ±90° so the posture check would always fail there.
+      const faceDown = Math.abs(screenBeta) > 90 || Math.abs(screenGamma) > 90;
 
       // Face-down play (lying on the back, screen pointing down): fold the
       // flipped hemisphere back onto the upright one. Beyond |beta| = 90°
@@ -595,6 +605,24 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       // Screen beta: relative to calibrated neutral.
       const gammaDelta = screenGamma - tiltNeutralGamma;
       const betaDelta = screenBeta - tiltNeutralBeta;
+
+      // Flipping the phone face-down or back arms the timer; when it
+      // expires, the current pose becomes the new neutral — same as
+      // pressing calibrate.
+      const AUTO_RECAL_MS = 2400;
+      const now = performance.now();
+      if (faceDown !== lastFaceDown) {
+        lastFaceDown = faceDown;
+        autoCalStart = now;
+      }
+      if (autoCalStart && now - autoCalStart >= AUTO_RECAL_MS) {
+        autoCalStart = 0;
+        console.log('[TILT] Auto-recalibration after posture change');
+        // Same capture as the Calibrate button in App.jsx: the latest pose
+        // stored in tiltSensorRef becomes the new neutral.
+        setTiltNeutralBeta(tiltSensorRef.current.beta);
+        setTiltNeutralGamma(tiltSensorRef.current.gamma);
+      }
 
       if (tiltMode === 'aim') {
         // Aim mode: tilt direction defines target heading.

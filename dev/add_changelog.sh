@@ -80,12 +80,14 @@ check_length() {
 DE_CHANGES=$(cat << EOF
 - Multiplayer-Modus heißt jetzt "Co-Op"
 - Tutorial überarbeitet: Seiten mit Vor/Zurück, Hinweise passen zur Steuerung
+- Neigungssteuerung: funktioniert auch liegend (Bildschirm nach unten) und kalibriert 5 s nach Umdrehen automatisch neu
 EOF
 )
 # English Changelog
 EN_CHANGES=$(cat << EOF
 - Multiplayer mode is now called "Co-Op"
 - Tutorial reworked: paged steps, hints match the active input method
+- Tilt steering: works lying face-down and auto-recalibrates 5 s after flipping the phone
 EOF
 )
 
