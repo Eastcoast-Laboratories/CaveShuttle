@@ -566,15 +566,13 @@ export default function GameCanvas({ width: widthProp, height: heightProp, onFue
       const faceDown = Math.abs(screenBeta) > 90 || Math.abs(screenGamma) > 90;
 
       // Face-down play (lying on the back, screen pointing down): fold the
-      // flipped hemisphere back onto the upright one. Beyond |beta| = 90°
-      // the delta to neutral would wrap through ±180°, and the device is
-      // seen from the other side, so every on-screen direction mirrors:
-      // the folded axis keeps the opposite sign and the other axis negates.
-      // The same fold applies to |gamma| > 90° in landscape, where beta is
-      // the axis that saturates at ±90 and gamma wraps instead.
+      // axis that wrapped past ±90° back into the upright hemisphere so the
+      // delta to the calibrated neutral stays continuous through the ±180°
+      // seam. In portrait the screen faces down via |beta| > 90°; in
+      // landscape via |gamma| > 90° (beta saturates at ±90). The other
+      // axis is left alone — the Euler fold already removes the seam.
       if (Math.abs(screenBeta) > 90) {
         screenBeta = screenBeta > 0 ? screenBeta - 180 : screenBeta + 180;
-        screenGamma = -screenGamma;
       }
       if (Math.abs(screenGamma) > 90) {
         screenGamma = screenGamma > 0 ? screenGamma - 180 : screenGamma + 180;
